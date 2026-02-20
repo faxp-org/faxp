@@ -1341,17 +1341,36 @@ def _track_unique_value(seen_set, value, label):
     if value in seen_set:
         raise ValueError(f"Replay detected for {label}: {value}")
     now_epoch = int(datetime.now(timezone.utc).timestamp())
-    with REPLAY_DB_LOCK:
-        with sqlite3.connect(REPLAY_DB_PATH, timeout=5) as conn:
+    attempts = 0
+    last_error = None
+    while attempts < 2:
+        attempts += 1
+        with REPLAY_DB_LOCK:
             try:
-                conn.execute(
-                    "INSERT INTO replay_cache(kind, value, seen_at) VALUES (?, ?, ?)",
-                    (label, value, now_epoch),
-                )
-            except sqlite3.IntegrityError as exc:
-                raise ValueError(f"Replay detected for {label}: {value}") from exc
-            _cleanup_replay_db(conn, now_epoch)
-            conn.commit()
+                with sqlite3.connect(REPLAY_DB_PATH, timeout=5) as conn:
+                    try:
+                        conn.execute(
+                            "INSERT INTO replay_cache(kind, value, seen_at) VALUES (?, ?, ?)",
+                            (label, value, now_epoch),
+                        )
+                    except sqlite3.IntegrityError as exc:
+                        raise ValueError(f"Replay detected for {label}: {value}") from exc
+                    _cleanup_replay_db(conn, now_epoch)
+                    conn.commit()
+                last_error = None
+                break
+            except sqlite3.OperationalError as exc:
+                last_error = exc
+                # Recover from cold-start race where replay table/index is not initialized yet.
+                if "no such table" in str(exc).lower():
+                    _init_replay_db()
+                    continue
+                # Retry once for transient sqlite lock contention.
+                if "database is locked" in str(exc).lower() and attempts < 2:
+                    continue
+                raise
+    if last_error is not None:
+        raise last_error
     seen_set.add(value)
     # Keep in-memory cache bounded while sqlite handles durability.
     if len(seen_set) > 200000:

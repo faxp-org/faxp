@@ -83,6 +83,18 @@ def append_message(sender, receiver, message_type, body):
             }
         )
         st.session_state.status_line = f"Validation failed: {message_type}"
+    except Exception as exc:
+        # Keep the demo fail-closed and user-visible instead of crashing the Streamlit process.
+        msg["Validation"] = "Fail"
+        msg["ValidationError"] = f"Internal validation error: {type(exc).__name__}"
+        st.session_state.validation_errors.append(
+            {
+                "MessageType": message_type,
+                "Error": f"{type(exc).__name__}: {exc}",
+                "Timestamp": msg["Timestamp"],
+            }
+        )
+        st.session_state.status_line = f"Internal validation error: {message_type}"
     st.session_state.messages.append(msg)
     return msg["Validation"] == "Pass"
 
