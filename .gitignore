@@ -1,0 +1,11 @@
+# FAXP local secrets and generated key material
+security.env.local
+faxp_agent_keys.local.json
+keys/
+*.bak.*
+security.env.filled
+faxp_agent_keys.filled.json
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
