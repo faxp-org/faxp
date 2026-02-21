@@ -558,7 +558,10 @@ else:
         "Configured" if diag.get("live_fmcsa_configured") else "Missing",
     )
     c4.metric("Last Result", diag.get("result_status", "n/a"))
-    st.caption(f"RunID: {diag.get('run_id', 'n/a')}")
+    run_id_value = str(diag.get("run_id", "n/a"))
+    st.caption(f"RunID: {run_id_value}")
+    if run_id_value and run_id_value != "n/a":
+        render_copy_button("Copy RunID", run_id_value, "diag_copy_runid_button")
     st.caption(f"Updated: {diag.get('timestamp', 'n/a')}")
     render_copy_button("Copy diagnostics JSON", diag_json, "diag_copy_button")
     timestamp_safe = str(diag.get("timestamp", "now")).replace(":", "-")
