@@ -3,6 +3,7 @@
 
 from datetime import datetime, timezone
 import base64
+import hashlib
 import json
 import os
 import secrets
@@ -607,11 +608,20 @@ else:
         },
     }
     support_bundle_json = json.dumps(support_bundle, indent=2)
+    support_bundle_hash = hashlib.sha256(
+        support_bundle_json.encode("utf-8")
+    ).hexdigest()
     st.download_button(
         "Download support-bundle.json",
         data=support_bundle_json,
         file_name=f"faxp_support_bundle_{run_id_safe}_{timestamp_safe}.json",
         mime="application/json",
+    )
+    st.caption(f"Support bundle SHA256: `{support_bundle_hash}`")
+    render_copy_button(
+        "Copy support bundle hash",
+        support_bundle_hash,
+        "diag_copy_support_bundle_hash_button",
     )
     st.code(diag_json, language="json")
     if st.button("Clear History", key="clear_verifier_history_button"):
