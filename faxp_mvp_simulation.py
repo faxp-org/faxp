@@ -389,7 +389,7 @@ def _ed25519_sign_bytes(message_bytes, private_key_path):
             msg_path = msg_file.name
         with tempfile.NamedTemporaryFile(delete=False) as sig_file:
             sig_path = sig_file.name
-        completed = _run_openssl(
+        sign_commands = [
             [
                 "openssl",
                 "pkeyutl",
@@ -400,9 +400,26 @@ def _ed25519_sign_bytes(message_bytes, private_key_path):
                 msg_path,
                 "-out",
                 sig_path,
-            ]
-        )
-        if completed.returncode != 0:
+            ],
+            [
+                "openssl",
+                "pkeyutl",
+                "-sign",
+                "-rawin",
+                "-inkey",
+                private_key_path,
+                "-in",
+                msg_path,
+                "-out",
+                sig_path,
+            ],
+        ]
+        completed = None
+        for command in sign_commands:
+            completed = _run_openssl(command)
+            if completed.returncode == 0:
+                break
+        if not completed or completed.returncode != 0:
             return None
         with open(sig_path, "rb") as handle:
             return handle.read()
@@ -425,7 +442,7 @@ def _ed25519_verify_bytes(message_bytes, signature_bytes, public_key_path):
         with tempfile.NamedTemporaryFile(delete=False) as sig_file:
             sig_file.write(signature_bytes)
             sig_path = sig_file.name
-        completed = _run_openssl(
+        verify_commands = [
             [
                 "openssl",
                 "pkeyutl",
@@ -437,9 +454,26 @@ def _ed25519_verify_bytes(message_bytes, signature_bytes, public_key_path):
                 sig_path,
                 "-in",
                 msg_path,
-            ]
-        )
-        return completed.returncode == 0
+            ],
+            [
+                "openssl",
+                "pkeyutl",
+                "-verify",
+                "-rawin",
+                "-pubin",
+                "-inkey",
+                public_key_path,
+                "-sigfile",
+                sig_path,
+                "-in",
+                msg_path,
+            ],
+        ]
+        for command in verify_commands:
+            completed = _run_openssl(command)
+            if completed.returncode == 0:
+                return True
+        return False
     finally:
         for path in [msg_path, sig_path]:
             if path and os.path.exists(path):
