@@ -174,7 +174,8 @@ Current CI workflow (`.github/workflows/ci.yml`) covers:
 - security self-test,
 - FMCSA parser regression check,
 - FMCSA contract drift detector check,
-- incident drill (CI mode).
+- incident drill (CI mode),
+- per-workflow RunID log artifacts (`faxp-ci-logs-<runid>`).
 
 Planned CI additions (v0.2+):
 - explicit capability-mismatch test invocation,

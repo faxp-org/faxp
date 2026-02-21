@@ -23,6 +23,21 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Initialize CI Run ID
+        id: ci_run_id
+        run: |
+          RUN_ID="$(python - <<'PY'
+          import uuid
+          print(uuid.uuid4())
+          PY
+          )"
+          LOG_DIR="/tmp/faxp-ci-${RUN_ID}"
+          mkdir -p "${LOG_DIR}"
+          echo "run_id=${RUN_ID}" >> "$GITHUB_OUTPUT"
+          echo "log_dir=${LOG_DIR}" >> "$GITHUB_OUTPUT"
+          echo "[INFO] CI RunID: ${RUN_ID}"
+          echo "[INFO] CI LogDir: ${LOG_DIR}"
+
       - name: Install system tools
         run: |
           sudo apt-get update
@@ -71,32 +86,32 @@ jobs:
           set -a
           source "$RUNNER_TEMP/faxp-secrets/security.env.ci"
           set +a
-          python faxp_mvp_simulation.py --provider MockBiometricProvider --response Accept --verification-status Success | tee /tmp/faxp-sim.log
-          rg -q "Booking completed successfully" /tmp/faxp-sim.log
+          python faxp_mvp_simulation.py --provider MockBiometricProvider --response Accept --verification-status Success | tee "${{ steps.ci_run_id.outputs.log_dir }}/faxp-sim-${{ steps.ci_run_id.outputs.run_id }}.log"
+          rg -q "Booking completed successfully" "${{ steps.ci_run_id.outputs.log_dir }}/faxp-sim-${{ steps.ci_run_id.outputs.run_id }}.log"
 
       - name: Security self-test
         run: |
           set -a
           source "$RUNNER_TEMP/faxp-secrets/security.env.ci"
           set +a
-          python faxp_mvp_simulation.py --security-self-test --self-test-iterations 25
+          python faxp_mvp_simulation.py --security-self-test --self-test-iterations 25 | tee "${{ steps.ci_run_id.outputs.log_dir }}/faxp-self-test-${{ steps.ci_run_id.outputs.run_id }}.log"
 
       - name: Capability mismatch fails closed
         run: |
           set -a
           source "$RUNNER_TEMP/faxp-secrets/security.env.ci"
           set +a
-          python faxp_mvp_simulation.py --force-capability-mismatch --provider MockBiometricProvider --verification-status Success | tee /tmp/faxp-capability.log
-          rg -q "Capability mismatch" /tmp/faxp-capability.log
-          ! rg -q "Booking completed successfully" /tmp/faxp-capability.log
+          python faxp_mvp_simulation.py --force-capability-mismatch --provider MockBiometricProvider --verification-status Success | tee "${{ steps.ci_run_id.outputs.log_dir }}/faxp-capability-${{ steps.ci_run_id.outputs.run_id }}.log"
+          rg -q "Capability mismatch" "${{ steps.ci_run_id.outputs.log_dir }}/faxp-capability-${{ steps.ci_run_id.outputs.run_id }}.log"
+          ! rg -q "Booking completed successfully" "${{ steps.ci_run_id.outputs.log_dir }}/faxp-capability-${{ steps.ci_run_id.outputs.run_id }}.log"
 
       - name: Legacy alias compatibility (iDenfy)
         run: |
           set -a
           source "$RUNNER_TEMP/faxp-secrets/security.env.ci"
           set +a
-          python faxp_mvp_simulation.py --provider iDenfy --response Accept --verification-status Success | tee /tmp/faxp-alias.log
-          rg -q "Booking completed successfully" /tmp/faxp-alias.log
+          python faxp_mvp_simulation.py --provider iDenfy --response Accept --verification-status Success | tee "${{ steps.ci_run_id.outputs.log_dir }}/faxp-alias-${{ steps.ci_run_id.outputs.run_id }}.log"
+          rg -q "Booking completed successfully" "${{ steps.ci_run_id.outputs.log_dir }}/faxp-alias-${{ steps.ci_run_id.outputs.run_id }}.log"
 
       - name: FMCSA parser regression check (MC normalization + authority + insurance)
         run: |
@@ -152,4 +167,12 @@ jobs:
           FAXP_INCIDENT_DRILL_PROVIDER: MockBiometricProvider
           FAXP_INCIDENT_DRILL_REQUIRE_TRUCK_FLOW: "0"
         run: |
-          ./incident_drill.sh "$RUNNER_TEMP/faxp-secrets/security.env.ci"
+          ./incident_drill.sh "$RUNNER_TEMP/faxp-secrets/security.env.ci" | tee "${{ steps.ci_run_id.outputs.log_dir }}/faxp-incident-drill-${{ steps.ci_run_id.outputs.run_id }}.log"
+
+      - name: Upload CI logs artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: faxp-ci-logs-${{ steps.ci_run_id.outputs.run_id }}
+          path: ${{ steps.ci_run_id.outputs.log_dir }}
+          if-no-files-found: warn
