@@ -542,6 +542,13 @@ else:
     c4.metric("Last Result", diag.get("result_status", "n/a"))
     st.caption(f"Updated: {diag.get('timestamp', 'n/a')}")
     render_copy_button("Copy diagnostics JSON", diag_json, "diag_copy_button")
+    timestamp_safe = str(diag.get("timestamp", "now")).replace(":", "-")
+    st.download_button(
+        "Download diagnostics.json",
+        data=diag_json,
+        file_name=f"faxp_diagnostics_{timestamp_safe}.json",
+        mime="application/json",
+    )
     st.code(diag_json, language="json")
 
 st.subheader("AmendRequest (exists, not executed)")
