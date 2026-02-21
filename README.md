@@ -23,6 +23,24 @@ This repository includes:
 - Provider integrations (FMCSA, biometric vendors, future verifiers) are adapter concerns and should remain outside protocol-core contracts.
 - `VerificationResult.provider` remains an opaque string in v0.2 compatibility schema; no vendor enum is required.
 
+## Legacy Field Deprecation Timeline
+
+Legacy provider-shaped fields remain supported for compatibility in v0.2:
+- `providerAlias`
+- `source`
+- `sourceAuthority`
+- `mcNumber`
+- `carrier`
+- `error`
+
+Planned lifecycle:
+1. v0.2.x: Supported and validated.
+2. v0.3.x: Still accepted, marked deprecated in docs and conformance notes.
+3. v0.4.0 target: move legacy fields to optional adapter-profile extensions; core conformance will only require neutral fields.
+
+Operational rule:
+- New integrations should write neutral fields first (`category`, `method`, `provider`, `assuranceLevel`, `evidenceRef`, `attestation`) and treat legacy fields as optional metadata.
+
 ## Runbook
 
 ### 1) Local Setup (Recommended)

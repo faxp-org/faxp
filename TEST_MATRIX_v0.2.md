@@ -1,6 +1,6 @@
 # FAXP v0.2 Test Matrix (Neutral Verification + Capability Negotiation)
 
-Status: Draft  
+Status: In Progress  
 Updated: 2026-02-21
 
 ## 1. Purpose
@@ -35,6 +35,7 @@ Expected:
 Command:
 - `./run_secure_demo.sh sim --use-kms-command --provider MockBiometricProvider --verification-status Success`
 Assert in output:
+- `VerificationResult.provider = identity.liveness-document.mock`
 - `VerificationResult.category = Biometric`
 - `VerificationResult.method = LivenessPlusDocument`
 - `VerificationResult.assuranceLevel = AAL2`
@@ -44,6 +45,7 @@ Assert in output:
 Command:
 - `./run_secure_demo.sh sim --use-kms-command --provider FMCSA --verification-status Success --mc-number 498282`
 Assert in output:
+- `VerificationResult.provider = compliance.authority-record.mock` (mock path) or `compliance.authority-record.registry` (carrier-finder path)
 - `VerificationResult.category = Compliance`
 - `VerificationResult.method = AuthorityRecordCheck`
 - `VerificationResult.assuranceLevel = AAL1`
@@ -171,13 +173,14 @@ Current CI workflow (`.github/workflows/ci.yml`) covers:
 - python compile,
 - security gate,
 - simulation smoke,
+- neutral provider smoke check for MockBiometricProvider,
+- neutral provider smoke check for FMCSA mock provider,
 - security self-test,
 - FMCSA parser regression check,
 - FMCSA contract drift detector check,
 - incident drill (CI mode),
 - per-workflow RunID log artifacts (`faxp-ci-logs-<runid>`).
 
-Planned CI additions (v0.2+):
-- explicit capability-mismatch test invocation,
-- explicit raw-biometric rejection test vector,
-- schema conformance checks for neutral verification fields.
+Remaining CI additions (v0.2+):
+- optional live FMCSA adapter contract test against sandbox/stub API,
+- dedicated compatibility suite for legacy-field deprecation warnings.

@@ -96,6 +96,16 @@ jobs:
           set +a
           python faxp_mvp_simulation.py --provider MockBiometricProvider --response Accept --verification-status Success | tee "${{ steps.ci_run_id.outputs.log_dir }}/faxp-sim-${{ steps.ci_run_id.outputs.run_id }}.log"
           rg -q "Booking completed successfully" "${{ steps.ci_run_id.outputs.log_dir }}/faxp-sim-${{ steps.ci_run_id.outputs.run_id }}.log"
+          rg -q "\"provider\": \"identity.liveness-document.mock\"" "${{ steps.ci_run_id.outputs.log_dir }}/faxp-sim-${{ steps.ci_run_id.outputs.run_id }}.log"
+
+      - name: Neutrality smoke test (FMCSA mock provider)
+        run: |
+          set -a
+          source "$RUNNER_TEMP/faxp-secrets/security.env.ci"
+          set +a
+          python faxp_mvp_simulation.py --provider FMCSA --response Accept --verification-status Success | tee "${{ steps.ci_run_id.outputs.log_dir }}/faxp-neutrality-fmcsa-${{ steps.ci_run_id.outputs.run_id }}.log"
+          rg -q "Booking completed successfully" "${{ steps.ci_run_id.outputs.log_dir }}/faxp-neutrality-fmcsa-${{ steps.ci_run_id.outputs.run_id }}.log"
+          rg -q "\"provider\": \"compliance.authority-record.mock\"" "${{ steps.ci_run_id.outputs.log_dir }}/faxp-neutrality-fmcsa-${{ steps.ci_run_id.outputs.run_id }}.log"
 
       - name: Security self-test
         run: |

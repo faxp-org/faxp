@@ -33,7 +33,7 @@ Target files:
   - [x] `attestation.alg`
   - [x] `attestation.kid`
   - [x] `attestation.sig`
-- [ ] Keep backward-compatibility fields for one version (deprecation notice in docs).
+- [x] Keep backward-compatibility fields for one version (deprecation notice in docs).
 - [x] Disallow raw biometric artifact fields in schema.
 
 Acceptance:
@@ -45,7 +45,7 @@ Acceptance:
 Target file: `/Users/zglitch009/projects/logistics-ai/FAXP/faxp_mvp_simulation.py`
 
 - [x] Update validation logic for `ExecutionReport.VerificationResult` neutral object.
-- [ ] Add verifier attestation validation hook:
+- [x] Add verifier attestation validation hook:
   - [x] enforce `alg`/`kid` presence when signed verifier mode is enabled.
   - [x] reject unknown/invalid attestation structure.
 - [x] Add "no raw biometric payload" guardrails in validation.
@@ -55,8 +55,8 @@ Target file: `/Users/zglitch009/projects/logistics-ai/FAXP/faxp_mvp_simulation.p
 Acceptance:
 - [ ] Load flow still completes.
 - [ ] Truck flow still completes.
-- [ ] Existing security tests pass.
-- [ ] New invalid verification payloads are rejected.
+- [x] Existing security tests pass.
+- [x] New invalid verification payloads are rejected.
 
 ## Phase 3: Capability Negotiation (Optional Metadata in v0.2)
 
@@ -71,7 +71,7 @@ Targets:
 
 Acceptance:
 - [ ] Capability metadata is optional and non-breaking.
-- [ ] Capability mismatch path is deterministic and logged.
+- [x] Capability mismatch path is deterministic and logged.
 
 ## Phase 4: Streamlit Cloud Alignment
 
@@ -93,21 +93,21 @@ Targets:
 - New test notes/doc file (optional):
   - `/Users/zglitch009/projects/logistics-ai/FAXP/TEST_MATRIX_v0.2.md`
 
-- [ ] Add neutral-verification happy-path test vectors:
-  - [ ] mock provider A
-  - [ ] mock provider B
+- [x] Add neutral-verification happy-path test vectors:
+  - [x] mock provider A
+  - [x] mock provider B
 - [ ] Add negative tests:
   - [x] missing attestation when required
   - [x] malformed attestation
   - [x] raw biometric payload rejection
   - [x] unknown category/method handling
-- [ ] Add explicit conformance checks for:
+- [x] Add explicit conformance checks for:
   - [x] no vendor-mandatory schema fields
   - [x] protocol acceptance independent of provider name
 
 Acceptance:
-- [ ] Two-provider neutrality tests pass.
-- [ ] Negative tests fail-closed as expected.
+- [x] Two-provider neutrality tests pass.
+- [x] Negative tests fail-closed as expected.
 
 ## Phase 6: Docs + Governance
 
@@ -118,8 +118,8 @@ Targets:
 
 - [x] Add protocol-neutral verification section to README.
 - [x] Document adapter pattern boundaries (core protocol vs provider adapters).
-- [ ] Add deprecation note/timeline for legacy provider-shaped fields.
-- [ ] Add conformance language snippet for foundation/governance docs.
+- [x] Add deprecation note/timeline for legacy provider-shaped fields.
+- [x] Add conformance language snippet for foundation/governance docs.
 
 Acceptance:
 - [ ] Developer can implement a new provider adapter without core schema changes.
@@ -135,8 +135,8 @@ Acceptance:
 
 ## Definition of Done (v0.2 Neutral Verification)
 
-- [ ] Core protocol schema is provider-neutral.
-- [ ] Core code has no vendor-specific required fields.
+- [x] Core protocol schema is provider-neutral.
+- [x] Core code has no vendor-specific required fields.
 - [ ] Cloud demo remains functional.
-- [ ] Security controls remain enforced.
-- [ ] Conformance tests prove multi-provider neutrality.
+- [x] Security controls remain enforced.
+- [x] Conformance tests prove multi-provider neutrality.

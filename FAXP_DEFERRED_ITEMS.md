@@ -22,3 +22,13 @@ Revisit deferred items when either condition is met:
 
 1. V2 rate structures/scenarios are finalized.
 2. FAXP is prepared for multi-agent/multi-repo external integrations.
+
+## Conformance Snippet (Draft)
+
+Use this language in governance/foundation-facing docs:
+
+- A FAXP implementation **MUST** accept protocol-valid verification messages without requiring any specific vendor name.
+- A FAXP implementation **MUST** reject raw biometric artifacts in protocol payloads.
+- A FAXP implementation **MUST** enforce configured verifier trust policy (signature scheme, trusted key IDs, and attestation validation when signed mode is enabled).
+- A FAXP implementation **SHOULD** preserve backward-compatible legacy verification fields during the deprecation window, but **MUST NOT** require them for core conformance.
+- A FAXP implementation **MUST NOT** define conformance in terms of a proprietary provider API.
