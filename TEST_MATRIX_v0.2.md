@@ -115,7 +115,17 @@ Expected:
 - One pass per fixture.
 - MC normalization and authority/insurance interpretation remain stable.
 
-5. Replay and TTL guards unchanged
+5. FMCSA contract drift detector guard
+Command:
+- `python3 - <<'PY'`
+- `from faxp_mvp_simulation import _unknown_fmcsa_top_level_keys`
+- `print(_unknown_fmcsa_top_level_keys({"content": {}, "meta": {}, "timestamp": "x"}))`
+- `PY`
+Expected:
+- Returns `["meta", "timestamp"]` with default config.
+- Runtime logs one non-blocking warning if these keys appear in live responses.
+
+6. Replay and TTL guards unchanged
 Expected:
 - Existing replay/TTL protections continue to pass/fail as before.
 
@@ -163,6 +173,7 @@ Current CI workflow (`.github/workflows/ci.yml`) covers:
 - simulation smoke,
 - security self-test,
 - FMCSA parser regression check,
+- FMCSA contract drift detector check,
 - incident drill (CI mode).
 
 Planned CI additions (v0.2+):

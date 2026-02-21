@@ -21,6 +21,7 @@ import shlex
 import shutil
 import sqlite3
 import subprocess
+import sys
 import tempfile
 import threading
 import urllib.error
@@ -38,6 +39,11 @@ FMCSA_API_BASE_URL = os.getenv(
     "FAXP_FMCSA_API_BASE_URL", "https://mobile.fmcsa.dot.gov/qc/services"
 ).strip()
 FMCSA_API_TIMEOUT_SECONDS_RAW = os.getenv("FAXP_FMCSA_API_TIMEOUT_SECONDS", "12").strip()
+FMCSA_LOG_UNKNOWN_KEYS_RAW = os.getenv("FAXP_FMCSA_LOG_UNKNOWN_KEYS", "1").strip()
+FMCSA_EXPECTED_TOP_LEVEL_KEYS_RAW = os.getenv(
+    "FAXP_FMCSA_EXPECTED_TOP_LEVEL_KEYS",
+    "content,result,data,error,errors",
+).strip()
 
 LEGACY_MESSAGE_SIGNING_KEY = os.getenv("FAXP_MESSAGE_SIGNING_KEY", "").encode("utf-8")
 LEGACY_VERIFIER_SIGNING_KEY = os.getenv("FAXP_VERIFIER_SIGNING_KEY", "").encode("utf-8")
@@ -131,6 +137,8 @@ ALLOWED_EXTERNAL_SECRET_KEYS = {
     "FAXP_FMCSA_CLIENT_SECRET",
     "FAXP_FMCSA_API_BASE_URL",
     "FAXP_FMCSA_API_TIMEOUT_SECONDS",
+    "FAXP_FMCSA_LOG_UNKNOWN_KEYS",
+    "FAXP_FMCSA_EXPECTED_TOP_LEVEL_KEYS",
 }
 ROUTE_POLICY = {
     "NewLoad": {("Broker", "Carrier")},
@@ -148,6 +156,7 @@ LAST_AUDIT_HASH = ""
 REPLAY_DB_LOCK = threading.Lock()
 STATE_LOCK = threading.Lock()
 FLOW_STATE = {"load": "START", "truck": "START"}
+FMCSA_DRIFT_WARNED_SIGNATURES = set()
 
 
 def _normalize_external_secret_bundle(raw_bundle):
@@ -288,6 +297,33 @@ try:
 except ValueError:
     FMCSA_API_TIMEOUT_SECONDS = 12
 FMCSA_API_TIMEOUT_SECONDS = max(3, min(30, FMCSA_API_TIMEOUT_SECONDS))
+FMCSA_LOG_UNKNOWN_KEYS_RAW = _override_secret_value(
+    "FAXP_FMCSA_LOG_UNKNOWN_KEYS",
+    FMCSA_LOG_UNKNOWN_KEYS_RAW,
+).strip()
+FMCSA_EXPECTED_TOP_LEVEL_KEYS_RAW = _override_secret_value(
+    "FAXP_FMCSA_EXPECTED_TOP_LEVEL_KEYS",
+    FMCSA_EXPECTED_TOP_LEVEL_KEYS_RAW,
+).strip()
+
+
+def _is_truthy(value):
+    return str(value or "").strip().lower() in {"1", "true", "yes", "on", "y"}
+
+
+def _parse_expected_fmcsa_top_level_keys(raw_value):
+    keys = {
+        str(part).strip().lower()
+        for part in str(raw_value or "").split(",")
+        if str(part).strip()
+    }
+    return keys or {"content", "result", "data", "error", "errors"}
+
+
+FMCSA_LOG_UNKNOWN_KEYS = _is_truthy(FMCSA_LOG_UNKNOWN_KEYS_RAW)
+FMCSA_EXPECTED_TOP_LEVEL_KEYS = _parse_expected_fmcsa_top_level_keys(
+    FMCSA_EXPECTED_TOP_LEVEL_KEYS_RAW
+)
 
 
 def _load_agent_key_registry():
@@ -1764,6 +1800,37 @@ def _normalize_mc(value):
     return digits.lstrip("0") or "0"
 
 
+def _unknown_fmcsa_top_level_keys(payload):
+    if not isinstance(payload, dict):
+        return []
+    unknown = []
+    for key in payload.keys():
+        normalized = str(key).strip().lower()
+        if normalized and normalized not in FMCSA_EXPECTED_TOP_LEVEL_KEYS:
+            unknown.append(str(key))
+    return sorted(unknown)
+
+
+def _log_fmcsa_contract_drift(endpoint, payload):
+    if not FMCSA_LOG_UNKNOWN_KEYS:
+        return
+    unknown = _unknown_fmcsa_top_level_keys(payload)
+    if not unknown:
+        return
+
+    signature = f"{endpoint}|{','.join(unknown)}"
+    with STATE_LOCK:
+        if signature in FMCSA_DRIFT_WARNED_SIGNATURES:
+            return
+        FMCSA_DRIFT_WARNED_SIGNATURES.add(signature)
+
+    print(
+        f"[WARN] FMCSA response contract drift detected from {endpoint}. "
+        f"Unknown top-level keys: {unknown}",
+        file=sys.stderr,
+    )
+
+
 def _status_is_active(value):
     text = str(value or "").strip().upper()
     if not text:
@@ -2088,6 +2155,7 @@ def lookup_fmcsa_live_api(mc_number):
             errors.append(f"{endpoint} -> non-JSON response.")
             continue
 
+        _log_fmcsa_contract_drift(endpoint, payload)
         normalized = _normalize_fmcsa_live_payload(payload, target_mc)
         try:
             _validate_carrier_finder_payload(normalized, requested_mc=target_mc)

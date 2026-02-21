@@ -102,6 +102,21 @@ jobs:
         run: |
           python tests/run_fmcsa_parser_fixtures.py
 
+      - name: FMCSA contract drift detector check
+        run: |
+          python - <<'PY'
+          from faxp_mvp_simulation import _unknown_fmcsa_top_level_keys
+
+          payload = {
+              "content": {"carrier": {}},
+              "meta": {"version": "next"},
+              "timestamp": "2026-02-21T00:00:00Z",
+          }
+          unknown = _unknown_fmcsa_top_level_keys(payload)
+          assert unknown == ["meta", "timestamp"], unknown
+          print("FMCSA contract drift detector check passed.")
+          PY
+
       - name: Reject raw biometric payload fields
         run: |
           python - <<'PY'
