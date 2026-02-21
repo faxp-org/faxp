@@ -21,9 +21,11 @@ from faxp_mvp_simulation import (
     format_rate,
     negotiate_verification_capability,
     redact_sensitive,
+    get_protocol_run_id,
     reset_protocol_runtime_state,
     resolve_allowed_carrier_finder_path,
     run_verification,
+    set_protocol_run_id,
     validate_envelope,
 )
 
@@ -187,6 +189,7 @@ def update_summary_from_report():
 
     st.session_state.summary = (
         "Booking completed successfully - "
+        f"RunID: {get_protocol_run_id()}, "
         f"LoadID: {report['LoadID']}, "
         f"Verified: {st.session_state.verified_badge}, "
         f"BaseRate: {format_rate(report['AgreedRate'])}, "
@@ -243,9 +246,11 @@ def run_flow(
     fmcsa_source,
 ):
     reset_state()
+    run_id = set_protocol_run_id()
     broker = st.session_state.broker
     carrier = st.session_state.carrier
     st.session_state.last_verifier_diagnostics = {
+        "run_id": run_id,
         "provider": provider,
         "fmcsa_source": fmcsa_source if provider == "FMCSA" else "n/a",
         "mc_number": (mc_number or "").strip() if provider == "FMCSA" else "",
@@ -519,6 +524,7 @@ if not diag:
 else:
     diag_json = json.dumps(
         {
+            "runId": diag.get("run_id", "n/a"),
             "provider": diag.get("provider", "n/a"),
             "fmcsaSource": diag.get("fmcsa_source", "n/a"),
             "liveFmcsaConfigured": diag.get("live_fmcsa_configured"),
@@ -540,13 +546,15 @@ else:
         "Configured" if diag.get("live_fmcsa_configured") else "Missing",
     )
     c4.metric("Last Result", diag.get("result_status", "n/a"))
+    st.caption(f"RunID: {diag.get('run_id', 'n/a')}")
     st.caption(f"Updated: {diag.get('timestamp', 'n/a')}")
     render_copy_button("Copy diagnostics JSON", diag_json, "diag_copy_button")
     timestamp_safe = str(diag.get("timestamp", "now")).replace(":", "-")
+    run_id_safe = str(diag.get("run_id", "run")).replace("/", "_")
     st.download_button(
         "Download diagnostics.json",
         data=diag_json,
-        file_name=f"faxp_diagnostics_{timestamp_safe}.json",
+        file_name=f"faxp_diagnostics_{run_id_safe}_{timestamp_safe}.json",
         mime="application/json",
     )
     st.code(diag_json, language="json")

@@ -157,6 +157,7 @@ REPLAY_DB_LOCK = threading.Lock()
 STATE_LOCK = threading.Lock()
 FLOW_STATE = {"load": "START", "truck": "START"}
 FMCSA_DRIFT_WARNED_SIGNATURES = set()
+CURRENT_RUN_ID = ""
 
 
 def _normalize_external_secret_bundle(raw_bundle):
@@ -856,9 +857,25 @@ def _enforce_state_transition(envelope):
 
 
 def reset_protocol_runtime_state():
+    global CURRENT_RUN_ID
     with STATE_LOCK:
         FLOW_STATE.clear()
         FLOW_STATE.update({"load": "START", "truck": "START"})
+        CURRENT_RUN_ID = ""
+
+
+def set_protocol_run_id(run_id=None):
+    global CURRENT_RUN_ID
+    candidate = str(run_id or "").strip() or str(uuid4())
+    with STATE_LOCK:
+        CURRENT_RUN_ID = candidate
+    return CURRENT_RUN_ID
+
+
+def get_protocol_run_id():
+    if CURRENT_RUN_ID:
+        return CURRENT_RUN_ID
+    return set_protocol_run_id()
 
 
 def _bounded_string(value, context):
@@ -925,6 +942,7 @@ def _append_audit_event(envelope, validation_status="pass"):
     global LAST_AUDIT_HASH
     event = {
         "timestamp": now_utc(),
+        "run_id": envelope.get("RunID"),
         "protocol": envelope.get("Protocol"),
         "version": envelope.get("ProtocolVersion"),
         "message_id": envelope.get("MessageID"),
@@ -1697,6 +1715,8 @@ def validate_envelope(envelope, track_replay=True, track_state=True):
         raise ValueError("Envelope.ProtocolVersion mismatch.")
     _bounded_string(envelope["From"], "Envelope.From")
     _bounded_string(envelope["To"], "Envelope.To")
+    if "RunID" in envelope:
+        _bounded_string(envelope["RunID"], "Envelope.RunID")
     _bounded_string(envelope["MessageID"], "Envelope.MessageID")
     _bounded_string(envelope["Nonce"], "Envelope.Nonce")
     _validate_iso_datetime(envelope["Timestamp"], "Envelope.Timestamp")
@@ -1761,9 +1781,11 @@ def apply_message_signature(envelope):
 
 
 def build_envelope(sender, receiver, message_type, body):
+    run_id = get_protocol_run_id()
     envelope = {
         "Protocol": FaxpProtocol.NAME,
         "ProtocolVersion": FaxpProtocol.VERSION,
+        "RunID": run_id,
         "MessageType": message_type,
         "From": sender,
         "To": receiver,
@@ -3067,6 +3089,7 @@ def run_load_flow(args, broker, carrier):
 
     print(
         "Booking completed successfully - "
+        f"RunID: {get_protocol_run_id()}, "
         f"LoadID: {bid_request['LoadID']}, "
         f"Verified: {verified_badge}, "
         f"Rate: {format_rate(bid_request['Rate'])}"
@@ -3162,6 +3185,7 @@ def run_truck_flow(args, broker, carrier):
     )
     print(
         "Truck capacity booking complete - "
+        f"RunID: {get_protocol_run_id()}, "
         f"TruckID: {selected_truck['TruckID']}, "
         f"Verified: {verified_badge}, "
         f"Rate: {format_rate(truck_bid_request['Rate'])}"
@@ -3172,6 +3196,7 @@ def main():
     args = parse_args()
     enforce_security_baseline()
     reset_protocol_runtime_state()
+    run_id = set_protocol_run_id()
 
     if args.security_self_test:
         if not run_security_self_tests(args.self_test_iterations):
@@ -3180,6 +3205,7 @@ def main():
     print(
         f"{FaxpProtocol.NAME} v{FaxpProtocol.VERSION} MVP - Autonomous Freight Booking Happy-Path Simulation"
     )
+    print(f"[System] RunID: {run_id}")
     print("\nSupported message types:")
     print(json.dumps(FaxpProtocol.MESSAGE_TYPES, indent=2))
 
