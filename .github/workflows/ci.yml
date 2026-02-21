@@ -204,6 +204,51 @@ jobs:
               print("Signed verifier mode disabled; attestation requirement check skipped.")
           PY
 
+      - name: Reject malformed verifier attestation signatures
+        run: |
+          set -a
+          source "$RUNNER_TEMP/faxp-secrets/security.env.ci"
+          set +a
+          python - <<'PY'
+          from faxp_mvp_simulation import REQUIRE_SIGNED_VERIFIER, run_verification, validate_message_body
+
+          if not REQUIRE_SIGNED_VERIFIER:
+              print("Signed verifier mode disabled; malformed attestation check skipped.")
+              raise SystemExit(0)
+
+          verification_result, _ = run_verification(
+              provider="MockBiometricProvider",
+              status="Success",
+          )
+
+          attestation = dict(verification_result.get("attestation") or {})
+          if not attestation:
+              raise SystemExit("Expected attestation in verification result, but none was present.")
+
+          attestation["sig"] = f"{attestation['sig']}tampered"
+          verification_result["attestation"] = attestation
+
+          execution_report_body = {
+              "LoadID": "load-123",
+              "ContractID": "FAXP-20260221-abc123",
+              "Status": "Booked",
+              "Timestamp": "2026-02-21T00:00:00Z",
+              "VerifiedBadge": "Premium",
+              "VerificationResult": verification_result,
+          }
+
+          try:
+              validate_message_body("ExecutionReport", execution_report_body)
+          except ValueError as exc:
+              message = str(exc)
+              if "attestation signature verification failed" not in message:
+                  raise SystemExit(f"Unexpected validation error: {message}")
+          else:
+              raise SystemExit("Expected malformed attestation rejection did not occur.")
+
+          print("Malformed attestation signature rejection check passed.")
+          PY
+
       - name: Incident drill (CI mode)
         env:
           FAXP_INCIDENT_DRILL_PROVIDER: MockBiometricProvider

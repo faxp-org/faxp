@@ -98,7 +98,7 @@ Targets:
   - [ ] mock provider B
 - [ ] Add negative tests:
   - [x] missing attestation when required
-  - [ ] malformed attestation
+  - [x] malformed attestation
   - [x] raw biometric payload rejection
   - [ ] unknown category/method handling
 - [ ] Add explicit conformance checks for:
