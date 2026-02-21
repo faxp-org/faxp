@@ -1,8 +1,8 @@
 # FAXP v0.2 Implementation Checklist (From RFC Verification Neutrality)
 
-Status: In Progress  
+Status: Alpha Candidate  
 Source RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/RFC-v0.2-verification-neutrality.md`  
-Updated: 2026-02-21 (phase tracking refreshed)
+Updated: 2026-02-21 (alpha evidence closure)
 
 ## Phase 0: Branch + Baseline
 
@@ -53,8 +53,8 @@ Target file: `/Users/zglitch009/projects/logistics-ai/FAXP/faxp_mvp_simulation.p
 - [x] Preserve existing `VerifiedBadge` behavior (`None`/`Basic`/`Premium`) as policy mapping.
 
 Acceptance:
-- [ ] Load flow still completes.
-- [ ] Truck flow still completes.
+- [x] Load flow still completes.
+- [x] Truck flow still completes.
 - [x] Existing security tests pass.
 - [x] New invalid verification payloads are rejected.
 
@@ -70,7 +70,7 @@ Targets:
 - [x] Keep transport placement minimal for v0.2 (no new message type yet).
 
 Acceptance:
-- [ ] Capability metadata is optional and non-breaking.
+- [x] Capability metadata is optional and non-breaking.
 - [x] Capability mismatch path is deterministic and logged.
 
 ## Phase 4: Streamlit Cloud Alignment
@@ -83,8 +83,8 @@ Target file: `/Users/zglitch009/projects/logistics-ai/FAXP/streamlit_app.py`
 - [x] Add clearer status text for verifier unavailable vs verification failure.
 
 Acceptance:
-- [ ] Streamlit cloud demo succeeds with known-good settings.
-- [ ] No ED25519 private-key file dependency in cloud mode.
+- [x] Streamlit cloud demo succeeds with known-good settings.
+- [x] No ED25519 private-key file dependency in cloud mode.
 
 ## Phase 5: Tests and Conformance
 
@@ -96,7 +96,7 @@ Targets:
 - [x] Add neutral-verification happy-path test vectors:
   - [x] mock provider A
   - [x] mock provider B
-- [ ] Add negative tests:
+- [x] Add negative tests:
   - [x] missing attestation when required
   - [x] malformed attestation
   - [x] raw biometric payload rejection
@@ -122,7 +122,7 @@ Targets:
 - [x] Add conformance language snippet for foundation/governance docs.
 
 Acceptance:
-- [ ] Developer can implement a new provider adapter without core schema changes.
+- [x] Developer can implement a new provider adapter without core schema changes.
 
 ## Suggested Implementation Order
 
@@ -137,6 +137,16 @@ Acceptance:
 
 - [x] Core protocol schema is provider-neutral.
 - [x] Core code has no vendor-specific required fields.
-- [ ] Cloud demo remains functional.
+- [x] Cloud demo remains functional.
 - [x] Security controls remain enforced.
 - [x] Conformance tests prove multi-provider neutrality.
+
+## Evidence Notes (2026-02-21)
+
+- CI has remained green across schema compatibility, attestation enforcement, unknown taxonomy rejection, and two-provider neutrality smoke checks.
+- Load/truck completion validated in simulation output (`Booking completed successfully` + truck completion path).
+- Streamlit cloud behavior validated manually with cloud-safe settings in production mode.
+- Adapter implementation acceptance supported by:
+  - opaque neutral `VerificationResult.provider` IDs,
+  - legacy `providerAlias` compatibility path,
+  - conformance language requiring provider-agnostic protocol handling.
