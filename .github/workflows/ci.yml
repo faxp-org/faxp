@@ -68,11 +68,15 @@ jobs:
 
       - name: Python compile checks
         run: |
-          python -m py_compile faxp_mvp_simulation.py streamlit_app.py
+          python -m py_compile faxp_mvp_simulation.py streamlit_app.py streamlit_state_logic.py tests/run_streamlit_state_logic.py tests/run_schema_compatibility.py
 
       - name: Streamlit state regression checks
         run: |
           python tests/run_streamlit_state_logic.py
+
+      - name: Schema compatibility checks (v0.1.1 + v0.2)
+        run: |
+          python tests/run_schema_compatibility.py
 
       - name: Security gate (template)
         run: |

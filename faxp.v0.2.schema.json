@@ -1,0 +1,306 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faxp.org/schema/faxp-v0.2.0.json",
+  "title": "FAXP Protocol Envelope v0.2",
+  "description": "Canonical message contract for FAXP v0.2 with v0.1.1 compatibility mode.",
+  "type": "object",
+  "required": [
+    "Protocol",
+    "ProtocolVersion",
+    "MessageType",
+    "From",
+    "To",
+    "Timestamp",
+    "Body"
+  ],
+  "properties": {
+    "Protocol": {
+      "type": "string",
+      "const": "FAXP"
+    },
+    "ProtocolVersion": {
+      "type": "string",
+      "enum": ["0.1.1", "0.2.0"]
+    },
+    "MessageType": {
+      "type": "string",
+      "enum": [
+        "NewLoad",
+        "LoadSearch",
+        "NewTruck",
+        "TruckSearch",
+        "BidRequest",
+        "BidResponse",
+        "ExecutionReport",
+        "AmendRequest"
+      ]
+    },
+    "From": { "type": "string" },
+    "To": { "type": "string" },
+    "Timestamp": { "type": "string" },
+    "Body": { "type": "object" }
+  },
+  "$defs": {
+    "Rate": {
+      "type": "object",
+      "required": ["RateModel", "Amount", "Currency"],
+      "properties": {
+        "RateModel": { "type": "string", "enum": ["PerMile", "Flat"] },
+        "Amount": { "type": "number", "minimum": 0 },
+        "Currency": { "type": "string", "const": "USD" }
+      },
+      "additionalProperties": true
+    },
+    "NewLoadBody": {
+      "type": "object",
+      "required": [
+        "LoadID",
+        "Origin",
+        "Destination",
+        "PickupEarliest",
+        "PickupLatest",
+        "LoadType",
+        "EquipmentType",
+        "TrailerLength",
+        "Weight",
+        "Commodity",
+        "Rate",
+        "RequireTracking"
+      ],
+      "properties": {
+        "LoadID": { "type": "string" },
+        "Origin": { "type": "object" },
+        "Destination": { "type": "object" },
+        "PickupEarliest": { "type": "string" },
+        "PickupLatest": { "type": "string" },
+        "LoadType": { "type": "string" },
+        "EquipmentType": { "type": "string" },
+        "TrailerLength": { "type": "number" },
+        "Weight": { "type": "number" },
+        "Commodity": { "type": "string" },
+        "Rate": { "$ref": "#/$defs/Rate" },
+        "RequireTracking": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "LoadSearchBody": {
+      "type": "object",
+      "required": [
+        "OriginState",
+        "DestinationState",
+        "EquipmentType",
+        "PickupDate",
+        "RateModel",
+        "MaxRate"
+      ],
+      "properties": {
+        "OriginState": { "type": "string" },
+        "DestinationState": { "type": "string" },
+        "EquipmentType": { "type": "string" },
+        "PickupDate": { "type": "string" },
+        "RateModel": { "type": "string", "enum": ["PerMile", "Flat"] },
+        "MaxRate": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": true
+    },
+    "NewTruckBody": {
+      "type": "object",
+      "required": [
+        "TruckID",
+        "Location",
+        "AvailabilityDate",
+        "EquipmentType",
+        "TrailerLength",
+        "MaxWeight",
+        "RateMin",
+        "Notes"
+      ],
+      "properties": {
+        "TruckID": { "type": "string" },
+        "Location": { "type": "object" },
+        "AvailabilityDate": { "type": "string" },
+        "EquipmentType": { "type": "string" },
+        "TrailerLength": { "type": "number" },
+        "MaxWeight": { "type": "number" },
+        "RateMin": { "$ref": "#/$defs/Rate" },
+        "Notes": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "TruckSearchBody": {
+      "type": "object",
+      "required": [
+        "LocationRadiusMiles",
+        "OriginState",
+        "EquipmentType",
+        "AvailableFrom",
+        "AvailableTo",
+        "RateModel",
+        "MinRate",
+        "MaxRate"
+      ],
+      "properties": {
+        "LocationRadiusMiles": { "type": "number", "minimum": 0 },
+        "OriginState": { "type": "string" },
+        "EquipmentType": { "type": "string" },
+        "AvailableFrom": { "type": "string" },
+        "AvailableTo": { "type": "string" },
+        "RateModel": { "type": "string", "enum": ["PerMile", "Flat"] },
+        "MinRate": { "type": "number", "minimum": 0 },
+        "MaxRate": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": true
+    },
+    "BidRequestBody": {
+      "type": "object",
+      "required": ["Rate"],
+      "oneOf": [
+        { "required": ["LoadID"] },
+        { "required": ["TruckID"] }
+      ],
+      "properties": {
+        "LoadID": { "type": "string" },
+        "TruckID": { "type": "string" },
+        "Rate": { "$ref": "#/$defs/Rate" }
+      },
+      "additionalProperties": true
+    },
+    "BidResponseBody": {
+      "type": "object",
+      "required": ["ResponseType"],
+      "oneOf": [
+        { "required": ["LoadID"] },
+        { "required": ["TruckID"] }
+      ],
+      "properties": {
+        "LoadID": { "type": "string" },
+        "TruckID": { "type": "string" },
+        "ResponseType": {
+          "type": "string",
+          "enum": ["Accept", "Counter", "Reject"]
+        },
+        "ProposedRate": { "$ref": "#/$defs/Rate" },
+        "VerifiedBadge": {
+          "type": "string",
+          "enum": ["None", "Basic", "Premium"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "VerificationAttestation": {
+      "type": "object",
+      "required": ["alg", "kid", "sig"],
+      "properties": {
+        "alg": { "type": "string" },
+        "kid": { "type": "string" },
+        "sig": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "VerificationResult": {
+      "type": "object",
+      "required": ["status", "provider"],
+      "properties": {
+        "status": { "type": "string", "enum": ["Success", "Fail", "Pending"] },
+        "category": { "type": "string" },
+        "method": { "type": "string" },
+        "provider": { "type": "string" },
+        "providerAlias": { "type": "string" },
+        "assuranceLevel": { "type": "string" },
+        "score": { "type": "number", "minimum": 0, "maximum": 100 },
+        "token": { "type": "string" },
+        "evidenceRef": { "type": "string" },
+        "verifiedAt": { "type": "string" },
+        "expiresAt": { "type": "string" },
+        "attestation": { "$ref": "#/$defs/VerificationAttestation" },
+        "source": { "type": "string" },
+        "sourceAuthority": { "type": "string" },
+        "mcNumber": { "type": "string" },
+        "carrier": { "type": "object" },
+        "error": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "not": {
+            "anyOf": [
+              { "required": ["faceImage"] },
+              { "required": ["selfieImage"] },
+              { "required": ["documentImage"] },
+              { "required": ["biometricTemplate"] },
+              { "required": ["rawBiometric"] },
+              { "required": ["fingerprintImage"] },
+              { "required": ["irisImage"] }
+            ]
+          }
+        },
+        {
+          "anyOf": [
+            {
+              "required": ["status", "provider"],
+              "not": {
+                "anyOf": [
+                  { "required": ["category"] },
+                  { "required": ["method"] },
+                  { "required": ["assuranceLevel"] },
+                  { "required": ["evidenceRef"] }
+                ]
+              }
+            },
+            {
+              "required": [
+                "status",
+                "provider",
+                "category",
+                "method",
+                "assuranceLevel",
+                "score",
+                "token",
+                "evidenceRef",
+                "verifiedAt"
+              ]
+            }
+          ]
+        }
+      ],
+      "additionalProperties": true
+    },
+    "ExecutionReportBody": {
+      "type": "object",
+      "required": [
+        "ContractID",
+        "Status",
+        "Timestamp",
+        "VerifiedBadge",
+        "VerificationResult"
+      ],
+      "oneOf": [
+        { "required": ["LoadID"] },
+        { "required": ["TruckID"] }
+      ],
+      "properties": {
+        "LoadID": { "type": "string" },
+        "TruckID": { "type": "string" },
+        "ContractID": { "type": "string" },
+        "Status": { "type": "string", "enum": ["Booked"] },
+        "Timestamp": { "type": "string" },
+        "AgreedRate": { "$ref": "#/$defs/Rate" },
+        "VerifiedBadge": {
+          "type": "string",
+          "enum": ["None", "Basic", "Premium"]
+        },
+        "VerificationResult": { "$ref": "#/$defs/VerificationResult" }
+      },
+      "additionalProperties": true
+    },
+    "AmendRequestBody": {
+      "type": "object",
+      "required": ["LoadID", "AmendmentType", "ReasonCode"],
+      "properties": {
+        "LoadID": { "type": "string" },
+        "AmendmentType": { "type": "string" },
+        "ReasonCode": { "type": "string" }
+      },
+      "additionalProperties": true
+    }
+  }
+}
