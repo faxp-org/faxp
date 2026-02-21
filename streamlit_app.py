@@ -82,6 +82,7 @@ def render_copy_button(label, text, key):
 
 def reset_state():
     existing_history = st.session_state.get("verifier_diagnostics_history", [])
+    existing_access_key = st.session_state.get("access_key_input", "")
     reset_protocol_runtime_state()
     st.session_state.broker = BrokerAgent("Broker Agent")
     st.session_state.carrier = CarrierAgent("Carrier Agent")
@@ -101,6 +102,7 @@ def reset_state():
     st.session_state.auth_locked_until = 0.0
     st.session_state.last_verifier_diagnostics = {}
     st.session_state.verifier_diagnostics_history = list(existing_history)[:5]
+    st.session_state.access_key_input = existing_access_key
 
 
 def push_verifier_history(entry):
@@ -568,7 +570,11 @@ else:
         mime="application/json",
     )
     st.code(diag_json, language="json")
-    history_rows = st.session_state.get("verifier_diagnostics_history", [])
+    if st.button("Clear History", key="clear_verifier_history_button"):
+        st.session_state.verifier_diagnostics_history = []
+        history_rows = []
+    else:
+        history_rows = st.session_state.get("verifier_diagnostics_history", [])
     if history_rows:
         st.caption("Recent Verifications (last 5)")
         st.table(
