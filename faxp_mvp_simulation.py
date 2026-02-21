@@ -1329,6 +1329,12 @@ KNOWN_VERIFICATION_CATEGORY_METHOD_PAIRS = {
     (cfg["category"], cfg["method"]) for cfg in PROVIDER_VERIFICATION_REQUIREMENTS.values()
 }
 KNOWN_VERIFICATION_CATEGORY_METHOD_PAIRS.add(("Identity", "DocumentOnly"))
+NEUTRAL_VERIFICATION_PROVIDER_IDS = {
+    "fmcsa_live": "compliance.authority-record.live",
+    "fmcsa_registry": "compliance.authority-record.registry",
+    "compliance_mock": "compliance.authority-record.mock",
+    "biometric_mock": "identity.liveness-document.mock",
+}
 PROVIDER_ALIASES = {
     "FMCSA": "FMCSA",
     "MockComplianceProvider": "FMCSA",
@@ -2576,7 +2582,7 @@ def run_verification(
         }
         if source_authority:
             result["sourceAuthority"] = source_authority
-        if requested_provider and requested_provider != normalized_provider:
+        if requested_provider and requested_provider != provider_value:
             result["providerAlias"] = requested_provider
         if extra:
             result.update(extra)
@@ -2595,7 +2601,7 @@ def run_verification(
                 badge = "Basic" if live_status == "Success" else "None"
                 verification_result = build_result(
                     status_value=live_status,
-                    provider_value="LiveFMCSAAdapter",
+                    provider_value=NEUTRAL_VERIFICATION_PROVIDER_IDS["fmcsa_live"],
                     category="Compliance",
                     method="AuthorityRecordCheck",
                     assurance_level="AAL1",
@@ -2619,7 +2625,7 @@ def run_verification(
 
             verification_result = build_result(
                 status_value="Fail",
-                provider_value="LiveFMCSAAdapter",
+                provider_value=NEUTRAL_VERIFICATION_PROVIDER_IDS["fmcsa_live"],
                 category="Compliance",
                 method="AuthorityRecordCheck",
                 assurance_level="AAL1",
@@ -2646,7 +2652,7 @@ def run_verification(
                 badge = "Basic" if live_status == "Success" else "None"
                 verification_result = build_result(
                     status_value=live_status,
-                    provider_value="CarrierFinderAdapter",
+                    provider_value=NEUTRAL_VERIFICATION_PROVIDER_IDS["fmcsa_registry"],
                     category="Compliance",
                     method="AuthorityRecordCheck",
                     assurance_level="AAL1",
@@ -2670,7 +2676,7 @@ def run_verification(
 
             verification_result = build_result(
                 status_value="Fail",
-                provider_value="CarrierFinderAdapter",
+                provider_value=NEUTRAL_VERIFICATION_PROVIDER_IDS["fmcsa_registry"],
                 category="Compliance",
                 method="AuthorityRecordCheck",
                 assurance_level="AAL1",
@@ -2701,7 +2707,7 @@ def run_verification(
         token = fm_token
         verification_result = build_result(
             status_value=status,
-            provider_value="MockComplianceProvider",
+            provider_value=NEUTRAL_VERIFICATION_PROVIDER_IDS["compliance_mock"],
             category="Compliance",
             method="AuthorityRecordCheck",
             assurance_level="AAL1",
@@ -2714,7 +2720,7 @@ def run_verification(
         token = id_token
         verification_result = build_result(
             status_value=status,
-            provider_value="MockBiometricProvider",
+            provider_value=NEUTRAL_VERIFICATION_PROVIDER_IDS["biometric_mock"],
             category="Biometric",
             method="LivenessPlusDocument",
             assurance_level="AAL2",

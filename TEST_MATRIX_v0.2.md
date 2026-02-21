@@ -59,7 +59,7 @@ Command:
 - `./run_secure_demo.sh sim --use-kms-command --provider iDenfy --verification-status Success`
 Assert in output:
 - Booking completes.
-- `VerificationResult.provider = MockBiometricProvider`
+- `VerificationResult.provider = identity.liveness-document.mock`
 - `VerificationResult.providerAlias = iDenfy`
 
 ## 4. Capability Negotiation Tests

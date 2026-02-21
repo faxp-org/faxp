@@ -49,7 +49,7 @@ Target file: `/Users/zglitch009/projects/logistics-ai/FAXP/faxp_mvp_simulation.p
   - [x] enforce `alg`/`kid` presence when signed verifier mode is enabled.
   - [x] reject unknown/invalid attestation structure.
 - [x] Add "no raw biometric payload" guardrails in validation.
-- [ ] Replace vendor-specific defaults in demo responses with neutral examples.
+- [x] Replace vendor-specific defaults in demo responses with neutral examples.
 - [x] Preserve existing `VerifiedBadge` behavior (`None`/`Basic`/`Premium`) as policy mapping.
 
 Acceptance:
