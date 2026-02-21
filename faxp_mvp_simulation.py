@@ -963,6 +963,11 @@ def parse_args():
         default=50,
         help="Number of randomized security self-test iterations.",
     )
+    parser.add_argument(
+        "--force-capability-mismatch",
+        action="store_true",
+        help="Force verification capability mismatch to exercise fail-closed negotiation path.",
+    )
     return parser.parse_args()
 
 
@@ -1167,6 +1172,32 @@ VALID_RATE_MODELS = {"PerMile", "Flat"}
 VALID_BID_RESPONSE_TYPES = {"Accept", "Counter", "Reject"}
 VALID_EXECUTION_STATUSES = {"Booked"}
 VALID_VERIFIED_BADGES = {"None", "Basic", "Premium"}
+VALID_VERIFICATION_STATUSES = {"Success", "Fail", "Pending"}
+FORBIDDEN_BIOMETRIC_FIELDS = {
+    "faceimage",
+    "selfieimage",
+    "documentimage",
+    "biometrictemplate",
+    "rawbiometric",
+    "fingerprintimage",
+    "irisimage",
+    "face_template",
+    "fingerprint_template",
+    "iris_template",
+}
+PROVIDER_VERIFICATION_REQUIREMENTS = {
+    "FMCSA": {
+        "category": "Compliance",
+        "method": "AuthorityRecordCheck",
+        "minAssuranceLevel": "AAL1",
+    },
+    "iDenfy": {
+        "category": "Biometric",
+        "method": "LivenessPlusDocument",
+        "minAssuranceLevel": "AAL2",
+    },
+}
+ASSURANCE_LEVEL_RANK = {"AAL0": 0, "AAL1": 1, "AAL2": 2, "AAL3": 3}
 
 
 def _require_fields(payload, required_fields, context):
@@ -1185,6 +1216,134 @@ def _validate_rate_object(rate, context):
         raise ValueError(f"{context}.Amount must be a non-negative number.")
     if rate["Currency"] != "USD":
         raise ValueError(f"{context}.Currency must be USD for v0.1.1.")
+
+
+def _contains_forbidden_biometric_field(value):
+    if isinstance(value, dict):
+        for key, item in value.items():
+            normalized = str(key).strip().lower()
+            if normalized in FORBIDDEN_BIOMETRIC_FIELDS:
+                return True
+            if _contains_forbidden_biometric_field(item):
+                return True
+        return False
+    if isinstance(value, list):
+        return any(_contains_forbidden_biometric_field(item) for item in value)
+    return False
+
+
+def _validate_verification_result(result, context):
+    if not isinstance(result, dict):
+        raise ValueError(f"{context} must be an object.")
+    _require_fields(result, ["status"], context)
+    if result["status"] not in VALID_VERIFICATION_STATUSES:
+        raise ValueError(
+            f"{context}.status must be one of {sorted(VALID_VERIFICATION_STATUSES)}."
+        )
+    _bounded_string(result["status"], f"{context}.status")
+
+    optional_string_fields = [
+        "category",
+        "method",
+        "provider",
+        "assuranceLevel",
+        "token",
+        "evidenceRef",
+        "source",
+        "mcNumber",
+        "error",
+    ]
+    for field in optional_string_fields:
+        if field in result:
+            _bounded_string(result[field], f"{context}.{field}")
+
+    if "score" in result:
+        score = result["score"]
+        if not isinstance(score, (int, float)) or not (0 <= score <= 100):
+            raise ValueError(f"{context}.score must be between 0 and 100.")
+
+    if "verifiedAt" in result:
+        _validate_iso_datetime(result["verifiedAt"], f"{context}.verifiedAt")
+    if "expiresAt" in result:
+        _validate_iso_datetime(result["expiresAt"], f"{context}.expiresAt")
+
+    if "attestation" in result:
+        attestation = result["attestation"]
+        if not isinstance(attestation, dict):
+            raise ValueError(f"{context}.attestation must be an object.")
+        _require_fields(attestation, ["alg", "kid", "sig"], f"{context}.attestation")
+        _bounded_string(attestation["alg"], f"{context}.attestation.alg")
+        _bounded_string(attestation["kid"], f"{context}.attestation.kid")
+        _bounded_string(attestation["sig"], f"{context}.attestation.sig")
+
+    if "carrier" in result:
+        carrier = result["carrier"]
+        if not isinstance(carrier, dict):
+            raise ValueError(f"{context}.carrier must be an object.")
+        for field in ["mc", "name", "operatingStatus"]:
+            if field in carrier and carrier[field] is not None:
+                _bounded_string(str(carrier[field]), f"{context}.carrier.{field}")
+        for field in ["hasCurrentInsurance", "interstateAuthorityOk"]:
+            if field in carrier and not isinstance(carrier[field], bool):
+                raise ValueError(f"{context}.carrier.{field} must be boolean.")
+        if "usdot" in carrier and carrier["usdot"] is not None:
+            if not isinstance(carrier["usdot"], (int, str)):
+                raise ValueError(f"{context}.carrier.usdot must be int/string.")
+
+    if _contains_forbidden_biometric_field(result):
+        raise ValueError(f"{context} must not include raw biometric artifacts.")
+
+
+def default_verification_capabilities():
+    return {
+        "supportedCategories": ["Compliance", "Biometric", "Identity"],
+        "supportedMethods": ["AuthorityRecordCheck", "LivenessPlusDocument"],
+        "minAssuranceLevel": "AAL1",
+        "requiresSignedAttestation": bool(REQUIRE_SIGNED_VERIFIER),
+    }
+
+
+def _assurance_rank(value):
+    return ASSURANCE_LEVEL_RANK.get(str(value or "").upper(), -1)
+
+
+def negotiate_verification_capability(provider, *agents):
+    requirement = PROVIDER_VERIFICATION_REQUIREMENTS.get(provider)
+    if not requirement:
+        return False, f"Unsupported verification provider for capability negotiation: {provider}."
+
+    required_category = requirement["category"]
+    required_method = requirement["method"]
+    required_aal = requirement["minAssuranceLevel"]
+    required_aal_rank = _assurance_rank(required_aal)
+
+    for agent in agents:
+        agent_name = getattr(agent, "name", "Unknown Agent")
+        capabilities = getattr(agent, "verification_capabilities", {}) or {}
+
+        categories = capabilities.get("supportedCategories") or []
+        methods = capabilities.get("supportedMethods") or []
+        min_aal = str(capabilities.get("minAssuranceLevel") or "AAL0").upper()
+        min_aal_rank = _assurance_rank(min_aal)
+
+        if required_category not in categories:
+            return (
+                False,
+                f"Capability mismatch: {agent_name} does not support category '{required_category}'.",
+            )
+        if required_method not in methods:
+            return (
+                False,
+                f"Capability mismatch: {agent_name} does not support method '{required_method}'.",
+            )
+        # Agent minAssuranceLevel is a requirement floor; provider assurance must meet/exceed it.
+        if required_aal_rank < min_aal_rank:
+            return (
+                False,
+                f"Capability mismatch: provider assurance '{required_aal}' below {agent_name} minimum '{min_aal}'.",
+            )
+
+    return True, ""
 
 
 def validate_message_body(message_type, body):
@@ -1357,6 +1516,7 @@ def validate_message_body(message_type, body):
             _validate_rate_object(body["AgreedRate"], "ExecutionReport.AgreedRate")
         _bounded_string(body["ContractID"], "ExecutionReport.ContractID")
         _validate_iso_datetime(body["Timestamp"], "ExecutionReport.Timestamp")
+        _validate_verification_result(body["VerificationResult"], "ExecutionReport.VerificationResult")
         if has_load_id:
             _bounded_string(body["LoadID"], "ExecutionReport.LoadID")
         if has_truck_id:
@@ -1804,17 +1964,50 @@ def run_verification(
     - FMCSA: compliance check -> Basic badge (on success)
     - iDenfy: biometric verification -> Premium badge (on success)
     """
+    def build_result(
+        status_value,
+        provider_value,
+        category,
+        method,
+        assurance_level,
+        score_value,
+        token_value,
+        source_value,
+        extra=None,
+    ):
+        result = {
+            "status": status_value,
+            "provider": provider_value,
+            "category": category,
+            "method": method,
+            "assuranceLevel": assurance_level,
+            "score": int(score_value),
+            "token": token_value,
+            "source": source_value,
+            "verifiedAt": now_utc(),
+            "evidenceRef": f"sha256:{hashlib.sha256(token_value.encode('utf-8')).hexdigest()[:24]}",
+        }
+        if extra:
+            result.update(extra)
+        return result
+
     if provider == "FMCSA":
+        fm_token = f"{provider.lower()}-{uuid4().hex[:14]}"
         if fmcsa_source == "live-fmcsa":
-            verification_result = {
-                "status": "Fail",
-                "provider": provider,
-                "score": 0,
-                "token": f"{provider.lower()}-{uuid4().hex[:14]}",
-                "mcNumber": _normalize_digits(mc_number),
-                "source": "live-fmcsa",
-                "error": "Live FMCSA integration is not implemented yet. Use --fmcsa-source carrier-finder.",
-            }
+            verification_result = build_result(
+                status_value="Fail",
+                provider_value=provider,
+                category="Compliance",
+                method="AuthorityRecordCheck",
+                assurance_level="AAL1",
+                score_value=0,
+                token_value=fm_token,
+                source_value="live-fmcsa",
+                extra={
+                    "mcNumber": _normalize_digits(mc_number),
+                    "error": "Live FMCSA integration is not implemented yet. Use --fmcsa-source carrier-finder.",
+                },
+            )
             return verification_result, "None"
 
         if mc_number:
@@ -1827,33 +2020,43 @@ def run_verification(
                 live_status = live.get("status", "Fail")
                 score = int(live.get("score", 0))
                 badge = "Basic" if live_status == "Success" else "None"
-                verification_result = {
-                    "status": live_status,
-                    "provider": provider,
-                    "score": score,
-                    "token": f"{provider.lower()}-{uuid4().hex[:14]}",
-                    "mcNumber": _normalize_digits(mc_number),
-                    "source": "carrier-finder",
-                    "carrier": {
-                        "usdot": live.get("usdot_number"),
-                        "mc": live.get("mc_number"),
-                        "name": live.get("carrier_name"),
-                        "operatingStatus": live.get("operating_status"),
-                        "hasCurrentInsurance": live.get("has_current_insurance"),
-                        "interstateAuthorityOk": live.get("interstate_authority_ok"),
+                verification_result = build_result(
+                    status_value=live_status,
+                    provider_value=provider,
+                    category="Compliance",
+                    method="AuthorityRecordCheck",
+                    assurance_level="AAL1",
+                    score_value=score,
+                    token_value=fm_token,
+                    source_value="carrier-finder",
+                    extra={
+                        "mcNumber": _normalize_digits(mc_number),
+                        "carrier": {
+                            "usdot": live.get("usdot_number"),
+                            "mc": live.get("mc_number"),
+                            "name": live.get("carrier_name"),
+                            "operatingStatus": live.get("operating_status"),
+                            "hasCurrentInsurance": live.get("has_current_insurance"),
+                            "interstateAuthorityOk": live.get("interstate_authority_ok"),
+                        },
                     },
-                }
+                )
                 return verification_result, badge
 
-            verification_result = {
-                "status": "Fail",
-                "provider": provider,
-                "score": 0,
-                "token": f"{provider.lower()}-{uuid4().hex[:14]}",
-                "mcNumber": _normalize_digits(mc_number),
-                "source": "carrier-finder",
-                "error": live.get("error", "Unknown carrier-finder error."),
-            }
+            verification_result = build_result(
+                status_value="Fail",
+                provider_value=provider,
+                category="Compliance",
+                method="AuthorityRecordCheck",
+                assurance_level="AAL1",
+                score_value=0,
+                token_value=fm_token,
+                source_value="carrier-finder",
+                extra={
+                    "mcNumber": _normalize_digits(mc_number),
+                    "error": live.get("error", "Unknown carrier-finder error."),
+                },
+            )
             return verification_result, "None"
 
         success_score = 86
@@ -1861,22 +2064,37 @@ def run_verification(
     elif provider == "iDenfy":
         success_score = 94
         badge = "Premium"
+        id_token = f"{provider.lower()}-{uuid4().hex[:14]}"
     else:
         raise ValueError(f"Unsupported verification provider: {provider}")
 
     score = success_score if status == "Success" else 42
     badge = badge if status == "Success" else "None"
 
-    verification_result = {
-        "status": status,
-        "provider": provider,
-        "score": score,
-        "token": f"{provider.lower()}-{uuid4().hex[:14]}",
-    }
     if provider == "FMCSA":
-        verification_result["source"] = "mock-fmcsa"
-    if provider == "iDenfy":
-        verification_result["source"] = "mock-idenfy"
+        token = fm_token
+        verification_result = build_result(
+            status_value=status,
+            provider_value=provider,
+            category="Compliance",
+            method="AuthorityRecordCheck",
+            assurance_level="AAL1",
+            score_value=score,
+            token_value=token,
+            source_value="mock-fmcsa",
+        )
+    else:
+        token = id_token
+        verification_result = build_result(
+            status_value=status,
+            provider_value=provider,
+            category="Biometric",
+            method="LivenessPlusDocument",
+            assurance_level="AAL2",
+            score_value=score,
+            token_value=token,
+            source_value="mock-idenfy",
+        )
     return verification_result, badge
 
 
@@ -1885,6 +2103,7 @@ class BrokerAgent:
         self.name = name
         self.loads = {}
         self.completed_bookings = {}
+        self.verification_capabilities = default_verification_capabilities()
 
     def post_new_load(self, rate_model="PerMile"):
         load_id = str(uuid4())
@@ -2044,6 +2263,7 @@ class CarrierAgent:
         self.name = name
         self.completed_bookings = {}
         self.trucks = {}
+        self.verification_capabilities = default_verification_capabilities()
 
     def create_load_search(self, force_no_match, rate_model):
         target_pickup = (date.today() + timedelta(days=2)).isoformat()
@@ -2301,6 +2521,14 @@ def run_load_flow(args, broker, carrier):
         print("\n[System] Bid rejected. Load booking not complete in this run.")
         return
 
+    capabilities_ok, capability_reason = negotiate_verification_capability(
+        args.provider, broker, carrier
+    )
+    if not capabilities_ok:
+        print(f"\n[System] {capability_reason}")
+        print("[System] Verification not attempted due to capability mismatch.")
+        return
+
     # 5) Verification step (success/fail configurable).
     print(f"\n[System] Verification requested via provider: {args.provider}")
     verification_result, verified_badge = run_verification(
@@ -2385,6 +2613,14 @@ def run_truck_flow(args, broker, carrier):
         print("\n[System] Truck bid was not accepted. Truck booking not complete.")
         return
 
+    capabilities_ok, capability_reason = negotiate_verification_capability(
+        "FMCSA", broker, carrier
+    )
+    if not capabilities_ok:
+        print(f"\n[System] {capability_reason}")
+        print("[System] Truck flow verification not attempted due to capability mismatch.")
+        return
+
     # 5) Verification uses carrier-finder-backed FMCSA check.
     verification_mc = args.mc_number or "498282"
     print(
@@ -2446,6 +2682,18 @@ def main():
 
     broker = BrokerAgent("Broker Agent")
     carrier = CarrierAgent("Carrier Agent")
+    if args.force_capability_mismatch:
+        carrier.verification_capabilities = {
+            "supportedCategories": ["Identity"],
+            "supportedMethods": ["DocumentOnly"],
+            "minAssuranceLevel": "AAL1",
+            "requiresSignedAttestation": bool(REQUIRE_SIGNED_VERIFIER),
+        }
+        print("\n[System] Forced capability mismatch is enabled for this run.")
+    print("\nVerificationCapabilities (Broker):")
+    print(json.dumps(broker.verification_capabilities, indent=2))
+    print("VerificationCapabilities (Carrier):")
+    print(json.dumps(carrier.verification_capabilities, indent=2))
 
     # Show AmendRequest exists in protocol but do not execute it in these happy paths.
     amend_preview = FaxpProtocol.amend_request_example("example-load-id")

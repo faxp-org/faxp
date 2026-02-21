@@ -17,6 +17,7 @@ from faxp_mvp_simulation import (
     build_envelope,
     default_bid_amount,
     format_rate,
+    negotiate_verification_capability,
     redact_sensitive,
     reset_protocol_runtime_state,
     resolve_allowed_carrier_finder_path,
@@ -258,6 +259,13 @@ def run_flow(
         st.session_state.status_line = "Bid rejected."
         return
 
+    capabilities_ok, capability_reason = negotiate_verification_capability(
+        provider, broker, carrier
+    )
+    if not capabilities_ok:
+        st.session_state.status_line = capability_reason
+        return
+
     # 5) Verification
     if not allow_verification_attempt():
         st.session_state.status_line = "Verification rate limit reached. Try again later."
@@ -416,6 +424,14 @@ else:
 
 st.subheader("Protocol Message Types")
 st.json(FaxpProtocol.MESSAGE_TYPES)
+
+st.subheader("Verification Capabilities")
+st.json(
+    {
+        "Broker": getattr(st.session_state.broker, "verification_capabilities", {}),
+        "Carrier": getattr(st.session_state.carrier, "verification_capabilities", {}),
+    }
+)
 
 st.subheader("AmendRequest (exists, not executed)")
 st.json(st.session_state.get("amend_example", FaxpProtocol.amend_request_example("example-load-id")))

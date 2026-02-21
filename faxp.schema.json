@@ -187,6 +187,53 @@
       },
       "additionalProperties": true
     },
+    "VerificationAttestation": {
+      "type": "object",
+      "required": ["alg", "kid", "sig"],
+      "properties": {
+        "alg": { "type": "string" },
+        "kid": { "type": "string" },
+        "sig": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "VerificationResult": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": { "type": "string", "enum": ["Success", "Fail", "Pending"] },
+        "category": { "type": "string" },
+        "method": { "type": "string" },
+        "provider": { "type": "string" },
+        "assuranceLevel": { "type": "string" },
+        "score": { "type": "number", "minimum": 0, "maximum": 100 },
+        "token": { "type": "string" },
+        "evidenceRef": { "type": "string" },
+        "verifiedAt": { "type": "string" },
+        "expiresAt": { "type": "string" },
+        "attestation": { "$ref": "#/$defs/VerificationAttestation" },
+        "source": { "type": "string" },
+        "mcNumber": { "type": "string" },
+        "carrier": { "type": "object" },
+        "error": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "not": {
+            "anyOf": [
+              { "required": ["faceImage"] },
+              { "required": ["selfieImage"] },
+              { "required": ["documentImage"] },
+              { "required": ["biometricTemplate"] },
+              { "required": ["rawBiometric"] },
+              { "required": ["fingerprintImage"] },
+              { "required": ["irisImage"] }
+            ]
+          }
+        }
+      ],
+      "additionalProperties": true
+    },
     "ExecutionReportBody": {
       "type": "object",
       "required": [
@@ -211,7 +258,7 @@
           "type": "string",
           "enum": ["None", "Basic", "Premium"]
         },
-        "VerificationResult": { "type": "object" }
+        "VerificationResult": { "$ref": "#/$defs/VerificationResult" }
       },
       "additionalProperties": true
     },
