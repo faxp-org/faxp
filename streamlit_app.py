@@ -81,6 +81,7 @@ def render_copy_button(label, text, key):
 
 
 def reset_state():
+    existing_history = st.session_state.get("verifier_diagnostics_history", [])
     reset_protocol_runtime_state()
     st.session_state.broker = BrokerAgent("Broker Agent")
     st.session_state.carrier = CarrierAgent("Carrier Agent")
@@ -99,6 +100,13 @@ def reset_state():
     st.session_state.auth_failures = 0
     st.session_state.auth_locked_until = 0.0
     st.session_state.last_verifier_diagnostics = {}
+    st.session_state.verifier_diagnostics_history = list(existing_history)[:5]
+
+
+def push_verifier_history(entry):
+    history = list(st.session_state.get("verifier_diagnostics_history", []))
+    history.insert(0, dict(entry))
+    st.session_state.verifier_diagnostics_history = history[:5]
 
 
 def append_message(sender, receiver, message_type, body):
@@ -327,6 +335,7 @@ def run_flow(
         diag["result_status"] = "Error"
         diag["result_error"] = "Verification process error."
         diag["timestamp"] = now_utc()
+        push_verifier_history(diag)
         return
     st.session_state.verification_result = verification_result
     st.session_state.verified_badge = verified_badge
@@ -336,6 +345,7 @@ def run_flow(
     diag["result_provider"] = verification_result.get("provider", "n/a")
     diag["result_error"] = verification_result.get("error", "")
     diag["timestamp"] = now_utc()
+    push_verifier_history(diag)
 
     if verification_result.get("status") != "Success":
         reason = verification_result.get("error")
@@ -558,6 +568,23 @@ else:
         mime="application/json",
     )
     st.code(diag_json, language="json")
+    history_rows = st.session_state.get("verifier_diagnostics_history", [])
+    if history_rows:
+        st.caption("Recent Verifications (last 5)")
+        st.table(
+            [
+                {
+                    "RunID": row.get("run_id", "n/a"),
+                    "Status": row.get("result_status", "n/a"),
+                    "Provider": row.get("result_provider", row.get("provider", "n/a")),
+                    "Source": row.get("result_source", row.get("fmcsa_source", "n/a")),
+                    "MC": row.get("mc_number", ""),
+                    "Updated": row.get("timestamp", "n/a"),
+                    "Error": row.get("result_error", ""),
+                }
+                for row in history_rows
+            ]
+        )
 
 st.subheader("AmendRequest (exists, not executed)")
 st.json(st.session_state.get("amend_example", FaxpProtocol.amend_request_example("example-load-id")))
