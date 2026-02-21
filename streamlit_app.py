@@ -202,7 +202,8 @@ def reset_state():
     st.session_state.auth_locked_until = 0.0
     st.session_state.last_verifier_diagnostics = {}
     st.session_state.verifier_diagnostics_history = list(existing_history)[:5]
-    st.session_state.access_key_input = existing_access_key
+    if "access_key_input" not in st.session_state:
+        st.session_state.access_key_input = existing_access_key
 
 
 def push_verifier_history(entry):
