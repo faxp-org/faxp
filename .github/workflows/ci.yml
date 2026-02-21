@@ -249,6 +249,62 @@ jobs:
           print("Malformed attestation signature rejection check passed.")
           PY
 
+      - name: Reject unknown verification category and method
+        run: |
+          set -a
+          source "$RUNNER_TEMP/faxp-secrets/security.env.ci"
+          set +a
+          python - <<'PY'
+          from copy import deepcopy
+
+          from faxp_mvp_simulation import (
+              REQUIRE_SIGNED_VERIFIER,
+              _build_verifier_attestation,
+              run_verification,
+              validate_message_body,
+          )
+
+          base_result, _ = run_verification(provider="MockBiometricProvider", status="Success")
+
+          def _validate_with_mutation(mutator, expected_fragment):
+              verification_result = deepcopy(base_result)
+              mutator(verification_result)
+              if REQUIRE_SIGNED_VERIFIER:
+                  payload = {k: v for k, v in verification_result.items() if k != "attestation"}
+                  verification_result["attestation"] = _build_verifier_attestation(payload)
+              execution_report_body = {
+                  "LoadID": "load-123",
+                  "ContractID": "FAXP-20260221-abc123",
+                  "Status": "Booked",
+                  "Timestamp": "2026-02-21T00:00:00Z",
+                  "VerifiedBadge": "Premium",
+                  "VerificationResult": verification_result,
+              }
+              try:
+                  validate_message_body("ExecutionReport", execution_report_body)
+              except ValueError as exc:
+                  message = str(exc)
+                  if expected_fragment not in message:
+                      raise SystemExit(f"Unexpected validation error: {message}")
+              else:
+                  raise SystemExit("Expected unknown taxonomy rejection did not occur.")
+
+          _validate_with_mutation(
+              lambda result: result.update({"category": "UnknownCategoryX"}),
+              "category is not recognized",
+          )
+          _validate_with_mutation(
+              lambda result: result.update({"method": "UnknownMethodX"}),
+              "method is not recognized",
+          )
+          _validate_with_mutation(
+              lambda result: result.update({"category": "Compliance", "method": "LivenessPlusDocument"}),
+              "category/method combination is not recognized",
+          )
+
+          print("Unknown category/method rejection checks passed.")
+          PY
+
       - name: Incident drill (CI mode)
         env:
           FAXP_INCIDENT_DRILL_PROVIDER: MockBiometricProvider

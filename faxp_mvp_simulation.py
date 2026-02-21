@@ -1317,6 +1317,18 @@ PROVIDER_VERIFICATION_REQUIREMENTS = {
         "minAssuranceLevel": "AAL2",
     },
 }
+KNOWN_VERIFICATION_CATEGORIES = {
+    "Identity",
+    *(cfg["category"] for cfg in PROVIDER_VERIFICATION_REQUIREMENTS.values()),
+}
+KNOWN_VERIFICATION_METHODS = {
+    "DocumentOnly",
+    *(cfg["method"] for cfg in PROVIDER_VERIFICATION_REQUIREMENTS.values()),
+}
+KNOWN_VERIFICATION_CATEGORY_METHOD_PAIRS = {
+    (cfg["category"], cfg["method"]) for cfg in PROVIDER_VERIFICATION_REQUIREMENTS.values()
+}
+KNOWN_VERIFICATION_CATEGORY_METHOD_PAIRS.add(("Identity", "DocumentOnly"))
 PROVIDER_ALIASES = {
     "FMCSA": "FMCSA",
     "MockComplianceProvider": "FMCSA",
@@ -1384,6 +1396,17 @@ def _validate_verification_result(result, context):
     for field in optional_string_fields:
         if field in result:
             _bounded_string(result[field], f"{context}.{field}")
+
+    if "category" in result and result["category"] not in KNOWN_VERIFICATION_CATEGORIES:
+        raise ValueError(f"{context}.category is not recognized.")
+
+    if "method" in result and result["method"] not in KNOWN_VERIFICATION_METHODS:
+        raise ValueError(f"{context}.method is not recognized.")
+
+    if "category" in result and "method" in result:
+        category_method = (result["category"], result["method"])
+        if category_method not in KNOWN_VERIFICATION_CATEGORY_METHOD_PAIRS:
+            raise ValueError(f"{context}.category/method combination is not recognized.")
 
     if "score" in result:
         score = result["score"]

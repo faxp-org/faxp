@@ -100,7 +100,7 @@ Targets:
   - [x] missing attestation when required
   - [x] malformed attestation
   - [x] raw biometric payload rejection
-  - [ ] unknown category/method handling
+  - [x] unknown category/method handling
 - [ ] Add explicit conformance checks for:
   - [x] no vendor-mandatory schema fields
   - [x] protocol acceptance independent of provider name
