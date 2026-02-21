@@ -73,6 +73,7 @@ def reset_state():
     st.session_state.verification_call_times = []
     st.session_state.auth_failures = 0
     st.session_state.auth_locked_until = 0.0
+    st.session_state.last_verifier_diagnostics = {}
 
 
 def append_message(sender, receiver, message_type, body):
@@ -221,6 +222,18 @@ def run_flow(
     reset_state()
     broker = st.session_state.broker
     carrier = st.session_state.carrier
+    st.session_state.last_verifier_diagnostics = {
+        "provider": provider,
+        "fmcsa_source": fmcsa_source if provider == "FMCSA" else "n/a",
+        "mc_number": (mc_number or "").strip() if provider == "FMCSA" else "",
+        "live_fmcsa_configured": LIVE_FMCSA_CONFIGURED,
+        "cloud_safe_mode": CLOUD_SAFE_MODE,
+        "result_status": "NotStarted",
+        "result_source": "n/a",
+        "result_provider": "n/a",
+        "result_error": "",
+        "timestamp": now_utc(),
+    }
 
     # Show AmendRequest exists but do not execute it in this flow.
     st.session_state.amend_example = FaxpProtocol.amend_request_example("example-load-id")
@@ -282,9 +295,19 @@ def run_flow(
         )
     except Exception:
         st.session_state.status_line = "Verification process error."
+        diag = st.session_state.last_verifier_diagnostics
+        diag["result_status"] = "Error"
+        diag["result_error"] = "Verification process error."
+        diag["timestamp"] = now_utc()
         return
     st.session_state.verification_result = verification_result
     st.session_state.verified_badge = verified_badge
+    diag = st.session_state.last_verifier_diagnostics
+    diag["result_status"] = verification_result.get("status", "Unknown")
+    diag["result_source"] = verification_result.get("source", "n/a")
+    diag["result_provider"] = verification_result.get("provider", "n/a")
+    diag["result_error"] = verification_result.get("error", "")
+    diag["timestamp"] = now_utc()
 
     if verification_result.get("status") != "Success":
         reason = verification_result.get("error")
@@ -465,6 +488,30 @@ st.json(
         "Carrier": getattr(st.session_state.carrier, "verification_capabilities", {}),
     }
 )
+
+st.subheader("Verifier Diagnostics")
+diag = st.session_state.get("last_verifier_diagnostics", {})
+if not diag:
+    st.info("Run a flow to populate verifier diagnostics.")
+else:
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Configured Provider", diag.get("provider", "n/a"))
+    c2.metric("FMCSA Source", diag.get("fmcsa_source", "n/a"))
+    c3.metric(
+        "FMCSA WebKey",
+        "Configured" if diag.get("live_fmcsa_configured") else "Missing",
+    )
+    c4.metric("Last Result", diag.get("result_status", "n/a"))
+    st.caption(f"Updated: {diag.get('timestamp', 'n/a')}")
+    st.json(
+        {
+            "resultProvider": diag.get("result_provider", "n/a"),
+            "resultSource": diag.get("result_source", "n/a"),
+            "resultError": diag.get("result_error", ""),
+            "mcNumber": diag.get("mc_number", ""),
+            "cloudSafeMode": diag.get("cloud_safe_mode"),
+        }
+    )
 
 st.subheader("AmendRequest (exists, not executed)")
 st.json(st.session_state.get("amend_example", FaxpProtocol.amend_request_example("example-load-id")))
