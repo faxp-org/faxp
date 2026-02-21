@@ -714,6 +714,44 @@ def _verify_ed25519_with_public_key_ring(payload, signature, signature_key_id, p
     )
 
 
+def _build_verifier_attestation(payload):
+    """Sign a verification payload and return attestation metadata."""
+    if VERIFIER_SIGNATURE_SCHEME == "HMAC_SHA256":
+        key_id = VERIFIER_SIGNING_ACTIVE_KEY_ID
+        key = VERIFIER_SIGNING_KEYS.get(key_id, b"")
+        if not key_id:
+            raise RuntimeError("Missing verifier HMAC key ID.")
+        if not key:
+            raise RuntimeError("Missing verifier HMAC key material.")
+        signature = sign_payload(payload, key)
+        if not signature:
+            raise RuntimeError("Failed to produce verifier HMAC signature.")
+        return {"alg": "HMAC_SHA256", "kid": key_id, "sig": signature}
+
+    if VERIFIER_SIGNATURE_SCHEME == "ED25519":
+        key_id = VERIFIER_ED25519_ACTIVE_KEY_ID
+        private_key_path = VERIFIER_ED25519_PRIVATE_KEYS.get(key_id, "")
+        if not key_id:
+            raise RuntimeError("Missing verifier ED25519 key ID.")
+        if not private_key_path:
+            raise RuntimeError("Missing verifier ED25519 private key path.")
+        signature_bytes = _ed25519_sign_bytes(
+            canonical_json(payload).encode("utf-8"),
+            private_key_path,
+        )
+        if not signature_bytes:
+            raise RuntimeError("Failed to produce verifier ED25519 signature.")
+        return {
+            "alg": "ED25519",
+            "kid": key_id,
+            "sig": base64.b64encode(signature_bytes).decode("ascii"),
+        }
+
+    raise RuntimeError(
+        f"Unsupported verifier signature scheme for attestation: {VERIFIER_SIGNATURE_SCHEME}."
+    )
+
+
 MESSAGE_SIGNING_KEYS = _parse_key_ring(
     MESSAGE_SIGNING_KEYS_RAW, LEGACY_MESSAGE_SIGNING_KEY, "legacy-msg"
 )
@@ -1357,15 +1395,6 @@ def _validate_verification_result(result, context):
     if "expiresAt" in result:
         _validate_iso_datetime(result["expiresAt"], f"{context}.expiresAt")
 
-    if "attestation" in result:
-        attestation = result["attestation"]
-        if not isinstance(attestation, dict):
-            raise ValueError(f"{context}.attestation must be an object.")
-        _require_fields(attestation, ["alg", "kid", "sig"], f"{context}.attestation")
-        _bounded_string(attestation["alg"], f"{context}.attestation.alg")
-        _bounded_string(attestation["kid"], f"{context}.attestation.kid")
-        _bounded_string(attestation["sig"], f"{context}.attestation.sig")
-
     if "carrier" in result:
         carrier = result["carrier"]
         if not isinstance(carrier, dict):
@@ -1382,6 +1411,54 @@ def _validate_verification_result(result, context):
 
     if _contains_forbidden_biometric_field(result):
         raise ValueError(f"{context} must not include raw biometric artifacts.")
+
+    if REQUIRE_SIGNED_VERIFIER and "attestation" not in result:
+        raise ValueError(
+            f"{context}.attestation is required when signed verifier mode is enabled."
+        )
+
+    if "attestation" in result:
+        attestation = result["attestation"]
+        if not isinstance(attestation, dict):
+            raise ValueError(f"{context}.attestation must be an object.")
+        _require_fields(attestation, ["alg", "kid", "sig"], f"{context}.attestation")
+        _bounded_string(attestation["alg"], f"{context}.attestation.alg")
+        _bounded_string(attestation["kid"], f"{context}.attestation.kid")
+        _bounded_string(attestation["sig"], f"{context}.attestation.sig")
+
+        attestation_alg = str(attestation["alg"]).upper()
+        attestation_kid = str(attestation["kid"])
+        attestation_sig = attestation["sig"]
+        signed_payload = {k: v for k, v in result.items() if k != "attestation"}
+
+        if attestation_alg not in SUPPORTED_SIGNATURE_SCHEMES:
+            raise ValueError(f"{context}.attestation.alg is not supported.")
+
+        if REQUIRE_SIGNED_VERIFIER and attestation_alg != VERIFIER_SIGNATURE_SCHEME:
+            raise ValueError(
+                f"{context}.attestation.alg must match configured verifier signature scheme."
+            )
+
+        if attestation_alg == "HMAC_SHA256":
+            if REQUIRE_SIGNED_VERIFIER and attestation_kid not in VERIFIER_SIGNING_KEYS:
+                raise ValueError(f"{context}.attestation.kid is not trusted for HMAC verifier mode.")
+            if not _verify_with_key_ring(
+                signed_payload,
+                attestation_sig,
+                attestation_kid,
+                VERIFIER_SIGNING_KEYS,
+            ):
+                raise ValueError(f"{context}.attestation signature verification failed.")
+        elif attestation_alg == "ED25519":
+            if REQUIRE_SIGNED_VERIFIER and attestation_kid not in VERIFIER_ED25519_PUBLIC_KEYS:
+                raise ValueError(f"{context}.attestation.kid is not trusted for ED25519 verifier mode.")
+            if not _verify_ed25519_with_public_key_ring(
+                signed_payload,
+                attestation_sig,
+                attestation_kid,
+                VERIFIER_ED25519_PUBLIC_KEYS,
+            ):
+                raise ValueError(f"{context}.attestation signature verification failed.")
 
 
 def default_verification_capabilities():
@@ -2480,6 +2557,9 @@ def run_verification(
             result["providerAlias"] = requested_provider
         if extra:
             result.update(extra)
+        if REQUIRE_SIGNED_VERIFIER:
+            attestation_payload = {k: v for k, v in result.items() if k != "attestation"}
+            result["attestation"] = _build_verifier_attestation(attestation_payload)
         return result
 
     if normalized_provider == "FMCSA":

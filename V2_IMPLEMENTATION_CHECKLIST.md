@@ -46,7 +46,7 @@ Target file: `/Users/zglitch009/projects/logistics-ai/FAXP/faxp_mvp_simulation.p
 
 - [x] Update validation logic for `ExecutionReport.VerificationResult` neutral object.
 - [ ] Add verifier attestation validation hook:
-  - [ ] enforce `alg`/`kid` presence when signed verifier mode is enabled.
+  - [x] enforce `alg`/`kid` presence when signed verifier mode is enabled.
   - [x] reject unknown/invalid attestation structure.
 - [x] Add "no raw biometric payload" guardrails in validation.
 - [ ] Replace vendor-specific defaults in demo responses with neutral examples.
@@ -97,7 +97,7 @@ Targets:
   - [ ] mock provider A
   - [ ] mock provider B
 - [ ] Add negative tests:
-  - [ ] missing attestation when required
+  - [x] missing attestation when required
   - [ ] malformed attestation
   - [x] raw biometric payload rejection
   - [ ] unknown category/method handling

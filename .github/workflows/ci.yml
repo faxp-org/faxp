@@ -170,6 +170,40 @@ jobs:
           print("Raw biometric payload rejection check passed.")
           PY
 
+      - name: Require verifier attestation when signed mode is enabled
+        run: |
+          python - <<'PY'
+          from faxp_mvp_simulation import REQUIRE_SIGNED_VERIFIER, validate_message_body
+
+          execution_report_body = {
+              "LoadID": "load-123",
+              "ContractID": "FAXP-20260221-abc123",
+              "Status": "Booked",
+              "Timestamp": "2026-02-21T00:00:00Z",
+              "VerifiedBadge": "None",
+              "VerificationResult": {
+                  "status": "Success",
+                  "provider": "MockBiometricProvider",
+                  "score": 90,
+                  "token": "opaque-token"
+              }
+          }
+
+          if REQUIRE_SIGNED_VERIFIER:
+              try:
+                  validate_message_body("ExecutionReport", execution_report_body)
+              except ValueError as exc:
+                  message = str(exc)
+                  if "attestation is required" not in message:
+                      raise SystemExit(f"Unexpected validation error: {message}")
+              else:
+                  raise SystemExit("Expected missing attestation rejection did not occur.")
+              print("Missing attestation enforcement check passed.")
+          else:
+              validate_message_body("ExecutionReport", execution_report_body)
+              print("Signed verifier mode disabled; attestation requirement check skipped.")
+          PY
+
       - name: Incident drill (CI mode)
         env:
           FAXP_INCIDENT_DRILL_PROVIDER: MockBiometricProvider
