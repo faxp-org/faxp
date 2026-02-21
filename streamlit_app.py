@@ -34,6 +34,17 @@ ACCESS_KEY = os.getenv("FAXP_STREAMLIT_ACCESS_KEY", "").strip()
 MAX_VERIFICATION_CALLS_PER_HOUR = int(os.getenv("FAXP_MAX_VERIFICATIONS_PER_HOUR", "30"))
 APP_MODE = os.getenv("FAXP_APP_MODE", "local").strip().lower()
 NON_LOCAL_MODE = APP_MODE not in {"local", "dev", "development"}
+SIGNATURE_SCHEME = os.getenv("FAXP_SIGNATURE_SCHEME", "HMAC_SHA256").strip().upper()
+VERIFIER_SIGNATURE_SCHEME = os.getenv(
+    "FAXP_VERIFIER_SIGNATURE_SCHEME", "HMAC_SHA256"
+).strip().upper()
+SIGNED_VERIFIER_REQUIRED = os.getenv("FAXP_REQUIRE_SIGNED_VERIFIER", "1").strip() in {
+    "1",
+    "true",
+    "TRUE",
+    "yes",
+    "on",
+}
 _cloud_safe_setting = os.getenv("FAXP_CLOUD_SAFE_MODE", "auto").strip().lower()
 if _cloud_safe_setting in {"1", "true", "yes", "on"}:
     CLOUD_SAFE_MODE = True
@@ -622,6 +633,17 @@ else:
         "Copy support bundle hash",
         support_bundle_hash,
         "diag_copy_support_bundle_hash_button",
+    )
+    st.caption("Environment Health (non-secret)")
+    st.table(
+        [
+            {"Check": "SIGNED_VERIFIER_REQUIRED", "Value": SIGNED_VERIFIER_REQUIRED},
+            {"Check": "SIGNATURE_SCHEME", "Value": SIGNATURE_SCHEME},
+            {"Check": "VERIFIER_SIGNATURE_SCHEME", "Value": VERIFIER_SIGNATURE_SCHEME},
+            {"Check": "FMCSA_WEBKEY_CONFIGURED", "Value": LIVE_FMCSA_CONFIGURED},
+            {"Check": "CLOUD_SAFE_MODE", "Value": CLOUD_SAFE_MODE},
+            {"Check": "APP_MODE", "Value": APP_MODE},
+        ]
     )
     st.code(diag_json, language="json")
     if st.button("Clear History", key="clear_verifier_history_button"):
