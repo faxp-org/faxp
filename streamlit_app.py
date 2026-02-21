@@ -56,6 +56,48 @@ LIVE_FMCSA_CONFIGURED = bool(os.getenv("FAXP_FMCSA_WEBKEY", "").strip())
 MAX_AUTH_FAILURES = int(os.getenv("FAXP_AUTH_MAX_FAILURES", "5"))
 AUTH_LOCKOUT_SECONDS = int(os.getenv("FAXP_AUTH_LOCKOUT_SECONDS", "300"))
 GLOBAL_VERIFICATION_CALL_TIMES = []
+QUICK_PRESETS = {
+    "FMCSA live (MC 498282)": {
+        "provider": "FMCSA",
+        "rate_model": "PerMile",
+        "bid_amount": float(default_bid_amount("PerMile")),
+        "response_type": "Accept",
+        "verification_status": "Success",
+        "no_match": False,
+        "mc_number": "498282",
+        "fmcsa_source_local": "live-fmcsa",
+        "fmcsa_source_cloud": "live-fmcsa",
+    },
+    "FMCSA authority-mock": {
+        "provider": "FMCSA",
+        "rate_model": "PerMile",
+        "bid_amount": float(default_bid_amount("PerMile")),
+        "response_type": "Accept",
+        "verification_status": "Success",
+        "no_match": False,
+        "mc_number": "498282",
+        "fmcsa_source_local": "carrier-finder",
+        "fmcsa_source_cloud": "authority-mock",
+    },
+    "MockBiometric success": {
+        "provider": "MockBiometricProvider",
+        "rate_model": "PerMile",
+        "bid_amount": float(default_bid_amount("PerMile")),
+        "response_type": "Accept",
+        "verification_status": "Success",
+        "no_match": False,
+        "mc_number": "",
+    },
+    "Forced fail demo": {
+        "provider": "MockBiometricProvider",
+        "rate_model": "PerMile",
+        "bid_amount": float(default_bid_amount("PerMile")),
+        "response_type": "Accept",
+        "verification_status": "Fail",
+        "no_match": False,
+        "mc_number": "",
+    },
+}
 
 
 def now_utc():
@@ -90,6 +132,53 @@ def render_copy_button(label, text, key):
         """,
         height=46,
     )
+
+
+def ensure_sidebar_defaults():
+    defaults = {
+        "quick_preset_select": "MockBiometric success",
+        "rate_model_select": "PerMile",
+        "bid_amount_input": float(default_bid_amount("PerMile")),
+        "response_type_select": "Accept",
+        "provider_local_select": "FMCSA",
+        "provider_cloud_select": "MockBiometricProvider",
+        "fmcsa_source_select_local": "carrier-finder",
+        "fmcsa_source_select_cloud": "authority-mock",
+        "mc_number_input": "498282",
+        "verification_status_select": "Success",
+        "no_match_checkbox": False,
+    }
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+
+
+def apply_quick_preset(preset_name):
+    preset = QUICK_PRESETS.get(preset_name)
+    if not preset:
+        return
+    st.session_state.quick_preset_select = preset_name
+    st.session_state.rate_model_select = preset["rate_model"]
+    st.session_state.bid_amount_input = float(preset["bid_amount"])
+    st.session_state.response_type_select = preset["response_type"]
+    st.session_state.verification_status_select = preset["verification_status"]
+    st.session_state.no_match_checkbox = bool(preset["no_match"])
+    st.session_state.mc_number_input = str(preset.get("mc_number", ""))
+
+    provider = preset["provider"]
+    if provider == "FMCSA":
+        st.session_state.provider_local_select = "FMCSA"
+        st.session_state.provider_cloud_select = "FMCSA (Authority)"
+        st.session_state.fmcsa_source_select_local = preset.get(
+            "fmcsa_source_local", "carrier-finder"
+        )
+        cloud_source = preset.get("fmcsa_source_cloud", "authority-mock")
+        if cloud_source == "live-fmcsa" and not LIVE_FMCSA_CONFIGURED:
+            cloud_source = "authority-mock"
+        st.session_state.fmcsa_source_select_cloud = cloud_source
+    else:
+        st.session_state.provider_local_select = "MockBiometricProvider"
+        st.session_state.provider_cloud_select = "MockBiometricProvider"
 
 
 def reset_state():
@@ -393,6 +482,8 @@ st.caption("Mock FAXP client embedded in Streamlit: NewLoad -> Bid -> Verificati
 if "broker" not in st.session_state:
     reset_state()
 
+ensure_sidebar_defaults()
+
 if NON_LOCAL_MODE and not ACCESS_KEY:
     st.error("Secure mode requires FAXP_STREAMLIT_ACCESS_KEY.")
     st.stop()
@@ -403,23 +494,33 @@ with st.sidebar:
         f"Runtime mode: {'cloud-safe' if CLOUD_SAFE_MODE else 'full/local'} "
         f"(FAXP_APP_MODE={APP_MODE})"
     )
+    preset_name = st.selectbox(
+        "Quick Preset",
+        list(QUICK_PRESETS.keys()),
+        key="quick_preset_select",
+    )
+    if st.button("Apply Preset", key="apply_quick_preset_button", use_container_width=True):
+        apply_quick_preset(preset_name)
     if ACCESS_KEY:
         st.text_input("Access Key", type="password", key="access_key_input")
-    rate_model = st.selectbox("Rate Model", ["PerMile", "Flat"], index=0)
+    rate_model = st.selectbox("Rate Model", ["PerMile", "Flat"], key="rate_model_select")
     bid_amount = st.number_input(
         "Bid Amount",
         min_value=0.0,
-        value=float(default_bid_amount(rate_model)),
+        value=float(st.session_state.bid_amount_input),
         step=0.01,
         format="%.2f",
         help="PerMile uses $/mile. Flat uses total trip amount.",
+        key="bid_amount_input",
     )
-    response_type = st.selectbox("BidResponse", ["Accept", "Counter", "Reject"], index=0)
+    response_type = st.selectbox(
+        "BidResponse", ["Accept", "Counter", "Reject"], key="response_type_select"
+    )
     if CLOUD_SAFE_MODE:
         provider_choice = st.selectbox(
             "Verification Provider",
             ["MockBiometricProvider", "FMCSA (Authority)"],
-            index=0,
+            key="provider_cloud_select",
             help="Cloud-safe mode disables local-only verifier paths.",
         )
         provider = "FMCSA" if provider_choice.startswith("FMCSA") else "MockBiometricProvider"
@@ -427,7 +528,7 @@ with st.sidebar:
         provider = st.selectbox(
             "Verification Provider",
             ["FMCSA", "MockBiometricProvider", "iDenfy (Legacy Alias)"],
-            index=0,
+            key="provider_local_select",
             help="iDenfy label is maintained as a legacy alias.",
         )
         if provider == "iDenfy (Legacy Alias)":
@@ -438,15 +539,17 @@ with st.sidebar:
             options = ["authority-mock"]
             if LIVE_FMCSA_CONFIGURED:
                 options.insert(0, "live-fmcsa")
+            if st.session_state.get("fmcsa_source_select_cloud") not in options:
+                st.session_state.fmcsa_source_select_cloud = options[0]
             cloud_fmcsa_mode = st.selectbox(
                 "FMCSA Source",
                 options,
-                index=0,
+                key="fmcsa_source_select_cloud",
                 help="authority-mock uses local mock compliance scoring only.",
             )
             if cloud_fmcsa_mode == "live-fmcsa":
                 fmcsa_source = "live-fmcsa"
-                mc_number = st.text_input("MC Number", value="498282")
+                mc_number = st.text_input("MC Number", key="mc_number_input")
                 st.caption("Live FMCSA mode enabled via FAXP_FMCSA_WEBKEY.")
             else:
                 fmcsa_source = "carrier-finder"
@@ -457,10 +560,10 @@ with st.sidebar:
             fmcsa_source = st.selectbox(
                 "FMCSA Source",
                 ["carrier-finder", "live-fmcsa"],
-                index=0,
+                key="fmcsa_source_select_local",
                 help="carrier-finder uses local adapter; live-fmcsa calls FMCSA QCMobile API directly.",
             )
-            mc_number = st.text_input("MC Number", value="498282")
+            mc_number = st.text_input("MC Number", key="mc_number_input")
             if fmcsa_source == "carrier-finder":
                 carrier_finder_path = secure_carrier_finder_path()
                 st.caption(f"carrier-finder path: {carrier_finder_path or '[not allowlisted]'}")
@@ -475,8 +578,10 @@ with st.sidebar:
         mc_number = ""
         carrier_finder_path = None if CLOUD_SAFE_MODE else secure_carrier_finder_path()
 
-    verification_status = st.selectbox("Mock Verification Status", ["Success", "Fail"], index=0)
-    no_match = st.checkbox("Force no load match", value=False)
+    verification_status = st.selectbox(
+        "Mock Verification Status", ["Success", "Fail"], key="verification_status_select"
+    )
+    no_match = st.checkbox("Force no load match", key="no_match_checkbox")
 
     run_clicked = st.button("Run NewLoad -> Bid Flow", type="primary", use_container_width=True)
     reset_clicked = st.button("Reset", use_container_width=True)
