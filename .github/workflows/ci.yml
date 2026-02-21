@@ -81,6 +81,45 @@ jobs:
           set +a
           python faxp_mvp_simulation.py --security-self-test --self-test-iterations 25
 
+      - name: Capability mismatch fails closed
+        run: |
+          set -a
+          source "$RUNNER_TEMP/faxp-secrets/security.env.ci"
+          set +a
+          python faxp_mvp_simulation.py --force-capability-mismatch --provider iDenfy --verification-status Success | tee /tmp/faxp-capability.log
+          rg -q "Capability mismatch" /tmp/faxp-capability.log
+          ! rg -q "Booking completed successfully" /tmp/faxp-capability.log
+
+      - name: Reject raw biometric payload fields
+        run: |
+          python - <<'PY'
+          from faxp_mvp_simulation import validate_message_body
+
+          execution_report_body = {
+              "LoadID": "load-123",
+              "ContractID": "FAXP-20260221-abc123",
+              "Status": "Booked",
+              "Timestamp": "2026-02-21T00:00:00Z",
+              "VerifiedBadge": "None",
+              "VerificationResult": {
+                  "status": "Success",
+                  "provider": "MockBiometricProvider",
+                  "rawBiometric": "forbidden-demo-payload"
+              }
+          }
+
+          try:
+              validate_message_body("ExecutionReport", execution_report_body)
+          except ValueError as exc:
+              message = str(exc)
+              if "biometric artifacts" not in message:
+                  raise SystemExit(f"Unexpected validation error: {message}")
+          else:
+              raise SystemExit("Expected raw biometric payload rejection did not occur.")
+
+          print("Raw biometric payload rejection check passed.")
+          PY
+
       - name: Incident drill (CI mode)
         env:
           FAXP_INCIDENT_DRILL_PROVIDER: iDenfy
