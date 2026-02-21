@@ -572,6 +572,47 @@ else:
         file_name=f"faxp_diagnostics_{run_id_safe}_{timestamp_safe}.json",
         mime="application/json",
     )
+    support_bundle = {
+        "generatedAt": now_utc(),
+        "protocol": {
+            "name": FaxpProtocol.NAME,
+            "version": FaxpProtocol.VERSION,
+        },
+        "runtime": {
+            "appMode": APP_MODE,
+            "cloudSafeMode": CLOUD_SAFE_MODE,
+            "liveFmcsaConfigured": LIVE_FMCSA_CONFIGURED,
+            "maxVerificationsPerHour": MAX_VERIFICATION_CALLS_PER_HOUR,
+        },
+        "diagnostics": json.loads(diag_json),
+        "history": [
+            {
+                "runId": row.get("run_id", "n/a"),
+                "status": row.get("result_status", "n/a"),
+                "provider": row.get("result_provider", row.get("provider", "n/a")),
+                "source": row.get("result_source", row.get("fmcsa_source", "n/a")),
+                "mcNumber": row.get("mc_number", ""),
+                "timestamp": row.get("timestamp", "n/a"),
+                "error": row.get("result_error", ""),
+            }
+            for row in st.session_state.get("verifier_diagnostics_history", [])
+        ],
+        "latestMessages": [
+            redact_sensitive(msg)
+            for msg in st.session_state.get("messages", [])[-5:]
+        ],
+        "validation": {
+            "validatedMessages": st.session_state.get("validated_messages", 0),
+            "validationErrors": st.session_state.get("validation_errors", []),
+        },
+    }
+    support_bundle_json = json.dumps(support_bundle, indent=2)
+    st.download_button(
+        "Download support-bundle.json",
+        data=support_bundle_json,
+        file_name=f"faxp_support_bundle_{run_id_safe}_{timestamp_safe}.json",
+        mime="application/json",
+    )
     st.code(diag_json, language="json")
     if st.button("Clear History", key="clear_verifier_history_button"):
         st.session_state.verifier_diagnostics_history = []
