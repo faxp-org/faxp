@@ -98,6 +98,36 @@ jobs:
           python faxp_mvp_simulation.py --provider iDenfy --response Accept --verification-status Success | tee /tmp/faxp-alias.log
           rg -q "Booking completed successfully" /tmp/faxp-alias.log
 
+      - name: FMCSA parser regression check (MC normalization + authority + insurance)
+        run: |
+          python - <<'PY'
+          from faxp_mvp_simulation import _normalize_fmcsa_live_payload
+
+          payload = {
+              "content": {
+                  "carrier": {
+                      "docketNumber": "MC00498282",
+                      "dotNumber": 1292301,
+                      "legalName": "CA FREIGHT XPRESS, INC.",
+                      "commonAuthorityStatus": "NONE",
+                      "contractAuthorityStatus": "ACTIVE",
+                      "brokerAuthorityStatus": "NONE",
+                      "bipdOnFile": "$750,000",
+                      "cargoInsuranceOnFile": "NO",
+                      "bondOnFile": "NO",
+                  }
+              }
+          }
+
+          normalized = _normalize_fmcsa_live_payload(payload, "498282")
+          assert normalized["found"] is True, normalized
+          assert normalized["status"] == "Success", normalized
+          assert normalized["mc_number"] == "498282", normalized
+          assert normalized["has_current_insurance"] is True, normalized
+          assert normalized["interstate_authority_ok"] is True, normalized
+          print("FMCSA parser regression check passed.")
+          PY
+
       - name: Reject raw biometric payload fields
         run: |
           python - <<'PY'

@@ -104,7 +104,18 @@ Input:
 Expected:
 - Validation fails.
 
-4. Replay and TTL guards unchanged
+4. FMCSA parser regression guard
+Input payload includes:
+- `docketNumber = MC00498282`
+- `contractAuthorityStatus = ACTIVE`
+- `bipdOnFile = $750,000`
+Expected:
+- Normalization maps MC to `498282`.
+- Authority is treated as active.
+- Insurance is treated as on-file.
+- Status resolves to `Success`.
+
+5. Replay and TTL guards unchanged
 Expected:
 - Existing replay/TTL protections continue to pass/fail as before.
 
@@ -151,6 +162,7 @@ Current CI workflow (`.github/workflows/ci.yml`) covers:
 - security gate,
 - simulation smoke,
 - security self-test,
+- FMCSA parser regression check,
 - incident drill (CI mode).
 
 Planned CI additions (v0.2+):
