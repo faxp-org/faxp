@@ -157,7 +157,6 @@ def apply_quick_preset(preset_name):
     preset = QUICK_PRESETS.get(preset_name)
     if not preset:
         return
-    st.session_state.quick_preset_select = preset_name
     st.session_state.rate_model_select = preset["rate_model"]
     st.session_state.bid_amount_input = float(preset["bid_amount"])
     st.session_state.response_type_select = preset["response_type"]
