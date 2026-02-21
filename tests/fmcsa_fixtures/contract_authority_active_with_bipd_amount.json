@@ -1,0 +1,29 @@
+{
+  "name": "contract-authority-active-with-bipd-amount",
+  "requested_mc": "498282",
+  "payload": {
+    "content": {
+      "carrier": {
+        "docketNumber": "MC00498282",
+        "dotNumber": 1292301,
+        "legalName": "CA FREIGHT XPRESS, INC.",
+        "commonAuthorityStatus": "NONE",
+        "contractAuthorityStatus": "ACTIVE",
+        "brokerAuthorityStatus": "NONE",
+        "bipdOnFile": "$750,000",
+        "cargoInsuranceOnFile": "NO",
+        "bondOnFile": "NO"
+      }
+    }
+  },
+  "expected": {
+    "found": true,
+    "status": "Success",
+    "mc_number": "498282",
+    "usdot_number": 1292301,
+    "carrier_name": "CA FREIGHT XPRESS, INC.",
+    "has_current_insurance": true,
+    "interstate_authority_ok": true,
+    "score": 100
+  }
+}

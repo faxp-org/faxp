@@ -105,15 +105,15 @@ Expected:
 - Validation fails.
 
 4. FMCSA parser regression guard
-Input payload includes:
-- `docketNumber = MC00498282`
-- `contractAuthorityStatus = ACTIVE`
-- `bipdOnFile = $750,000`
+Fixtures:
+- `tests/fmcsa_fixtures/contract_authority_active_with_bipd_amount.json`
+- `tests/fmcsa_fixtures/inactive_no_insurance.json`
+- `tests/fmcsa_fixtures/no_carrier_match.json`
+Command:
+- `python3 tests/run_fmcsa_parser_fixtures.py`
 Expected:
-- Normalization maps MC to `498282`.
-- Authority is treated as active.
-- Insurance is treated as on-file.
-- Status resolves to `Success`.
+- One pass per fixture.
+- MC normalization and authority/insurance interpretation remain stable.
 
 5. Replay and TTL guards unchanged
 Expected:

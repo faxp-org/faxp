@@ -1,0 +1,19 @@
+{
+  "name": "no-carrier-match",
+  "requested_mc": "123456",
+  "payload": {
+    "result": {
+      "items": []
+    }
+  },
+  "expected": {
+    "found": false,
+    "status": "Fail",
+    "mc_number": "123456",
+    "usdot_number": null,
+    "carrier_name": null,
+    "has_current_insurance": false,
+    "interstate_authority_ok": false,
+    "score": 10
+  }
+}

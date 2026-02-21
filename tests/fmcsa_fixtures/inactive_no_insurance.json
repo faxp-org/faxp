@@ -1,0 +1,29 @@
+{
+  "name": "inactive-no-insurance",
+  "requested_mc": "777777",
+  "payload": {
+    "content": {
+      "carrier": {
+        "docketNumber": "MC777777",
+        "dotNumber": 7777777,
+        "legalName": "INACTIVE CARRIER LLC",
+        "commonAuthorityStatus": "INACTIVE",
+        "contractAuthorityStatus": "NONE",
+        "brokerAuthorityStatus": "NONE",
+        "bipdOnFile": "NO",
+        "cargoInsuranceOnFile": "NO",
+        "bondOnFile": "NO"
+      }
+    }
+  },
+  "expected": {
+    "found": true,
+    "status": "Fail",
+    "mc_number": "777777",
+    "usdot_number": 7777777,
+    "carrier_name": "INACTIVE CARRIER LLC",
+    "has_current_insurance": false,
+    "interstate_authority_ok": false,
+    "score": 50
+  }
+}
