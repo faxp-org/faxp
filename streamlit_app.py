@@ -2,12 +2,14 @@
 """FAXP Streamlit demo: NewLoad -> Bid -> Verification -> ExecutionReport."""
 
 from datetime import datetime, timezone
+import base64
 import json
 import os
 import secrets
 import time
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 from faxp_mvp_simulation import (
     BrokerAgent,
@@ -53,6 +55,27 @@ def now_utc():
 
 def envelope(sender, receiver, message_type, body):
     return build_envelope(sender, receiver, message_type, body)
+
+
+def render_copy_button(label, text, key):
+    payload_b64 = base64.b64encode(text.encode("utf-8")).decode("ascii")
+    components.html(
+        f"""
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button id="{key}" onclick="
+            navigator.clipboard.writeText(atob('{payload_b64}')).then(() => {{
+              document.getElementById('{key}_status').textContent = 'Copied';
+            }}).catch(() => {{
+              document.getElementById('{key}_status').textContent = 'Copy failed';
+            }});
+          " style="padding:6px 12px;border:1px solid #999;border-radius:6px;background:#f5f5f5;cursor:pointer;">
+            {label}
+          </button>
+          <span id="{key}_status" style="font-size:0.9em;color:#666;"></span>
+        </div>
+        """,
+        height=46,
+    )
 
 
 def reset_state():
@@ -494,6 +517,21 @@ diag = st.session_state.get("last_verifier_diagnostics", {})
 if not diag:
     st.info("Run a flow to populate verifier diagnostics.")
 else:
+    diag_json = json.dumps(
+        {
+            "provider": diag.get("provider", "n/a"),
+            "fmcsaSource": diag.get("fmcsa_source", "n/a"),
+            "liveFmcsaConfigured": diag.get("live_fmcsa_configured"),
+            "cloudSafeMode": diag.get("cloud_safe_mode"),
+            "resultStatus": diag.get("result_status", "n/a"),
+            "resultProvider": diag.get("result_provider", "n/a"),
+            "resultSource": diag.get("result_source", "n/a"),
+            "resultError": diag.get("result_error", ""),
+            "mcNumber": diag.get("mc_number", ""),
+            "timestamp": diag.get("timestamp", "n/a"),
+        },
+        indent=2,
+    )
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Configured Provider", diag.get("provider", "n/a"))
     c2.metric("FMCSA Source", diag.get("fmcsa_source", "n/a"))
@@ -503,15 +541,8 @@ else:
     )
     c4.metric("Last Result", diag.get("result_status", "n/a"))
     st.caption(f"Updated: {diag.get('timestamp', 'n/a')}")
-    st.json(
-        {
-            "resultProvider": diag.get("result_provider", "n/a"),
-            "resultSource": diag.get("result_source", "n/a"),
-            "resultError": diag.get("result_error", ""),
-            "mcNumber": diag.get("mc_number", ""),
-            "cloudSafeMode": diag.get("cloud_safe_mode"),
-        }
-    )
+    render_copy_button("Copy diagnostics JSON", diag_json, "diag_copy_button")
+    st.code(diag_json, language="json")
 
 st.subheader("AmendRequest (exists, not executed)")
 st.json(st.session_state.get("amend_example", FaxpProtocol.amend_request_example("example-load-id")))
