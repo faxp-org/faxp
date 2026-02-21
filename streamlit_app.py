@@ -36,6 +36,7 @@ elif _cloud_safe_setting in {"0", "false", "no", "off"}:
     CLOUD_SAFE_MODE = False
 else:
     CLOUD_SAFE_MODE = NON_LOCAL_MODE
+LIVE_FMCSA_CONFIGURED = bool(os.getenv("FAXP_FMCSA_WEBKEY", "").strip())
 MAX_AUTH_FAILURES = int(os.getenv("FAXP_AUTH_MAX_FAILURES", "5"))
 AUTH_LOCKOUT_SECONDS = int(os.getenv("FAXP_AUTH_LOCKOUT_SECONDS", "300"))
 GLOBAL_VERIFICATION_CALL_TIMES = []
@@ -342,7 +343,7 @@ with st.sidebar:
     if CLOUD_SAFE_MODE:
         provider_choice = st.selectbox(
             "Verification Provider",
-            ["MockBiometricProvider", "FMCSA (Authority Mock)"],
+            ["MockBiometricProvider", "FMCSA (Authority)"],
             index=0,
             help="Cloud-safe mode disables local-only verifier paths.",
         )
@@ -359,21 +360,41 @@ with st.sidebar:
 
     if provider == "FMCSA":
         if CLOUD_SAFE_MODE:
-            # Avoid local filesystem/API assumptions in shared cloud runtime.
-            fmcsa_source = "carrier-finder"
-            mc_number = ""
+            options = ["authority-mock"]
+            if LIVE_FMCSA_CONFIGURED:
+                options.insert(0, "live-fmcsa")
+            cloud_fmcsa_mode = st.selectbox(
+                "FMCSA Source",
+                options,
+                index=0,
+                help="authority-mock uses local mock compliance scoring only.",
+            )
+            if cloud_fmcsa_mode == "live-fmcsa":
+                fmcsa_source = "live-fmcsa"
+                mc_number = st.text_input("MC Number", value="498282")
+                st.caption("Live FMCSA mode enabled via FAXP_FMCSA_WEBKEY.")
+            else:
+                fmcsa_source = "carrier-finder"
+                mc_number = ""
+                st.caption("FMCSA authority-mock mode (no external API call).")
             carrier_finder_path = None
-            st.caption("FMCSA is running in mock-only mode in cloud-safe runtime.")
         else:
             fmcsa_source = st.selectbox(
                 "FMCSA Source",
                 ["carrier-finder", "live-fmcsa"],
                 index=0,
-                help="live-fmcsa is a placeholder for future direct API integration.",
+                help="carrier-finder uses local adapter; live-fmcsa calls FMCSA QCMobile API directly.",
             )
             mc_number = st.text_input("MC Number", value="498282")
-            carrier_finder_path = secure_carrier_finder_path()
-            st.caption(f"carrier-finder path: {carrier_finder_path or '[not allowlisted]'}")
+            if fmcsa_source == "carrier-finder":
+                carrier_finder_path = secure_carrier_finder_path()
+                st.caption(f"carrier-finder path: {carrier_finder_path or '[not allowlisted]'}")
+            else:
+                carrier_finder_path = None
+                if LIVE_FMCSA_CONFIGURED:
+                    st.caption("Live FMCSA mode enabled via FAXP_FMCSA_WEBKEY.")
+                else:
+                    st.caption("Missing FAXP_FMCSA_WEBKEY; live FMCSA calls will fail closed.")
     else:
         fmcsa_source = "carrier-finder"
         mc_number = ""
@@ -392,7 +413,12 @@ if run_clicked:
             st.session_state.status_line = f"Unauthorized. Locked for {wait_seconds}s."
         else:
             st.session_state.status_line = "Unauthorized."
-    elif provider == "FMCSA" and not CLOUD_SAFE_MODE and not carrier_finder_path:
+    elif (
+        provider == "FMCSA"
+        and fmcsa_source == "carrier-finder"
+        and not CLOUD_SAFE_MODE
+        and not carrier_finder_path
+    ):
         st.session_state.status_line = "carrier-finder path is not allowlisted."
     else:
         run_flow(

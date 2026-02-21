@@ -116,7 +116,7 @@ Secrets:
 - `FAXP_CLOUD_SAFE_MODE=1`
 Expected:
 - Runtime caption shows cloud-safe mode.
-- Provider options show `MockBiometricProvider` and `FMCSA (Authority Mock)`.
+- Provider options show `MockBiometricProvider` and `FMCSA (Authority)`.
 
 2. Cloud booking success
 Settings:
@@ -127,10 +127,21 @@ Expected:
 
 3. Cloud FMCSA mock behavior
 Settings:
-- Provider `FMCSA (Authority Mock)`
+- Provider `FMCSA (Authority)`
 Expected:
 - No local carrier-finder path dependency.
 - No crash.
+
+4. Cloud live FMCSA behavior (when webkey is configured)
+Secrets:
+- `FAXP_FMCSA_WEBKEY=<valid_webkey>`
+Settings:
+- Provider `FMCSA (Authority)`
+- FMCSA Source `live-fmcsa`
+- MC `498282`
+Expected:
+- Verification source is `live-fmcsa`.
+- Verification either succeeds with `VerifiedBadge=Basic` or fails closed with a clear FMCSA/API error.
 
 ## 7. CI Coverage Mapping
 

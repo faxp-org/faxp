@@ -18,3 +18,8 @@ Expected result:
 - Booking completed
 - VerifiedBadge: Premium
 - Validation Errors: 0
+
+### Direct FMCSA mode
+- Set `FAXP_FMCSA_WEBKEY` in your local/Streamlit secrets.
+- In the app, choose `Verification Provider: FMCSA` and `FMCSA Source: live-fmcsa`.
+- Enter an MC number (example: `498282`).
