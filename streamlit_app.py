@@ -28,6 +28,13 @@ ACCESS_KEY = os.getenv("FAXP_STREAMLIT_ACCESS_KEY", "").strip()
 MAX_VERIFICATION_CALLS_PER_HOUR = int(os.getenv("FAXP_MAX_VERIFICATIONS_PER_HOUR", "30"))
 APP_MODE = os.getenv("FAXP_APP_MODE", "local").strip().lower()
 NON_LOCAL_MODE = APP_MODE not in {"local", "dev", "development"}
+_cloud_safe_setting = os.getenv("FAXP_CLOUD_SAFE_MODE", "auto").strip().lower()
+if _cloud_safe_setting in {"1", "true", "yes", "on"}:
+    CLOUD_SAFE_MODE = True
+elif _cloud_safe_setting in {"0", "false", "no", "off"}:
+    CLOUD_SAFE_MODE = False
+else:
+    CLOUD_SAFE_MODE = NON_LOCAL_MODE
 MAX_AUTH_FAILURES = int(os.getenv("FAXP_AUTH_MAX_FAILURES", "5"))
 AUTH_LOCKOUT_SECONDS = int(os.getenv("FAXP_AUTH_LOCKOUT_SECONDS", "300"))
 GLOBAL_VERIFICATION_CALL_TIMES = []
@@ -271,7 +278,11 @@ def run_flow(
     st.session_state.verified_badge = verified_badge
 
     if verification_result.get("status") != "Success":
-        st.session_state.status_line = "Verification failed."
+        reason = verification_result.get("error")
+        if reason:
+            st.session_state.status_line = f"Verification unavailable: {reason}"
+        else:
+            st.session_state.status_line = "Verification failed."
         return
 
     # 6) ExecutionReport
@@ -304,6 +315,10 @@ if NON_LOCAL_MODE and not ACCESS_KEY:
 
 with st.sidebar:
     st.header("Scenario")
+    st.caption(
+        f"Runtime mode: {'cloud-safe' if CLOUD_SAFE_MODE else 'full/local'} "
+        f"(FAXP_APP_MODE={APP_MODE})"
+    )
     if ACCESS_KEY:
         st.text_input("Access Key", type="password", key="access_key_input")
     rate_model = st.selectbox("Rate Model", ["PerMile", "Flat"], index=0)
@@ -316,22 +331,38 @@ with st.sidebar:
         help="PerMile uses $/mile. Flat uses total trip amount.",
     )
     response_type = st.selectbox("BidResponse", ["Accept", "Counter", "Reject"], index=0)
-    provider = st.selectbox("Verification Provider", ["FMCSA", "iDenfy"], index=0)
+    if CLOUD_SAFE_MODE:
+        provider_choice = st.selectbox(
+            "Verification Provider",
+            ["iDenfy", "FMCSA (Mock)"],
+            index=0,
+            help="Cloud-safe mode disables local-only verifier paths.",
+        )
+        provider = "FMCSA" if provider_choice.startswith("FMCSA") else "iDenfy"
+    else:
+        provider = st.selectbox("Verification Provider", ["FMCSA", "iDenfy"], index=0)
 
     if provider == "FMCSA":
-        fmcsa_source = st.selectbox(
-            "FMCSA Source",
-            ["carrier-finder", "live-fmcsa"],
-            index=0,
-            help="live-fmcsa is a placeholder for future direct API integration.",
-        )
-        mc_number = st.text_input("MC Number", value="498282")
-        carrier_finder_path = secure_carrier_finder_path()
-        st.caption(f"carrier-finder path: {carrier_finder_path or '[not allowlisted]'}")
+        if CLOUD_SAFE_MODE:
+            # Avoid local filesystem/API assumptions in shared cloud runtime.
+            fmcsa_source = "carrier-finder"
+            mc_number = ""
+            carrier_finder_path = None
+            st.caption("FMCSA is running in mock-only mode in cloud-safe runtime.")
+        else:
+            fmcsa_source = st.selectbox(
+                "FMCSA Source",
+                ["carrier-finder", "live-fmcsa"],
+                index=0,
+                help="live-fmcsa is a placeholder for future direct API integration.",
+            )
+            mc_number = st.text_input("MC Number", value="498282")
+            carrier_finder_path = secure_carrier_finder_path()
+            st.caption(f"carrier-finder path: {carrier_finder_path or '[not allowlisted]'}")
     else:
         fmcsa_source = "carrier-finder"
         mc_number = ""
-        carrier_finder_path = secure_carrier_finder_path()
+        carrier_finder_path = None if CLOUD_SAFE_MODE else secure_carrier_finder_path()
 
     verification_status = st.selectbox("Mock Verification Status", ["Success", "Fail"], index=0)
     no_match = st.checkbox("Force no load match", value=False)
@@ -346,7 +377,7 @@ if run_clicked:
             st.session_state.status_line = f"Unauthorized. Locked for {wait_seconds}s."
         else:
             st.session_state.status_line = "Unauthorized."
-    elif provider == "FMCSA" and not carrier_finder_path:
+    elif provider == "FMCSA" and not CLOUD_SAFE_MODE and not carrier_finder_path:
         st.session_state.status_line = "carrier-finder path is not allowlisted."
     else:
         run_flow(

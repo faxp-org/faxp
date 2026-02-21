@@ -6,6 +6,8 @@ SECRETS_DIR="${HOME}/.faxp-secrets"
 ENV_FILE="${1:-${SECRETS_DIR}/security.env.local}"
 MC_NUMBER="${FAXP_INCIDENT_DRILL_MC_NUMBER:-498282}"
 ROTATE_ON_DRILL="${FAXP_INCIDENT_DRILL_ROTATE:-0}"
+DRILL_PROVIDER="${FAXP_INCIDENT_DRILL_PROVIDER:-FMCSA}"
+REQUIRE_TRUCK_FLOW="${FAXP_INCIDENT_DRILL_REQUIRE_TRUCK_FLOW:-1}"
 
 SIM_SCRIPT="${PROJECT_ROOT}/faxp_mvp_simulation.py"
 ROTATE_SCRIPT="${PROJECT_ROOT}/rotate_faxp_keys.sh"
@@ -37,26 +39,41 @@ tmp_fail="$(mktemp)"
 trap 'rm -f "${tmp_ok}" "${tmp_fail}"' EXIT
 
 echo "[IncidentDrill] Step 1/4: Baseline verification run (expect success)."
-"${PYTHON_BIN}" "${SIM_SCRIPT}" \
-  --provider FMCSA \
-  --response Accept \
-  --verification-status Success \
-  --mc-number "${MC_NUMBER}" >"${tmp_ok}" 2>&1
+baseline_cmd=(
+  "${PYTHON_BIN}" "${SIM_SCRIPT}"
+  --provider "${DRILL_PROVIDER}"
+  --response Accept
+  --verification-status Success
+)
+if [[ "${DRILL_PROVIDER}" == "FMCSA" ]]; then
+  baseline_cmd+=(--mc-number "${MC_NUMBER}")
+fi
+"${baseline_cmd[@]}" >"${tmp_ok}" 2>&1
 
-if ! rg -q "Booking completed successfully" "${tmp_ok}" || ! rg -q "Truck capacity booking complete" "${tmp_ok}"; then
-  echo "[IncidentDrill] Baseline run did not complete both flows." >&2
+if ! rg -q "Booking completed successfully" "${tmp_ok}"; then
+  echo "[IncidentDrill] Baseline run did not complete load flow." >&2
+  tail -n 80 "${tmp_ok}" >&2
+  exit 1
+fi
+if [[ "${REQUIRE_TRUCK_FLOW}" == "1" ]] && ! rg -q "Truck capacity booking complete" "${tmp_ok}"; then
+  echo "[IncidentDrill] Baseline run did not complete truck flow." >&2
   tail -n 80 "${tmp_ok}" >&2
   exit 1
 fi
 echo "[IncidentDrill] Baseline run passed."
 
 echo "[IncidentDrill] Step 2/4: Simulate verifier signing key incident (expect detection/fail-close)."
+incident_cmd=(
+  "${PYTHON_BIN}" "${SIM_SCRIPT}"
+  --provider "${DRILL_PROVIDER}"
+  --response Accept
+  --verification-status Success
+)
+if [[ "${DRILL_PROVIDER}" == "FMCSA" ]]; then
+  incident_cmd+=(--mc-number "${MC_NUMBER}")
+fi
 FAXP_VERIFIER_ED25519_ACTIVE_KEY_ID="incident-compromised-kid" \
-  "${PYTHON_BIN}" "${SIM_SCRIPT}" \
-    --provider FMCSA \
-    --response Accept \
-    --verification-status Success \
-    --mc-number "${MC_NUMBER}" >"${tmp_fail}" 2>&1 || true
+  "${incident_cmd[@]}" >"${tmp_fail}" 2>&1 || true
 
 if ! rg -q "verification failed|Verifier|active key ID .* not found in configured key ring" "${tmp_fail}"; then
   echo "[IncidentDrill] Incident scenario did not produce expected verification failure." >&2

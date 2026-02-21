@@ -1,0 +1,89 @@
+name: FAXP CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install system tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ripgrep
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Make scripts executable
+        run: |
+          chmod +x \
+            security_gate.sh \
+            generate_faxp_keys.sh \
+            rotate_faxp_keys.sh \
+            incident_drill.sh \
+            run_secure_demo.sh
+
+      - name: Shell syntax checks
+        run: |
+          bash -n \
+            security_gate.sh \
+            generate_faxp_keys.sh \
+            rotate_faxp_keys.sh \
+            incident_drill.sh \
+            run_secure_demo.sh
+
+      - name: Python compile checks
+        run: |
+          python -m py_compile faxp_mvp_simulation.py streamlit_app.py
+
+      - name: Security gate (template)
+        run: |
+          ./security_gate.sh security.env.template
+
+      - name: Generate CI key material
+        run: |
+          ./generate_faxp_keys.sh "$RUNNER_TEMP/faxp-secrets"
+          cp "$RUNNER_TEMP/faxp-secrets/security.env.local" "$RUNNER_TEMP/faxp-secrets/security.env.ci"
+          sed -i 's/^FAXP_APP_MODE=.*/FAXP_APP_MODE=local/' "$RUNNER_TEMP/faxp-secrets/security.env.ci"
+          sed -i 's/^FAXP_REQUIRE_EXTERNAL_SECRET_MANAGER=.*/FAXP_REQUIRE_EXTERNAL_SECRET_MANAGER=0/' "$RUNNER_TEMP/faxp-secrets/security.env.ci"
+
+      - name: Simulation smoke test
+        run: |
+          set -a
+          source "$RUNNER_TEMP/faxp-secrets/security.env.ci"
+          set +a
+          python faxp_mvp_simulation.py --provider iDenfy --response Accept --verification-status Success | tee /tmp/faxp-sim.log
+          rg -q "Booking completed successfully" /tmp/faxp-sim.log
+
+      - name: Security self-test
+        run: |
+          set -a
+          source "$RUNNER_TEMP/faxp-secrets/security.env.ci"
+          set +a
+          python faxp_mvp_simulation.py --security-self-test --self-test-iterations 25
+
+      - name: Incident drill (CI mode)
+        env:
+          FAXP_INCIDENT_DRILL_PROVIDER: iDenfy
+          FAXP_INCIDENT_DRILL_REQUIRE_TRUCK_FLOW: "0"
+        run: |
+          ./incident_drill.sh "$RUNNER_TEMP/faxp-secrets/security.env.ci"
