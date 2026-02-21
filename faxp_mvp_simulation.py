@@ -903,9 +903,9 @@ def parse_args():
     )
     parser.add_argument(
         "--provider",
-        choices=["FMCSA", "iDenfy"],
-        default="iDenfy",
-        help="Verification provider to simulate.",
+        choices=["FMCSA", "MockComplianceProvider", "MockBiometricProvider", "iDenfy"],
+        default="MockBiometricProvider",
+        help="Verification provider ID to simulate (legacy alias: iDenfy).",
     )
     parser.add_argument(
         "--response",
@@ -1191,11 +1191,17 @@ PROVIDER_VERIFICATION_REQUIREMENTS = {
         "method": "AuthorityRecordCheck",
         "minAssuranceLevel": "AAL1",
     },
-    "iDenfy": {
+    "MockBiometricProvider": {
         "category": "Biometric",
         "method": "LivenessPlusDocument",
         "minAssuranceLevel": "AAL2",
     },
+}
+PROVIDER_ALIASES = {
+    "FMCSA": "FMCSA",
+    "MockComplianceProvider": "FMCSA",
+    "iDenfy": "MockBiometricProvider",
+    "MockBiometricProvider": "MockBiometricProvider",
 }
 ASSURANCE_LEVEL_RANK = {"AAL0": 0, "AAL1": 1, "AAL2": 2, "AAL3": 3}
 
@@ -1246,10 +1252,12 @@ def _validate_verification_result(result, context):
         "category",
         "method",
         "provider",
+        "providerAlias",
         "assuranceLevel",
         "token",
         "evidenceRef",
         "source",
+        "sourceAuthority",
         "mcNumber",
         "error",
     ]
@@ -1307,10 +1315,21 @@ def _assurance_rank(value):
     return ASSURANCE_LEVEL_RANK.get(str(value or "").upper(), -1)
 
 
+def normalize_verification_provider(provider):
+    normalized = PROVIDER_ALIASES.get(str(provider or "").strip())
+    if normalized:
+        return normalized
+    return str(provider or "").strip()
+
+
 def negotiate_verification_capability(provider, *agents):
-    requirement = PROVIDER_VERIFICATION_REQUIREMENTS.get(provider)
+    normalized_provider = normalize_verification_provider(provider)
+    requirement = PROVIDER_VERIFICATION_REQUIREMENTS.get(normalized_provider)
     if not requirement:
-        return False, f"Unsupported verification provider for capability negotiation: {provider}."
+        return (
+            False,
+            f"Unsupported verification provider for capability negotiation: {provider}.",
+        )
 
     required_category = requirement["category"]
     required_method = requirement["method"]
@@ -1960,10 +1979,13 @@ def run_verification(
     fmcsa_source="carrier-finder",
 ):
     """
-    Mock verification providers:
-    - FMCSA: compliance check -> Basic badge (on success)
-    - iDenfy: biometric verification -> Premium badge (on success)
+    Verification providers:
+    - FMCSA / MockComplianceProvider: compliance check -> Basic badge (on success)
+    - MockBiometricProvider / iDenfy alias: biometric check -> Premium badge (on success)
     """
+    requested_provider = str(provider or "").strip()
+    normalized_provider = normalize_verification_provider(requested_provider)
+
     def build_result(
         status_value,
         provider_value,
@@ -1973,6 +1995,7 @@ def run_verification(
         score_value,
         token_value,
         source_value,
+        source_authority=None,
         extra=None,
     ):
         result = {
@@ -1987,22 +2010,27 @@ def run_verification(
             "verifiedAt": now_utc(),
             "evidenceRef": f"sha256:{hashlib.sha256(token_value.encode('utf-8')).hexdigest()[:24]}",
         }
+        if source_authority:
+            result["sourceAuthority"] = source_authority
+        if requested_provider and requested_provider != normalized_provider:
+            result["providerAlias"] = requested_provider
         if extra:
             result.update(extra)
         return result
 
-    if provider == "FMCSA":
-        fm_token = f"{provider.lower()}-{uuid4().hex[:14]}"
+    if normalized_provider == "FMCSA":
+        fm_token = f"fmcsa-{uuid4().hex[:14]}"
         if fmcsa_source == "live-fmcsa":
             verification_result = build_result(
                 status_value="Fail",
-                provider_value=provider,
+                provider_value="LiveFMCSAAdapter",
                 category="Compliance",
                 method="AuthorityRecordCheck",
                 assurance_level="AAL1",
                 score_value=0,
                 token_value=fm_token,
                 source_value="live-fmcsa",
+                source_authority="FMCSA",
                 extra={
                     "mcNumber": _normalize_digits(mc_number),
                     "error": "Live FMCSA integration is not implemented yet. Use --fmcsa-source carrier-finder.",
@@ -2022,13 +2050,14 @@ def run_verification(
                 badge = "Basic" if live_status == "Success" else "None"
                 verification_result = build_result(
                     status_value=live_status,
-                    provider_value=provider,
+                    provider_value="CarrierFinderAdapter",
                     category="Compliance",
                     method="AuthorityRecordCheck",
                     assurance_level="AAL1",
                     score_value=score,
                     token_value=fm_token,
                     source_value="carrier-finder",
+                    source_authority="FMCSA",
                     extra={
                         "mcNumber": _normalize_digits(mc_number),
                         "carrier": {
@@ -2045,13 +2074,14 @@ def run_verification(
 
             verification_result = build_result(
                 status_value="Fail",
-                provider_value=provider,
+                provider_value="CarrierFinderAdapter",
                 category="Compliance",
                 method="AuthorityRecordCheck",
                 assurance_level="AAL1",
                 score_value=0,
                 token_value=fm_token,
                 source_value="carrier-finder",
+                source_authority="FMCSA",
                 extra={
                     "mcNumber": _normalize_digits(mc_number),
                     "error": live.get("error", "Unknown carrier-finder error."),
@@ -2061,39 +2091,40 @@ def run_verification(
 
         success_score = 86
         badge = "Basic"
-    elif provider == "iDenfy":
+    elif normalized_provider == "MockBiometricProvider":
         success_score = 94
         badge = "Premium"
-        id_token = f"{provider.lower()}-{uuid4().hex[:14]}"
+        id_token = f"biometric-{uuid4().hex[:14]}"
     else:
-        raise ValueError(f"Unsupported verification provider: {provider}")
+        raise ValueError(f"Unsupported verification provider: {provider!r}")
 
     score = success_score if status == "Success" else 42
     badge = badge if status == "Success" else "None"
 
-    if provider == "FMCSA":
+    if normalized_provider == "FMCSA":
         token = fm_token
         verification_result = build_result(
             status_value=status,
-            provider_value=provider,
+            provider_value="MockComplianceProvider",
             category="Compliance",
             method="AuthorityRecordCheck",
             assurance_level="AAL1",
             score_value=score,
             token_value=token,
-            source_value="mock-fmcsa",
+            source_value="mock-compliance",
+            source_authority="FMCSA",
         )
     else:
         token = id_token
         verification_result = build_result(
             status_value=status,
-            provider_value=provider,
+            provider_value="MockBiometricProvider",
             category="Biometric",
             method="LivenessPlusDocument",
             assurance_level="AAL2",
             score_value=score,
             token_value=token,
-            source_value="mock-idenfy",
+            source_value="mock-biometric",
         )
     return verification_result, badge
 

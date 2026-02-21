@@ -12,7 +12,7 @@ This matrix tracks conformance and regression tests for v0.2 changes:
 
 ## 2. Baseline Regression (Must Stay Green)
 
-1. `./run_secure_demo.sh sim --use-kms-command --provider iDenfy --verification-status Success`
+1. `./run_secure_demo.sh sim --use-kms-command --provider MockBiometricProvider --verification-status Success`
 Expected:
 - Load booking completes.
 - Truck booking completes.
@@ -31,9 +31,9 @@ Expected:
 
 ## 3. Verification Neutrality Tests
 
-1. iDenfy mock emits neutral fields
+1. Mock biometric provider emits neutral fields
 Command:
-- `./run_secure_demo.sh sim --use-kms-command --provider iDenfy --verification-status Success`
+- `./run_secure_demo.sh sim --use-kms-command --provider MockBiometricProvider --verification-status Success`
 Assert in output:
 - `VerificationResult.category = Biometric`
 - `VerificationResult.method = LivenessPlusDocument`
@@ -54,17 +54,25 @@ Input shape includes:
 Expected:
 - Validation passes.
 
+4. Legacy provider alias remains accepted
+Command:
+- `./run_secure_demo.sh sim --use-kms-command --provider iDenfy --verification-status Success`
+Assert in output:
+- Booking completes.
+- `VerificationResult.provider = MockBiometricProvider`
+- `VerificationResult.providerAlias = iDenfy`
+
 ## 4. Capability Negotiation Tests
 
 1. Default capabilities aligned (happy path)
 Command:
-- `./run_secure_demo.sh sim --use-kms-command --provider iDenfy --verification-status Success`
+- `./run_secure_demo.sh sim --use-kms-command --provider MockBiometricProvider --verification-status Success`
 Expected:
 - Verification proceeds.
 
 2. Forced mismatch fails closed
 Command:
-- `python3 faxp_mvp_simulation.py --force-capability-mismatch --provider iDenfy --verification-status Success`
+- `python3 faxp_mvp_simulation.py --force-capability-mismatch --provider MockBiometricProvider --verification-status Success`
 Expected:
 - Explicit capability mismatch message.
 - Verification not attempted.
@@ -108,18 +116,18 @@ Secrets:
 - `FAXP_CLOUD_SAFE_MODE=1`
 Expected:
 - Runtime caption shows cloud-safe mode.
-- Provider options show `iDenfy` and `FMCSA (Mock)`.
+- Provider options show `MockBiometricProvider` and `FMCSA (Authority Mock)`.
 
 2. Cloud booking success
 Settings:
-- Provider `iDenfy`
+- Provider `MockBiometricProvider`
 - Status `Success`
 Expected:
 - Booking completed with `VerifiedBadge=Premium`.
 
 3. Cloud FMCSA mock behavior
 Settings:
-- Provider `FMCSA (Mock)`
+- Provider `FMCSA (Authority Mock)`
 Expected:
 - No local carrier-finder path dependency.
 - No crash.

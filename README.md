@@ -10,7 +10,7 @@ FAXP v0.1.1 demo includes:
 Streamlit URL: https://YOUR-APP-URL.streamlit.app
 
 ### Demo settings (known-good)
-- Verification Provider: iDenfy
+- Verification Provider: MockBiometricProvider
 - Mock Verification Status: Success
 - BidResponse: Accept
 

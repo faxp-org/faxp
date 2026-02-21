@@ -71,7 +71,7 @@ jobs:
           set -a
           source "$RUNNER_TEMP/faxp-secrets/security.env.ci"
           set +a
-          python faxp_mvp_simulation.py --provider iDenfy --response Accept --verification-status Success | tee /tmp/faxp-sim.log
+          python faxp_mvp_simulation.py --provider MockBiometricProvider --response Accept --verification-status Success | tee /tmp/faxp-sim.log
           rg -q "Booking completed successfully" /tmp/faxp-sim.log
 
       - name: Security self-test
@@ -86,9 +86,17 @@ jobs:
           set -a
           source "$RUNNER_TEMP/faxp-secrets/security.env.ci"
           set +a
-          python faxp_mvp_simulation.py --force-capability-mismatch --provider iDenfy --verification-status Success | tee /tmp/faxp-capability.log
+          python faxp_mvp_simulation.py --force-capability-mismatch --provider MockBiometricProvider --verification-status Success | tee /tmp/faxp-capability.log
           rg -q "Capability mismatch" /tmp/faxp-capability.log
           ! rg -q "Booking completed successfully" /tmp/faxp-capability.log
+
+      - name: Legacy alias compatibility (iDenfy)
+        run: |
+          set -a
+          source "$RUNNER_TEMP/faxp-secrets/security.env.ci"
+          set +a
+          python faxp_mvp_simulation.py --provider iDenfy --response Accept --verification-status Success | tee /tmp/faxp-alias.log
+          rg -q "Booking completed successfully" /tmp/faxp-alias.log
 
       - name: Reject raw biometric payload fields
         run: |
@@ -122,7 +130,7 @@ jobs:
 
       - name: Incident drill (CI mode)
         env:
-          FAXP_INCIDENT_DRILL_PROVIDER: iDenfy
+          FAXP_INCIDENT_DRILL_PROVIDER: MockBiometricProvider
           FAXP_INCIDENT_DRILL_REQUIRE_TRUCK_FLOW: "0"
         run: |
           ./incident_drill.sh "$RUNNER_TEMP/faxp-secrets/security.env.ci"

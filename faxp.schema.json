@@ -205,6 +205,7 @@
         "category": { "type": "string" },
         "method": { "type": "string" },
         "provider": { "type": "string" },
+        "providerAlias": { "type": "string" },
         "assuranceLevel": { "type": "string" },
         "score": { "type": "number", "minimum": 0, "maximum": 100 },
         "token": { "type": "string" },
@@ -213,6 +214,7 @@
         "expiresAt": { "type": "string" },
         "attestation": { "$ref": "#/$defs/VerificationAttestation" },
         "source": { "type": "string" },
+        "sourceAuthority": { "type": "string" },
         "mcNumber": { "type": "string" },
         "carrier": { "type": "object" },
         "error": { "type": "string" }

@@ -342,13 +342,20 @@ with st.sidebar:
     if CLOUD_SAFE_MODE:
         provider_choice = st.selectbox(
             "Verification Provider",
-            ["iDenfy", "FMCSA (Mock)"],
+            ["MockBiometricProvider", "FMCSA (Authority Mock)"],
             index=0,
             help="Cloud-safe mode disables local-only verifier paths.",
         )
-        provider = "FMCSA" if provider_choice.startswith("FMCSA") else "iDenfy"
+        provider = "FMCSA" if provider_choice.startswith("FMCSA") else "MockBiometricProvider"
     else:
-        provider = st.selectbox("Verification Provider", ["FMCSA", "iDenfy"], index=0)
+        provider = st.selectbox(
+            "Verification Provider",
+            ["FMCSA", "MockBiometricProvider", "iDenfy (Legacy Alias)"],
+            index=0,
+            help="iDenfy label is maintained as a legacy alias.",
+        )
+        if provider == "iDenfy (Legacy Alias)":
+            provider = "iDenfy"
 
     if provider == "FMCSA":
         if CLOUD_SAFE_MODE:
