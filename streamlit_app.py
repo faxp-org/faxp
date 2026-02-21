@@ -29,6 +29,12 @@ from faxp_mvp_simulation import (
     set_protocol_run_id,
     validate_envelope,
 )
+from streamlit_state_logic import (
+    apply_preset_to_state,
+    build_quick_presets,
+    default_sidebar_state,
+    ensure_state_defaults,
+)
 
 ACCESS_KEY = os.getenv("FAXP_STREAMLIT_ACCESS_KEY", "").strip()
 MAX_VERIFICATION_CALLS_PER_HOUR = int(os.getenv("FAXP_MAX_VERIFICATIONS_PER_HOUR", "30"))
@@ -56,48 +62,9 @@ LIVE_FMCSA_CONFIGURED = bool(os.getenv("FAXP_FMCSA_WEBKEY", "").strip())
 MAX_AUTH_FAILURES = int(os.getenv("FAXP_AUTH_MAX_FAILURES", "5"))
 AUTH_LOCKOUT_SECONDS = int(os.getenv("FAXP_AUTH_LOCKOUT_SECONDS", "300"))
 GLOBAL_VERIFICATION_CALL_TIMES = []
-QUICK_PRESETS = {
-    "FMCSA live (MC 498282)": {
-        "provider": "FMCSA",
-        "rate_model": "PerMile",
-        "bid_amount": float(default_bid_amount("PerMile")),
-        "response_type": "Accept",
-        "verification_status": "Success",
-        "no_match": False,
-        "mc_number": "498282",
-        "fmcsa_source_local": "live-fmcsa",
-        "fmcsa_source_cloud": "live-fmcsa",
-    },
-    "FMCSA authority-mock": {
-        "provider": "FMCSA",
-        "rate_model": "PerMile",
-        "bid_amount": float(default_bid_amount("PerMile")),
-        "response_type": "Accept",
-        "verification_status": "Success",
-        "no_match": False,
-        "mc_number": "498282",
-        "fmcsa_source_local": "carrier-finder",
-        "fmcsa_source_cloud": "authority-mock",
-    },
-    "MockBiometric success": {
-        "provider": "MockBiometricProvider",
-        "rate_model": "PerMile",
-        "bid_amount": float(default_bid_amount("PerMile")),
-        "response_type": "Accept",
-        "verification_status": "Success",
-        "no_match": False,
-        "mc_number": "",
-    },
-    "Forced fail demo": {
-        "provider": "MockBiometricProvider",
-        "rate_model": "PerMile",
-        "bid_amount": float(default_bid_amount("PerMile")),
-        "response_type": "Accept",
-        "verification_status": "Fail",
-        "no_match": False,
-        "mc_number": "",
-    },
-}
+DEFAULT_PER_MILE_BID = float(default_bid_amount("PerMile"))
+QUICK_PRESETS = build_quick_presets(DEFAULT_PER_MILE_BID)
+SIDEBAR_DEFAULTS = default_sidebar_state(DEFAULT_PER_MILE_BID)
 
 
 def now_utc():
@@ -135,49 +102,16 @@ def render_copy_button(label, text, key):
 
 
 def ensure_sidebar_defaults():
-    defaults = {
-        "quick_preset_select": "MockBiometric success",
-        "rate_model_select": "PerMile",
-        "bid_amount_input": float(default_bid_amount("PerMile")),
-        "response_type_select": "Accept",
-        "provider_local_select": "FMCSA",
-        "provider_cloud_select": "MockBiometricProvider",
-        "fmcsa_source_select_local": "carrier-finder",
-        "fmcsa_source_select_cloud": "authority-mock",
-        "mc_number_input": "498282",
-        "verification_status_select": "Success",
-        "no_match_checkbox": False,
-    }
-    for key, value in defaults.items():
-        if key not in st.session_state:
-            st.session_state[key] = value
+    ensure_state_defaults(st.session_state, SIDEBAR_DEFAULTS)
 
 
 def apply_quick_preset(preset_name):
-    preset = QUICK_PRESETS.get(preset_name)
-    if not preset:
-        return
-    st.session_state.rate_model_select = preset["rate_model"]
-    st.session_state.bid_amount_input = float(preset["bid_amount"])
-    st.session_state.response_type_select = preset["response_type"]
-    st.session_state.verification_status_select = preset["verification_status"]
-    st.session_state.no_match_checkbox = bool(preset["no_match"])
-    st.session_state.mc_number_input = str(preset.get("mc_number", ""))
-
-    provider = preset["provider"]
-    if provider == "FMCSA":
-        st.session_state.provider_local_select = "FMCSA"
-        st.session_state.provider_cloud_select = "FMCSA (Authority)"
-        st.session_state.fmcsa_source_select_local = preset.get(
-            "fmcsa_source_local", "carrier-finder"
-        )
-        cloud_source = preset.get("fmcsa_source_cloud", "authority-mock")
-        if cloud_source == "live-fmcsa" and not LIVE_FMCSA_CONFIGURED:
-            cloud_source = "authority-mock"
-        st.session_state.fmcsa_source_select_cloud = cloud_source
-    else:
-        st.session_state.provider_local_select = "MockBiometricProvider"
-        st.session_state.provider_cloud_select = "MockBiometricProvider"
+    apply_preset_to_state(
+        st.session_state,
+        QUICK_PRESETS,
+        preset_name,
+        live_fmcsa_configured=LIVE_FMCSA_CONFIGURED,
+    )
 
 
 def reset_state():

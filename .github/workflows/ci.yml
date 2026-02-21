@@ -70,6 +70,10 @@ jobs:
         run: |
           python -m py_compile faxp_mvp_simulation.py streamlit_app.py
 
+      - name: Streamlit state regression checks
+        run: |
+          python tests/run_streamlit_state_logic.py
+
       - name: Security gate (template)
         run: |
           ./security_gate.sh security.env.template
