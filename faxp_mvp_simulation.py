@@ -2175,7 +2175,9 @@ def run_security_self_tests(iterations=50):
     base_body = BrokerAgent("Broker Agent").post_new_load(rate_model="PerMile")
 
     for _ in range(iterations):
-        message = build_envelope("Broker Agent", "Carrier Agent", "NewLoad", base_body)
+        # Ensure each test case is isolated; mutations must not leak across iterations.
+        message_body = json.loads(json.dumps(base_body))
+        message = build_envelope("Broker Agent", "Carrier Agent", "NewLoad", message_body)
         mutation = random.choice(
             [
                 "valid",
@@ -2198,7 +2200,8 @@ def run_security_self_tests(iterations=50):
             message["From"] = "Carrier Agent"
             message["To"] = "Broker Agent"
         elif mutation == "tamper_body":
-            message["Body"]["Commodity"] = "TamperedCommodity"
+            # Always change value so tamper is effective even after prior iterations.
+            message["Body"]["Commodity"] = f"TamperedCommodity-{uuid4().hex[:8]}"
             # Tamper is only detectable when the envelope is signed.
             expect_valid = "Signature" not in message
 
