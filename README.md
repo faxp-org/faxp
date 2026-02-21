@@ -8,6 +8,21 @@ This repository includes:
 - Security controls (message signing, verifier signing, replay/TTL, key rotation, incident drill).
 - CI checks for parser regressions, Streamlit state regressions, and schema compatibility.
 
+## v0.2 Planning Artifacts
+
+- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/RFC-v0.2-verification-neutrality.md`
+- Implementation checklist: `/Users/zglitch009/projects/logistics-ai/FAXP/V2_IMPLEMENTATION_CHECKLIST.md`
+- Test matrix: `/Users/zglitch009/projects/logistics-ai/FAXP/TEST_MATRIX_v0.2.md`
+- Schema files:
+  - v0.1.1: `/Users/zglitch009/projects/logistics-ai/FAXP/faxp.schema.json`
+  - v0.2 compatibility track: `/Users/zglitch009/projects/logistics-ai/FAXP/faxp.v0.2.schema.json`
+
+## Protocol Neutrality Boundary
+
+- Core FAXP handles envelope format, validation, message signing, replay/TTL controls, and conformance checks.
+- Provider integrations (FMCSA, biometric vendors, future verifiers) are adapter concerns and should remain outside protocol-core contracts.
+- `VerificationResult.provider` remains an opaque string in v0.2 compatibility schema; no vendor enum is required.
+
 ## Runbook
 
 ### 1) Local Setup (Recommended)
