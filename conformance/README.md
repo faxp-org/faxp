@@ -8,11 +8,16 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `certification_registry.sample.json`: sample registry entry.
 - `adapter_profile.schema.json`: schema for adapter self-attestation profile.
 - `adapter_profile.sample.json`: sample adapter profile with self-attestation payload.
+- `adapter_test_profile.schema.json`: schema for adapter API test-profile contracts.
+- `fmcsa_adapter_test_profile.v1.json`: FMCSA adapter certification test profile.
 - `attestation_keys.sample.json`: test-only keyring for local/CI attestation verification.
 - `generate_attestation.py`: helper to regenerate payload digest/signature for adapter profiles.
 - `conformance_bundle.py`: reusable conformance evaluator for profile + registry bundles.
 - `verifier_translator.py`: reference wrapper for translating provider-native payloads to neutral FAXP verification output.
 - `quickstart/`: onboarding templates + bundle builder script.
+
+Human-readable adapter contract:
+- `adapter/INTERFACE.md`: implementer handoff contract for request/response, security, and conformance expectations.
 
 Adapter hosting model:
 
@@ -68,6 +73,12 @@ Quickstart bundle:
 
 ```bash
 bash conformance/quickstart/make_conformance_bundle.sh
+```
+
+Adapter API test profile check:
+
+```bash
+python3 tests/run_adapter_test_profile.py
 ```
 
 Translator wrapper quick usage:

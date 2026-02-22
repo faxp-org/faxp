@@ -222,14 +222,6 @@ for raw_line in Path(env_path).read_text(encoding="utf-8").splitlines():
     key, value = stripped.split("=", 1)
     env_map[key.strip()] = value.strip()
 
-carrier_finder = "/Users/zglitch009/projects/logistics-ai/carrier-finder"
-repo_file = Path(carrier_finder) / "backend" / "app" / "repositories.py"
-repo_hash = ""
-if repo_file.exists():
-    import hashlib
-
-    repo_hash = hashlib.sha256(repo_file.read_bytes()).hexdigest()
-
 updates = {
     "FAXP_SIGNATURE_SCHEME": "ED25519",
     "FAXP_AGENT_KEY_REGISTRY_FILE": registry_path,
@@ -260,8 +252,6 @@ updates = {
     "FAXP_VERIFIER_SIGNING_ACTIVE_KEY_ID": os.environ["VERIFIER_HMAC_KID"],
     "FAXP_MESSAGE_ACTIVE_KEY_ISSUED_AT": issued_at,
     "FAXP_VERIFIER_ACTIVE_KEY_ISSUED_AT": issued_at,
-    "FAXP_ALLOWED_CARRIER_FINDER_PATHS": carrier_finder,
-    "FAXP_CARRIER_FINDER_REPOSITORIES_SHA256": repo_hash,
 }
 update_env_file(env_path, updates)
 PY

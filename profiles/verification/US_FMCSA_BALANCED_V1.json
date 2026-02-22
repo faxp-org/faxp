@@ -2,7 +2,7 @@
   "profileId": "US_FMCSA_BALANCED_V1",
   "version": "1.0.0",
   "jurisdiction": "US",
-  "verificationSources": ["hosted-adapter", "live-fmcsa", "carrier-finder", "cache"],
+  "verificationSources": ["hosted-adapter", "authority-mock", "cache"],
   "policyDefaults": {
     "degradedMode": "GraceCache",
     "maxFallbackDurationSeconds": 86400,

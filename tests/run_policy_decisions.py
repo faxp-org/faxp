@@ -21,7 +21,7 @@ def _assert(condition: bool, message: str) -> None:
 def main() -> int:
     success_result = {
         "status": "Success",
-        "source": "live-fmcsa",
+        "source": "hosted-adapter",
         "provider": "compliance.authority-record.live",
     }
     success_decision = evaluate_verification_policy_decision(
@@ -34,7 +34,7 @@ def main() -> int:
 
     hard_fail = {
         "status": "Fail",
-        "source": "live-fmcsa",
+        "source": "hosted-adapter",
         "provider": "compliance.authority-record.live",
     }
     hard_fail_decision = evaluate_verification_policy_decision(

@@ -28,7 +28,7 @@
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["live-fmcsa", "hosted-adapter", "carrier-finder", "cache"]
+        "enum": ["hosted-adapter", "authority-mock", "cache"]
       },
       "minItems": 1
     },

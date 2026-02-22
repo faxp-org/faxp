@@ -11,7 +11,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from faxp_mvp_simulation import _normalize_fmcsa_live_payload
+from adapter.fmcsa_live import normalize_fmcsa_live_payload
 
 
 FIXTURE_DIR = Path(__file__).resolve().parent / "fmcsa_fixtures"
@@ -46,7 +46,7 @@ def main() -> int:
         payload = fixture["payload"]
         expected = fixture["expected"]
 
-        actual = _normalize_fmcsa_live_payload(payload, requested_mc)
+        actual = normalize_fmcsa_live_payload(payload, requested_mc)
         _assert_expected(actual, expected, fixture_name)
         print(f"[PASS] {fixture_name}")
 

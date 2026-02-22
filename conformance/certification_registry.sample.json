@@ -3,7 +3,7 @@
   "generatedAt": "2026-02-22T00:00:00Z",
   "entries": [
     {
-      "adapterId": "freightseer-fmcsa-adapter-us-prod",
+      "adapterId": "sample-fmcsa-adapter-us-prod",
       "providerType": "Compliance",
       "hostingModel": "ImplementerHosted",
       "certificationTier": "Conformant",

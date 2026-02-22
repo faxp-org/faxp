@@ -16,7 +16,6 @@ from faxp_mvp_simulation import (
     BrokerAgent,
     CarrierAgent,
     DEFAULT_RISK_TIER,
-    DEFAULT_CARRIER_FINDER_PATH,
     FaxpProtocol,
     VERIFICATION_POLICY_PROFILE_ID,
     build_envelope,
@@ -27,7 +26,6 @@ from faxp_mvp_simulation import (
     redact_sensitive,
     get_protocol_run_id,
     reset_protocol_runtime_state,
-    resolve_allowed_carrier_finder_path,
     run_verification,
     set_protocol_run_id,
     validate_envelope,
@@ -61,7 +59,6 @@ elif _cloud_safe_setting in {"0", "false", "no", "off"}:
     CLOUD_SAFE_MODE = False
 else:
     CLOUD_SAFE_MODE = NON_LOCAL_MODE
-LIVE_FMCSA_CONFIGURED = bool(os.getenv("FAXP_FMCSA_WEBKEY", "").strip())
 HOSTED_FMCSA_CONFIGURED = bool(os.getenv("FAXP_FMCSA_ADAPTER_BASE_URL", "").strip())
 MAX_AUTH_FAILURES = int(os.getenv("FAXP_AUTH_MAX_FAILURES", "5"))
 AUTH_LOCKOUT_SECONDS = int(os.getenv("FAXP_AUTH_LOCKOUT_SECONDS", "300"))
@@ -120,7 +117,6 @@ def apply_quick_preset(preset_name):
         st.session_state,
         QUICK_PRESETS,
         preset_name,
-        live_fmcsa_configured=LIVE_FMCSA_CONFIGURED,
         hosted_fmcsa_configured=HOSTED_FMCSA_CONFIGURED,
     )
 
@@ -220,13 +216,6 @@ def allow_verification_attempt():
     return True
 
 
-def secure_carrier_finder_path():
-    try:
-        return resolve_allowed_carrier_finder_path(DEFAULT_CARRIER_FINDER_PATH)
-    except ValueError:
-        return None
-
-
 def accessorial_total(execution_report):
     return round(
         sum(
@@ -311,7 +300,6 @@ def run_flow(
     rate_model,
     bid_amount,
     mc_number,
-    carrier_finder_path,
     fmcsa_source,
     policy_profile_id,
     risk_tier,
@@ -331,7 +319,6 @@ def run_flow(
         "risk_tier": int(risk_tier),
         "exception_approved": bool(exception_approved),
         "exception_approval_ref": str(exception_approval_ref or "").strip(),
-        "live_fmcsa_configured": LIVE_FMCSA_CONFIGURED,
         "hosted_fmcsa_configured": HOSTED_FMCSA_CONFIGURED,
         "cloud_safe_mode": CLOUD_SAFE_MODE,
         "result_status": "NotStarted",
@@ -396,7 +383,6 @@ def run_flow(
             provider=provider,
             status=verification_status,
             mc_number=(mc_number.strip() or None),
-            carrier_finder_path=carrier_finder_path,
             fmcsa_source=fmcsa_source,
         )
     except Exception:
@@ -559,8 +545,6 @@ with st.sidebar:
             options = []
             if HOSTED_FMCSA_CONFIGURED:
                 options.append("hosted-adapter")
-            if LIVE_FMCSA_CONFIGURED:
-                options.append("live-fmcsa")
             options.append("authority-mock")
             if st.session_state.get("fmcsa_source_select_cloud") not in options:
                 st.session_state.fmcsa_source_select_cloud = options[0]
@@ -570,33 +554,26 @@ with st.sidebar:
                 key="fmcsa_source_select_cloud",
                 help="authority-mock uses local mock compliance scoring only.",
             )
-            if cloud_fmcsa_mode == "live-fmcsa":
-                fmcsa_source = "live-fmcsa"
-                mc_number = st.text_input("MC Number", key="mc_number_input")
-                st.caption("Live FMCSA mode enabled via FAXP_FMCSA_WEBKEY.")
-            elif cloud_fmcsa_mode == "hosted-adapter":
+            if cloud_fmcsa_mode == "hosted-adapter":
                 fmcsa_source = "hosted-adapter"
                 mc_number = st.text_input("MC Number", key="mc_number_input")
                 st.caption("Hosted FMCSA adapter mode enabled via FAXP_FMCSA_ADAPTER_BASE_URL.")
             else:
-                fmcsa_source = "carrier-finder"
+                fmcsa_source = "authority-mock"
                 mc_number = ""
                 st.caption("FMCSA authority-mock mode (no external API call).")
-            carrier_finder_path = None
         else:
-            local_fmcsa_options = ["carrier-finder", "hosted-adapter", "live-fmcsa"]
+            local_fmcsa_options = ["authority-mock", "hosted-adapter"]
+            if st.session_state.get("fmcsa_source_select_local") not in local_fmcsa_options:
+                st.session_state.fmcsa_source_select_local = local_fmcsa_options[0]
             fmcsa_source = st.selectbox(
                 "FMCSA Source",
                 local_fmcsa_options,
                 key="fmcsa_source_select_local",
-                help="carrier-finder uses local adapter; hosted-adapter calls your hosted FMCSA wrapper; live-fmcsa calls FMCSA QCMobile directly.",
+                help="authority-mock uses local mock compliance scoring only; hosted-adapter calls your hosted FMCSA wrapper.",
             )
             mc_number = st.text_input("MC Number", key="mc_number_input")
-            if fmcsa_source == "carrier-finder":
-                carrier_finder_path = secure_carrier_finder_path()
-                st.caption(f"carrier-finder path: {carrier_finder_path or '[not allowlisted]'}")
-            elif fmcsa_source == "hosted-adapter":
-                carrier_finder_path = None
+            if fmcsa_source == "hosted-adapter":
                 if HOSTED_FMCSA_CONFIGURED:
                     st.caption("Hosted FMCSA adapter mode enabled via FAXP_FMCSA_ADAPTER_BASE_URL.")
                 else:
@@ -604,15 +581,10 @@ with st.sidebar:
                         "Missing FAXP_FMCSA_ADAPTER_BASE_URL; hosted adapter calls will fail closed."
                     )
             else:
-                carrier_finder_path = None
-                if LIVE_FMCSA_CONFIGURED:
-                    st.caption("Live FMCSA mode enabled via FAXP_FMCSA_WEBKEY.")
-                else:
-                    st.caption("Missing FAXP_FMCSA_WEBKEY; live FMCSA calls will fail closed.")
+                st.caption("FMCSA authority-mock mode (no external API call).")
     else:
-        fmcsa_source = "carrier-finder"
+        fmcsa_source = "authority-mock"
         mc_number = ""
-        carrier_finder_path = None if CLOUD_SAFE_MODE else secure_carrier_finder_path()
 
     verification_status = st.selectbox(
         "Mock Verification Status", ["Success", "Fail"], key="verification_status_select"
@@ -629,13 +601,6 @@ if run_clicked:
             st.session_state.status_line = f"Unauthorized. Locked for {wait_seconds}s."
         else:
             st.session_state.status_line = "Unauthorized."
-    elif (
-        provider == "FMCSA"
-        and fmcsa_source == "carrier-finder"
-        and not CLOUD_SAFE_MODE
-        and not carrier_finder_path
-    ):
-        st.session_state.status_line = "carrier-finder path is not allowlisted."
     else:
         run_flow(
             response_type=response_type,
@@ -645,7 +610,6 @@ if run_clicked:
             rate_model=rate_model,
             bid_amount=bid_amount,
             mc_number=mc_number,
-            carrier_finder_path=carrier_finder_path,
             fmcsa_source=fmcsa_source,
             policy_profile_id=policy_profile_id,
             risk_tier=int(risk_tier),
@@ -696,7 +660,6 @@ else:
             "runId": diag.get("run_id", "n/a"),
             "provider": diag.get("provider", "n/a"),
             "fmcsaSource": diag.get("fmcsa_source", "n/a"),
-            "liveFmcsaConfigured": diag.get("live_fmcsa_configured"),
             "hostedFmcsaConfigured": diag.get("hosted_fmcsa_configured"),
             "cloudSafeMode": diag.get("cloud_safe_mode"),
             "resultStatus": diag.get("result_status", "n/a"),
@@ -714,18 +677,14 @@ else:
         },
         indent=2,
     )
-    c1, c2, c3, c4, c5 = st.columns(5)
+    c1, c2, c3, c4 = st.columns(4)
     c1.metric("Configured Provider", diag.get("provider", "n/a"))
     c2.metric("FMCSA Source", diag.get("fmcsa_source", "n/a"))
     c3.metric(
-        "FMCSA WebKey",
-        "Configured" if diag.get("live_fmcsa_configured") else "Missing",
-    )
-    c4.metric(
         "FMCSA Adapter",
         "Configured" if diag.get("hosted_fmcsa_configured") else "Missing",
     )
-    c5.metric("Last Result", diag.get("result_status", "n/a"))
+    c4.metric("Last Result", diag.get("result_status", "n/a"))
     st.caption(
         "Policy: "
         f"{diag.get('policy_profile_id', 'n/a')} | "
@@ -755,7 +714,6 @@ else:
         "runtime": {
             "appMode": APP_MODE,
             "cloudSafeMode": CLOUD_SAFE_MODE,
-            "liveFmcsaConfigured": LIVE_FMCSA_CONFIGURED,
             "hostedFmcsaConfigured": HOSTED_FMCSA_CONFIGURED,
             "maxVerificationsPerHour": MAX_VERIFICATION_CALLS_PER_HOUR,
         },
@@ -804,7 +762,6 @@ else:
             {"Check": "SIGNED_VERIFIER_REQUIRED", "Value": SIGNED_VERIFIER_REQUIRED},
             {"Check": "SIGNATURE_SCHEME", "Value": SIGNATURE_SCHEME},
             {"Check": "VERIFIER_SIGNATURE_SCHEME", "Value": VERIFIER_SIGNATURE_SCHEME},
-            {"Check": "FMCSA_WEBKEY_CONFIGURED", "Value": LIVE_FMCSA_CONFIGURED},
             {"Check": "FMCSA_ADAPTER_CONFIGURED", "Value": HOSTED_FMCSA_CONFIGURED},
             {"Check": "CLOUD_SAFE_MODE", "Value": CLOUD_SAFE_MODE},
             {"Check": "APP_MODE", "Value": APP_MODE},

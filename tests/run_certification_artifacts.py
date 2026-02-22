@@ -21,6 +21,8 @@ REGISTRY_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "certification_registry.sc
 REGISTRY_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "certification_registry.sample.json"
 ADAPTER_PROFILE_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "adapter_profile.schema.json"
 ADAPTER_PROFILE_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "adapter_profile.sample.json"
+ADAPTER_TEST_PROFILE_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "adapter_test_profile.schema.json"
+FMCSA_ADAPTER_TEST_PROFILE_PATH = PROJECT_ROOT / "conformance" / "fmcsa_adapter_test_profile.v1.json"
 ATTESTATION_KEYS_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "attestation_keys.sample.json"
 
 
@@ -66,12 +68,19 @@ def main() -> int:
     registry_sample = _load_json(REGISTRY_SAMPLE_PATH)
     adapter_profile_schema = _load_json(ADAPTER_PROFILE_SCHEMA_PATH)
     adapter_profile_sample = _load_json(ADAPTER_PROFILE_SAMPLE_PATH)
+    adapter_test_profile_schema = _load_json(ADAPTER_TEST_PROFILE_SCHEMA_PATH)
+    fmcsa_adapter_test_profile = _load_json(FMCSA_ADAPTER_TEST_PROFILE_PATH)
     attestation_keyring = _load_json(ATTESTATION_KEYS_SAMPLE_PATH)
 
     _validate(profile_schema, strict_profile, "strict profile")
     _validate(profile_schema, balanced_profile, "balanced profile")
     _validate(registry_schema, registry_sample, "certification registry sample")
     _validate(adapter_profile_schema, adapter_profile_sample, "adapter profile sample")
+    _validate(
+        adapter_test_profile_schema,
+        fmcsa_adapter_test_profile,
+        "fmcsa adapter test profile",
+    )
 
     _assert_tier_coverage(strict_profile, "strict profile")
     _assert_tier_coverage(balanced_profile, "balanced profile")
@@ -180,6 +189,18 @@ def main() -> int:
     _assert(
         first_entry.get("adapterProfileRef") == "conformance/adapter_profile.sample.json",
         "registry adapterProfileRef must reference the sample adapter profile.",
+    )
+    _assert(
+        fmcsa_adapter_test_profile["provider"] == "FMCSA",
+        "FMCSA adapter test profile provider mismatch.",
+    )
+    _assert(
+        fmcsa_adapter_test_profile["responseContract"]["signatureRequired"] is True,
+        "FMCSA adapter test profile must require signed responses.",
+    )
+    _assert(
+        "translator_neutral_fields" in fmcsa_adapter_test_profile.get("certificationChecks", []),
+        "FMCSA adapter test profile must require neutral translator checks.",
     )
 
     print("Certification artifact checks passed.")

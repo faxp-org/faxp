@@ -18,6 +18,7 @@ import time
 import traceback
 from uuid import uuid4
 
+from adapter.fmcsa_live import lookup_fmcsa_live_api, normalize_mc
 from conformance.verifier_translator import TranslationError, translate_verifier_payload
 from faxp_mvp_simulation import (
     VERIFIER_ED25519_ACTIVE_KEY_ID,
@@ -27,7 +28,6 @@ from faxp_mvp_simulation import (
     VERIFIER_SIGNING_KEYS,
     _ed25519_sign_bytes,
     canonical_json,
-    lookup_fmcsa_live_api,
     sign_payload,
 )
 
@@ -109,13 +109,6 @@ def _sleep_auth_penalty() -> None:
         time.sleep(ADAPTER_AUTH_FAILURE_DELAY_MS / 1000.0)
 
 
-def _normalize_mc(value: object) -> str:
-    digits = "".join(ch for ch in str(value or "") if ch.isdigit())
-    if not digits:
-        return ""
-    return digits.lstrip("0") or "0"
-
-
 def _normalize_live_result_to_neutral_payload(
     result: dict[str, object],
     *,
@@ -133,7 +126,7 @@ def _normalize_live_result_to_neutral_payload(
     }
     """
     safe_result = dict(result or {})
-    requested_mc_normalized = _normalize_mc(requested_mc)
+    requested_mc_normalized = normalize_mc(requested_mc)
     carrier = {
         "usdot": safe_result.get("usdot_number"),
         "mc": safe_result.get("mc_number") or requested_mc_normalized,
@@ -496,7 +489,7 @@ class AdapterHandler(BaseHTTPRequestHandler):
             self._write_json(401, {"error": "Signed request verification failed."}, request_id=request_id)
             return
 
-        mc_number = _normalize_mc(request_body.get("mcNumber"))
+        mc_number = normalize_mc(request_body.get("mcNumber"))
         if not mc_number:
             payload = {"ok": False, "error": "mcNumber is required."}
             wrapper = _build_signed_wrapper(payload)

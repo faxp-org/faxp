@@ -2,7 +2,7 @@
   "profileId": "US_FMCSA_STRICT_V1",
   "version": "1.0.0",
   "jurisdiction": "US",
-  "verificationSources": ["hosted-adapter", "live-fmcsa", "cache"],
+  "verificationSources": ["hosted-adapter", "cache"],
   "policyDefaults": {
     "degradedMode": "HardBlock",
     "maxFallbackDurationSeconds": 0,

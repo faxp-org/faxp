@@ -28,22 +28,10 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-DEFAULT_CARRIER_FINDER_PATH = "/Users/zglitch009/projects/logistics-ai/carrier-finder"
 DEBUG_MODE = os.getenv("FAXP_DEBUG", "0") == "1"
 SENSITIVE_KEYS = {"token", "stderr", "Signature"}
 APP_MODE = os.getenv("FAXP_APP_MODE", "local").strip().lower()
 NON_LOCAL_MODE = APP_MODE not in {"local", "dev", "development"}
-FMCSA_WEBKEY = os.getenv("FAXP_FMCSA_WEBKEY", "").strip()
-FMCSA_CLIENT_SECRET = os.getenv("FAXP_FMCSA_CLIENT_SECRET", "").strip()
-FMCSA_API_BASE_URL = os.getenv(
-    "FAXP_FMCSA_API_BASE_URL", "https://mobile.fmcsa.dot.gov/qc/services"
-).strip()
-FMCSA_API_TIMEOUT_SECONDS_RAW = os.getenv("FAXP_FMCSA_API_TIMEOUT_SECONDS", "12").strip()
-FMCSA_LOG_UNKNOWN_KEYS_RAW = os.getenv("FAXP_FMCSA_LOG_UNKNOWN_KEYS", "1").strip()
-FMCSA_EXPECTED_TOP_LEVEL_KEYS_RAW = os.getenv(
-    "FAXP_FMCSA_EXPECTED_TOP_LEVEL_KEYS",
-    "content,result,data,error,errors",
-).strip()
 VERIFICATION_POLICY_PROFILE_ID = os.getenv(
     "FAXP_VERIFICATION_POLICY_PROFILE_ID",
     "US_FMCSA_BALANCED_V1",
@@ -123,24 +111,11 @@ AUDIT_LOG_PATH = os.getenv(
     "FAXP_AUDIT_LOG_PATH",
     os.path.join(tempfile.gettempdir(), "faxp_audit.log"),
 )
-VERIFIER_REPOSITORIES_FILE = os.path.join(
-    DEFAULT_CARRIER_FINDER_PATH, "backend", "app", "repositories.py"
-)
-EXPECTED_REPO_HASH = os.getenv("FAXP_CARRIER_FINDER_REPOSITORIES_SHA256", "").strip().lower()
-
-
-def _build_allowed_carrier_finder_paths():
-    configured = os.getenv("FAXP_ALLOWED_CARRIER_FINDER_PATHS", "")
-    paths = set()
-    for raw in configured.split(":"):
-        candidate = raw.strip()
-        if candidate:
-            paths.add(os.path.realpath(candidate))
-    paths.add(os.path.realpath(DEFAULT_CARRIER_FINDER_PATH))
-    return paths
-
-
-ALLOWED_CARRIER_FINDER_PATHS = _build_allowed_carrier_finder_paths()
+VERIFIER_COMPONENT_FILE = os.getenv("FAXP_VERIFIER_COMPONENT_FILE", "").strip()
+EXPECTED_VERIFIER_COMPONENT_SHA256 = os.getenv(
+    "FAXP_VERIFIER_COMPONENT_SHA256",
+    "",
+).strip().lower()
 SUPPORTED_SIGNATURE_SCHEMES = {"HMAC_SHA256", "ED25519"}
 ALLOWED_EXTERNAL_SECRET_KEYS = {
     "FAXP_SIGNATURE_SCHEME",
@@ -158,12 +133,6 @@ ALLOWED_EXTERNAL_SECRET_KEYS = {
     "FAXP_VERIFIER_ED25519_ACTIVE_KEY_ID",
     "FAXP_AGENT_KEY_REGISTRY",
     "FAXP_AGENT_KEY_REGISTRY_FILE",
-    "FAXP_FMCSA_WEBKEY",
-    "FAXP_FMCSA_CLIENT_SECRET",
-    "FAXP_FMCSA_API_BASE_URL",
-    "FAXP_FMCSA_API_TIMEOUT_SECONDS",
-    "FAXP_FMCSA_LOG_UNKNOWN_KEYS",
-    "FAXP_FMCSA_EXPECTED_TOP_LEVEL_KEYS",
     "FAXP_FMCSA_ADAPTER_BASE_URL",
     "FAXP_FMCSA_ADAPTER_AUTH_TOKEN",
     "FAXP_FMCSA_ADAPTER_TIMEOUT_SECONDS",
@@ -188,7 +157,6 @@ LAST_AUDIT_HASH = ""
 REPLAY_DB_LOCK = threading.Lock()
 STATE_LOCK = threading.Lock()
 FLOW_STATE = {"load": "START", "truck": "START"}
-FMCSA_DRIFT_WARNED_SIGNATURES = set()
 CURRENT_RUN_ID = ""
 
 
@@ -313,31 +281,6 @@ AGENT_KEY_REGISTRY_RAW = _override_secret_value("FAXP_AGENT_KEY_REGISTRY", AGENT
 AGENT_KEY_REGISTRY_FILE = _override_secret_value(
     "FAXP_AGENT_KEY_REGISTRY_FILE", AGENT_KEY_REGISTRY_FILE
 )
-FMCSA_WEBKEY = _override_secret_value("FAXP_FMCSA_WEBKEY", FMCSA_WEBKEY).strip()
-FMCSA_CLIENT_SECRET = _override_secret_value(
-    "FAXP_FMCSA_CLIENT_SECRET", FMCSA_CLIENT_SECRET
-).strip()
-FMCSA_API_BASE_URL = _override_secret_value(
-    "FAXP_FMCSA_API_BASE_URL", FMCSA_API_BASE_URL
-).strip()
-try:
-    FMCSA_API_TIMEOUT_SECONDS = int(
-        _override_secret_value(
-            "FAXP_FMCSA_API_TIMEOUT_SECONDS",
-            FMCSA_API_TIMEOUT_SECONDS_RAW,
-        )
-    )
-except ValueError:
-    FMCSA_API_TIMEOUT_SECONDS = 12
-FMCSA_API_TIMEOUT_SECONDS = max(3, min(30, FMCSA_API_TIMEOUT_SECONDS))
-FMCSA_LOG_UNKNOWN_KEYS_RAW = _override_secret_value(
-    "FAXP_FMCSA_LOG_UNKNOWN_KEYS",
-    FMCSA_LOG_UNKNOWN_KEYS_RAW,
-).strip()
-FMCSA_EXPECTED_TOP_LEVEL_KEYS_RAW = _override_secret_value(
-    "FAXP_FMCSA_EXPECTED_TOP_LEVEL_KEYS",
-    FMCSA_EXPECTED_TOP_LEVEL_KEYS_RAW,
-).strip()
 FMCSA_ADAPTER_BASE_URL = _override_secret_value(
     "FAXP_FMCSA_ADAPTER_BASE_URL",
     FMCSA_ADAPTER_BASE_URL,
@@ -378,19 +321,6 @@ def _is_truthy(value):
     return str(value or "").strip().lower() in {"1", "true", "yes", "on", "y"}
 
 
-def _parse_expected_fmcsa_top_level_keys(raw_value):
-    keys = {
-        str(part).strip().lower()
-        for part in str(raw_value or "").split(",")
-        if str(part).strip()
-    }
-    return keys or {"content", "result", "data", "error", "errors"}
-
-
-FMCSA_LOG_UNKNOWN_KEYS = _is_truthy(FMCSA_LOG_UNKNOWN_KEYS_RAW)
-FMCSA_EXPECTED_TOP_LEVEL_KEYS = _parse_expected_fmcsa_top_level_keys(
-    FMCSA_EXPECTED_TOP_LEVEL_KEYS_RAW
-)
 FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER = _is_truthy(
     FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER_RAW
 )
@@ -1061,16 +991,14 @@ def _validate_location_obj(location, context):
 def _validate_verifier_dependency_integrity():
     if not NON_LOCAL_MODE:
         return
-    if not EXPECTED_REPO_HASH:
-        raise RuntimeError(
-            "Missing FAXP_CARRIER_FINDER_REPOSITORIES_SHA256 in non-local mode."
-        )
+    if not (VERIFIER_COMPONENT_FILE and EXPECTED_VERIFIER_COMPONENT_SHA256):
+        return
     try:
-        with open(VERIFIER_REPOSITORIES_FILE, "rb") as handle:
+        with open(VERIFIER_COMPONENT_FILE, "rb") as handle:
             digest = hashlib.sha256(handle.read()).hexdigest().lower()
     except FileNotFoundError as exc:
         raise RuntimeError("Verifier dependency file not found.") from exc
-    if digest != EXPECTED_REPO_HASH:
+    if digest != EXPECTED_VERIFIER_COMPONENT_SHA256:
         raise RuntimeError("Verifier dependency hash mismatch.")
 
 
@@ -1148,15 +1076,10 @@ def parse_args():
         help="MC number used for FMCSA verification (example: 498282).",
     )
     parser.add_argument(
-        "--carrier-finder-path",
-        default=DEFAULT_CARRIER_FINDER_PATH,
-        help="Path to the allowlisted carrier-finder project root.",
-    )
-    parser.add_argument(
         "--fmcsa-source",
-        choices=["carrier-finder", "live-fmcsa", "hosted-adapter"],
-        default="carrier-finder",
-        help="FMCSA verification source. 'hosted-adapter' calls a hosted FMCSA wrapper API.",
+        choices=["authority-mock", "hosted-adapter"],
+        default="authority-mock",
+        help="FMCSA verification source. 'hosted-adapter' calls a builder-hosted FMCSA wrapper API.",
     )
     parser.add_argument(
         "--rate-model",
@@ -1401,13 +1324,6 @@ def redact_sensitive(value):
     return value
 
 
-def resolve_allowed_carrier_finder_path(candidate_path):
-    resolved = os.path.realpath(candidate_path or DEFAULT_CARRIER_FINDER_PATH)
-    if resolved not in ALLOWED_CARRIER_FINDER_PATHS:
-        raise ValueError("carrier-finder path is not allowlisted.")
-    return resolved
-
-
 VALID_RATE_MODELS = {"PerMile", "Flat"}
 VALID_BID_RESPONSE_TYPES = {"Accept", "Counter", "Reject"}
 VALID_EXECUTION_STATUSES = {"Booked"}
@@ -1626,7 +1542,7 @@ def _validate_string_array(values, context):
 
 def _derive_verification_mode(verification_result):
     source = str((verification_result or {}).get("source") or "").strip().lower()
-    if source in {"live-fmcsa", "hosted-adapter"}:
+    if source in {"hosted-adapter"}:
         return "Live"
     if source in {"cache", "cached-fmcsa", "fmcsa-cache"}:
         return "Cached"
@@ -2259,379 +2175,9 @@ def _normalize_mc(value):
     return digits.lstrip("0") or "0"
 
 
-def _unknown_fmcsa_top_level_keys(payload):
+def _validate_fmcsa_normalized_payload(payload, requested_mc):
     if not isinstance(payload, dict):
-        return []
-    unknown = []
-    for key in payload.keys():
-        normalized = str(key).strip().lower()
-        if normalized and normalized not in FMCSA_EXPECTED_TOP_LEVEL_KEYS:
-            unknown.append(str(key))
-    return sorted(unknown)
-
-
-def _log_fmcsa_contract_drift(endpoint, payload):
-    if not FMCSA_LOG_UNKNOWN_KEYS:
-        return
-    unknown = _unknown_fmcsa_top_level_keys(payload)
-    if not unknown:
-        return
-
-    signature = f"{endpoint}|{','.join(unknown)}"
-    with STATE_LOCK:
-        if signature in FMCSA_DRIFT_WARNED_SIGNATURES:
-            return
-        FMCSA_DRIFT_WARNED_SIGNATURES.add(signature)
-
-    print(
-        f"[WARN] FMCSA response contract drift detected from {endpoint}. "
-        f"Unknown top-level keys: {unknown}",
-        file=sys.stderr,
-    )
-
-
-def _status_is_active(value):
-    text = str(value or "").strip().upper()
-    if not text:
-        return False
-    if "INACTIVE" in text or "NOT AUTH" in text or "OUT OF SERVICE" in text:
-        return False
-    if text in {"A", "ACT", "ACTIVE", "AUTHORIZED"}:
-        return True
-    if text.startswith("ACTIVE") or text.startswith("AUTH"):
-        return True
-    return False
-
-
-def _value_indicates_present(value):
-    if isinstance(value, bool):
-        return value
-    if isinstance(value, (int, float)):
-        return value > 0
-    text = str(value or "").strip()
-    if not text:
-        return False
-    normalized = text.upper().replace(",", "").replace("$", "")
-    if normalized in {"NO", "N", "NONE", "FALSE", "0", "0.0", "0.00", "N/A", "NA"}:
-        return False
-    if normalized in {"YES", "Y", "TRUE", "ACTIVE", "AUTHORIZED"}:
-        return True
-    numeric_match = re.search(r"[-+]?\d*\.?\d+", normalized)
-    if numeric_match:
-        try:
-            return float(numeric_match.group(0)) > 0
-        except ValueError:
-            return False
-    return True
-
-
-def _parse_bool_flag(value):
-    if isinstance(value, bool):
-        return value
-    if isinstance(value, (int, float)):
-        return value != 0
-    text = str(value or "").strip().lower()
-    if not text:
-        return None
-    if text in {"1", "true", "t", "yes", "y", "on", "active", "authorized"}:
-        return True
-    if text in {"0", "false", "f", "no", "n", "off", "inactive"}:
-        return False
-    return None
-
-
-def _extract_first_value(mapping, keys):
-    for key in keys:
-        if key in mapping:
-            value = mapping[key]
-            if value is not None and value != "":
-                return value
-    return None
-
-
-def _iter_dicts(value):
-    if isinstance(value, dict):
-        yield value
-        for child in value.values():
-            yield from _iter_dicts(child)
-        return
-    if isinstance(value, list):
-        for item in value:
-            yield from _iter_dicts(item)
-
-
-def _score_fmcsa_candidate(record, target_mc):
-    if not isinstance(record, dict):
-        return -1
-
-    mc_value = _extract_first_value(
-        record,
-        ["docketNumber", "mcNumber", "mc_number", "docket_number", "docket", "mc"],
-    )
-    mc_digits = _normalize_mc(mc_value)
-    score = 0
-    if target_mc and mc_digits == target_mc:
-        score += 100
-    elif mc_digits:
-        score += 20
-
-    if _extract_first_value(record, ["legalName", "carrierName", "name"]):
-        score += 10
-    if _extract_first_value(record, ["dotNumber", "usdotNumber", "usdot_number"]):
-        score += 10
-    if _extract_first_value(
-        record,
-        [
-            "operatingStatus",
-            "commonAuthorityStatus",
-            "contractAuthorityStatus",
-            "brokerAuthorityStatus",
-            "authorityStatus",
-            "allowedToOperate",
-            "interstateAuthority",
-            "interstateAuthorityOk",
-        ],
-    ):
-        score += 10
-    return score
-
-
-def _record_looks_like_carrier_profile(record):
-    keys = {
-        "legalName",
-        "carrierName",
-        "name",
-        "dotNumber",
-        "usdotNumber",
-        "usdot_number",
-        "operatingStatus",
-        "commonAuthorityStatus",
-        "contractAuthorityStatus",
-        "brokerAuthorityStatus",
-        "bipdInsuranceOnFile",
-        "bipdOnFile",
-        "insuranceOnFile",
-    }
-    return any(key in record for key in keys)
-
-
-def _select_fmcsa_candidate(payload, target_mc):
-    best_score = -1
-    best_record = None
-    for record in _iter_dicts(payload):
-        if not _record_looks_like_carrier_profile(record):
-            continue
-        score = _score_fmcsa_candidate(record, target_mc)
-        if score > best_score:
-            best_score = score
-            best_record = record
-    return best_record if best_score >= 20 else None
-
-
-def _normalize_fmcsa_live_payload(payload, requested_mc):
-    target_mc = _normalize_mc(requested_mc)
-    record = _select_fmcsa_candidate(payload, target_mc)
-    if not record:
-        return {
-            "found": False,
-            "status": "Fail",
-            "score": 10,
-            "usdot_number": None,
-            "mc_number": target_mc or None,
-            "carrier_name": None,
-            "operating_status": None,
-            "has_current_insurance": False,
-            "interstate_authority_ok": False,
-        }
-
-    mc_value = _extract_first_value(
-        record,
-        ["docketNumber", "mcNumber", "mc_number", "docket_number", "docket", "mc"],
-    )
-    mc_digits = _normalize_mc(mc_value) or target_mc
-    if target_mc and mc_digits != target_mc:
-        return {
-            "found": False,
-            "status": "Fail",
-            "score": 10,
-            "usdot_number": None,
-            "mc_number": target_mc,
-            "carrier_name": None,
-            "operating_status": None,
-            "has_current_insurance": False,
-            "interstate_authority_ok": False,
-        }
-
-    common_status = _extract_first_value(
-        record,
-        ["commonAuthorityStatus", "common_authority_status", "commonAuthority"],
-    )
-    contract_status = _extract_first_value(
-        record,
-        ["contractAuthorityStatus", "contract_authority_status", "contractAuthority"],
-    )
-    broker_status = _extract_first_value(
-        record,
-        ["brokerAuthorityStatus", "broker_authority_status", "brokerAuthority"],
-    )
-    operating_status_raw = _extract_first_value(
-        record,
-        ["operatingStatus", "authorityStatus", "status"],
-    )
-
-    authority_signals = [
-        common_status,
-        contract_status,
-        broker_status,
-        _extract_first_value(record, ["allowedToOperate", "interstateAuthority"]),
-        operating_status_raw,
-    ]
-    active = any(_status_is_active(signal) for signal in authority_signals if signal is not None)
-
-    status_parts = []
-    if common_status is not None:
-        status_parts.append(f"Common={common_status}")
-    if contract_status is not None:
-        status_parts.append(f"Contract={contract_status}")
-    if broker_status is not None:
-        status_parts.append(f"Broker={broker_status}")
-    if not status_parts and operating_status_raw is not None:
-        status_parts.append(str(operating_status_raw))
-    operating_status = "; ".join(status_parts) if status_parts else None
-
-    insurance_flags = []
-    for key in [
-        "bipdInsuranceOnFile",
-        "bipdOnFile",
-        "bipd_on_file",
-        "bipdInsuranceAmountOnFile",
-        "bipdAmountOnFile",
-        "insuranceOnFileAmount",
-        "cargoInsuranceOnFile",
-        "insuranceOnFile",
-        "hasCurrentInsurance",
-        "has_current_insurance",
-    ]:
-        if key in record:
-            value = record.get(key)
-            parsed = _parse_bool_flag(value)
-            if parsed is not None:
-                insurance_flags.append(parsed)
-            else:
-                insurance_flags.append(_value_indicates_present(value))
-    insurance_text = _extract_first_value(
-        record,
-        ["insuranceStatus", "bipdInsuranceStatus", "cargoInsuranceStatus"],
-    )
-    if not insurance_flags and insurance_text is not None:
-        insurance_flags.append(_status_is_active(insurance_text))
-    has_current_insurance = any(insurance_flags) if insurance_flags else False
-
-    interstate_signals = []
-    for key in [
-        "interstateAuthorityOk",
-        "interstate_authority_ok",
-        "allowedToOperate",
-        "commonAuthorityActive",
-        "commonAuthority",
-    ]:
-        if key in record:
-            parsed = _parse_bool_flag(record.get(key))
-            if parsed is not None:
-                interstate_signals.append(parsed)
-    if not interstate_signals:
-        interstate_signals.extend(
-            _status_is_active(signal) for signal in authority_signals if signal is not None
-        )
-    interstate_authority_ok = any(interstate_signals) if interstate_signals else False
-
-    score = 50
-    if active:
-        score += 20
-    if has_current_insurance:
-        score += 15
-    if interstate_authority_ok:
-        score += 15
-    status = "Success" if (active and has_current_insurance and interstate_authority_ok) else "Fail"
-
-    return {
-        "found": True,
-        "status": status,
-        "score": int(score),
-        "usdot_number": _extract_first_value(
-            record,
-            ["dotNumber", "usdotNumber", "usdot_number", "dot_number"],
-        ),
-        "mc_number": mc_digits,
-        "carrier_name": _extract_first_value(record, ["legalName", "carrierName", "name"]),
-        "operating_status": operating_status,
-        "has_current_insurance": has_current_insurance,
-        "interstate_authority_ok": interstate_authority_ok,
-    }
-
-
-def lookup_fmcsa_live_api(mc_number):
-    """Query FMCSA QCMobile API for MC compliance signals."""
-    target_mc = _normalize_mc(mc_number)
-    if not target_mc:
-        return {"ok": False, "error": "No MC number provided for live FMCSA verification."}
-    if not FMCSA_WEBKEY:
-        return {"ok": False, "error": "Missing FAXP_FMCSA_WEBKEY for live FMCSA verification."}
-
-    base_url = (FMCSA_API_BASE_URL or "").strip().rstrip("/")
-    if not base_url:
-        return {"ok": False, "error": "FAXP_FMCSA_API_BASE_URL is not configured."}
-
-    endpoints = [
-        f"{base_url}/carriers/docket-number/{urllib.parse.quote(target_mc)}",
-        f"{base_url}/carriers/{urllib.parse.quote(target_mc)}",
-    ]
-    errors = []
-    for endpoint in endpoints:
-        url = endpoint + "?webKey=" + urllib.parse.quote(FMCSA_WEBKEY)
-        request = urllib.request.Request(
-            url,
-            headers={"Accept": "application/json"},
-            method="GET",
-        )
-        try:
-            with urllib.request.urlopen(request, timeout=FMCSA_API_TIMEOUT_SECONDS) as response:
-                raw_text = response.read().decode("utf-8", errors="replace")
-        except urllib.error.HTTPError as exc:
-            body = exc.read().decode("utf-8", errors="replace")
-            errors.append(f"{endpoint} -> HTTP {exc.code}: {body[:180]}")
-            continue
-        except urllib.error.URLError as exc:
-            errors.append(f"{endpoint} -> {exc.reason}")
-            continue
-        except Exception as exc:
-            errors.append(f"{endpoint} -> {exc}")
-            continue
-
-        try:
-            payload = json.loads(raw_text)
-        except json.JSONDecodeError:
-            errors.append(f"{endpoint} -> non-JSON response.")
-            continue
-
-        _log_fmcsa_contract_drift(endpoint, payload)
-        normalized = _normalize_fmcsa_live_payload(payload, target_mc)
-        try:
-            _validate_carrier_finder_payload(normalized, requested_mc=target_mc)
-        except ValueError as exc:
-            errors.append(f"{endpoint} -> response validation error: {exc}")
-            continue
-
-        normalized["ok"] = True
-        return normalized
-
-    joined = "; ".join(errors) if errors else "Unknown FMCSA response error."
-    return {"ok": False, "error": f"live-fmcsa query failed: {joined}"}
-
-
-def _validate_carrier_finder_payload(payload, requested_mc):
-    if not isinstance(payload, dict):
-        raise ValueError("carrier-finder response must be a JSON object.")
+        raise ValueError("FMCSA payload must be a JSON object.")
 
     required = {
         "found",
@@ -2646,35 +2192,35 @@ def _validate_carrier_finder_payload(payload, requested_mc):
     }
     extras = set(payload.keys()) - required
     if extras:
-        raise ValueError(f"carrier-finder returned unexpected fields: {sorted(extras)}")
+        raise ValueError(f"FMCSA payload returned unexpected fields: {sorted(extras)}")
 
     missing = [field for field in required if field not in payload]
     if missing:
-        raise ValueError(f"carrier-finder response missing fields: {missing}")
+        raise ValueError(f"FMCSA payload missing fields: {missing}")
 
     if not isinstance(payload["found"], bool):
-        raise ValueError("carrier-finder 'found' must be boolean.")
+        raise ValueError("FMCSA payload 'found' must be boolean.")
     if payload["status"] not in {"Success", "Fail"}:
-        raise ValueError("carrier-finder 'status' must be Success or Fail.")
+        raise ValueError("FMCSA payload 'status' must be Success or Fail.")
     if not isinstance(payload["score"], (int, float)) or not (0 <= payload["score"] <= 100):
-        raise ValueError("carrier-finder 'score' must be between 0 and 100.")
+        raise ValueError("FMCSA payload 'score' must be between 0 and 100.")
     if not isinstance(payload["has_current_insurance"], bool):
-        raise ValueError("carrier-finder 'has_current_insurance' must be boolean.")
+        raise ValueError("FMCSA payload 'has_current_insurance' must be boolean.")
     if not isinstance(payload["interstate_authority_ok"], bool):
-        raise ValueError("carrier-finder 'interstate_authority_ok' must be boolean.")
+        raise ValueError("FMCSA payload 'interstate_authority_ok' must be boolean.")
 
     target_mc = _normalize_mc(requested_mc)
     returned_mc = _normalize_mc(payload.get("mc_number"))
     if target_mc and returned_mc != target_mc:
-        raise ValueError("carrier-finder returned an MC number that does not match the request.")
+        raise ValueError("FMCSA payload returned an MC number that does not match the request.")
 
     if payload["status"] == "Success" and not payload["found"]:
-        raise ValueError("carrier-finder returned Success with found=false.")
+        raise ValueError("FMCSA payload returned Success with found=false.")
 
 
 def _normalize_hosted_adapter_payload(payload, requested_mc):
     """
-    Accept both legacy carrier-finder style and neutral translator style payloads.
+    Accept both legacy compact style and neutral translator style payloads.
 
     Returns a normalized compatibility dict with fields consumed by run_verification().
     """
@@ -2685,7 +2231,7 @@ def _normalize_hosted_adapter_payload(payload, requested_mc):
         legacy_payload = dict(payload)
         legacy_payload.pop("ok", None)
         legacy_payload.pop("error", None)
-        _validate_carrier_finder_payload(legacy_payload, requested_mc=requested_mc)
+        _validate_fmcsa_normalized_payload(legacy_payload, requested_mc=requested_mc)
         return legacy_payload
 
     verification_result = payload.get("VerificationResult")
@@ -2841,173 +2387,6 @@ def _unwrap_verifier_payload_wrapper(
     return payload
 
 
-def lookup_fmcsa_with_carrier_finder(mc_number, carrier_finder_path):
-    """Query carrier-finder for MC compliance signals."""
-    if not mc_number:
-        return {"ok": False, "error": "No MC number provided."}
-
-    try:
-        allowed_path = resolve_allowed_carrier_finder_path(carrier_finder_path)
-    except ValueError as exc:
-        return {"ok": False, "error": str(exc)}
-
-    venv_python = os.path.join(allowed_path, ".venv", "bin", "python")
-    inline_code = (
-        "import base64,hashlib,hmac,json,os,subprocess,sys,tempfile\n"
-        "from backend.app.repositories import search_carriers\n"
-        "def d(v):\n"
-        "    digits = ''.join(ch for ch in str(v or '') if ch.isdigit())\n"
-        "    return (digits.lstrip('0') or '0') if digits else ''\n"
-        "def cj(v):\n"
-        "    return json.dumps(v, sort_keys=True, separators=(',', ':'))\n"
-        "mc = sys.argv[1].strip()\n"
-        "payload = search_carriers(\n"
-        "    query=mc,\n"
-        "    state=None,\n"
-        "    min_power_units=None,\n"
-        "    cargo_type=None,\n"
-        "    interstate_authority_only=False,\n"
-        "    valid_insurance_only=False,\n"
-        "    min_auto_liability_limit=None,\n"
-        "    requires_cargo_coverage=False,\n"
-        "    min_cargo_limit=None,\n"
-        "    insurance_source_mode='authoritative_only',\n"
-        "    risk_band=None,\n"
-        "    quality_band=None,\n"
-        "    safety_rating_status=None,\n"
-        "    safety_freshness=None,\n"
-        "    sort_by='power_units',\n"
-        "    sort_dir='desc',\n"
-        "    limit=50,\n"
-        "    offset=0,\n"
-        ")\n"
-        "items = payload.get('items') or []\n"
-        "target = d(mc)\n"
-        "exact = None\n"
-        "for row in items:\n"
-        "    if d(row.get('mc_number')) == target:\n"
-        "        exact = row\n"
-        "        break\n"
-        "if exact:\n"
-        "    operating = str(exact.get('operating_status') or '')\n"
-        "    active = operating.upper().startswith('ACTIVE') or operating.upper() in {'A','ACT','ACTIVE','AUTHORIZED'}\n"
-        "    has_ins = bool(exact.get('has_current_insurance'))\n"
-        "    interstate = bool(exact.get('interstate_authority_ok'))\n"
-        "    score = 50 + (20 if active else 0) + (15 if has_ins else 0) + (15 if interstate else 0)\n"
-        "    status = 'Success' if (active and has_ins and interstate) else 'Fail'\n"
-        "    out = {\n"
-        "        'found': True,\n"
-        "        'status': status,\n"
-        "        'score': int(score),\n"
-        "        'usdot_number': exact.get('usdot_number'),\n"
-        "        'mc_number': exact.get('mc_number'),\n"
-        "        'carrier_name': exact.get('legal_name'),\n"
-        "        'operating_status': operating,\n"
-        "        'has_current_insurance': has_ins,\n"
-        "        'interstate_authority_ok': interstate,\n"
-        "    }\n"
-        "else:\n"
-        "    out = {\n"
-        "        'found': False,\n"
-        "        'status': 'Fail',\n"
-        "        'score': 10,\n"
-        "        'usdot_number': None,\n"
-        "        'mc_number': mc,\n"
-        "        'carrier_name': None,\n"
-        "        'operating_status': None,\n"
-        "        'has_current_insurance': False,\n"
-        "        'interstate_authority_ok': False,\n"
-        "    }\n"
-        "scheme = (os.getenv('FAXP_VERIFIER_SIGNATURE_SCHEME', 'HMAC_SHA256') or 'HMAC_SHA256').upper()\n"
-        "kid = os.getenv('FAXP_VERIFIER_SIGNING_KEY_ID', '')\n"
-        "sig = ''\n"
-        "if scheme == 'ED25519':\n"
-        "    key_path = os.getenv('FAXP_VERIFIER_ED25519_PRIVATE_KEY_PATH', '').strip()\n"
-        "    if key_path:\n"
-        "        msg = tempfile.NamedTemporaryFile(delete=False)\n"
-        "        sigf = tempfile.NamedTemporaryFile(delete=False)\n"
-        "        try:\n"
-        "            msg.write(cj(out).encode('utf-8'))\n"
-        "            msg.flush(); msg.close(); sigf.close()\n"
-        "            proc = subprocess.run(['openssl', 'pkeyutl', '-sign', '-inkey', key_path, '-in', msg.name, '-out', sigf.name], capture_output=True, check=False)\n"
-        "            if proc.returncode == 0:\n"
-        "                with open(sigf.name, 'rb') as h:\n"
-        "                    sig = base64.b64encode(h.read()).decode('ascii')\n"
-        "        finally:\n"
-        "            for p in (msg.name, sigf.name):\n"
-        "                try:\n"
-        "                    os.remove(p)\n"
-        "                except OSError:\n"
-        "                    pass\n"
-        "elif scheme == 'HMAC_SHA256':\n"
-        "    key = os.getenv('FAXP_VERIFIER_SIGNING_KEY', '')\n"
-        "    if key:\n"
-        "        sig = hmac.new(key.encode('utf-8'), cj(out).encode('utf-8'), hashlib.sha256).hexdigest()\n"
-        "print(json.dumps({'payload': out, 'signature': sig, 'signature_key_id': kid, 'signature_algorithm': scheme}))\n"
-    )
-
-    try:
-        verifier_signing_key_id = VERIFIER_SIGNING_ACTIVE_KEY_ID
-        if VERIFIER_SIGNATURE_SCHEME == "ED25519":
-            verifier_signing_key_id = VERIFIER_ED25519_ACTIVE_KEY_ID
-        subprocess_env = {
-            "PATH": os.environ.get("PATH", ""),
-            "LANG": os.environ.get("LANG", "C"),
-            "LC_ALL": os.environ.get("LC_ALL", "C"),
-            "FAXP_VERIFIER_SIGNATURE_SCHEME": VERIFIER_SIGNATURE_SCHEME,
-            "FAXP_VERIFIER_SIGNING_KEY": VERIFIER_SIGNING_KEY.decode("utf-8"),
-            "FAXP_VERIFIER_SIGNING_KEY_ID": verifier_signing_key_id,
-            "FAXP_VERIFIER_ED25519_PRIVATE_KEY_PATH": VERIFIER_ED25519_PRIVATE_KEY_PATH,
-        }
-        completed = subprocess.run(
-            [venv_python, "-c", inline_code, str(mc_number)],
-            cwd=allowed_path,
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=20,
-            env=subprocess_env,
-        )
-    except Exception as exc:
-        return {"ok": False, "error": f"carrier-finder call failed: {exc}"}
-
-    if completed.returncode != 0:
-        error = {"ok": False, "error": "carrier-finder verification failed."}
-        if DEBUG_MODE:
-            error["debug"] = (completed.stderr or "").strip()[:500]
-        return error
-
-    lines = [line.strip() for line in (completed.stdout or "").splitlines() if line.strip()]
-    if not lines:
-        return {"ok": False, "error": "carrier-finder returned no output."}
-
-    try:
-        wrapper = json.loads(lines[-1])
-    except json.JSONDecodeError:
-        return {
-            "ok": False,
-            "error": "carrier-finder output was not valid JSON.",
-        }
-
-    try:
-        payload = _unwrap_verifier_payload_wrapper(
-            wrapper=wrapper,
-            source_name="carrier-finder",
-            require_payload_wrapper=True,
-            require_signature=REQUIRE_SIGNED_VERIFIER,
-        )
-    except ValueError as exc:
-        return {"ok": False, "error": str(exc)}
-
-    try:
-        _validate_carrier_finder_payload(payload, requested_mc=mc_number)
-    except ValueError as exc:
-        return {"ok": False, "error": f"carrier-finder validation error: {exc}"}
-
-    payload["ok"] = True
-    return payload
-
-
 def lookup_fmcsa_with_hosted_adapter(mc_number):
     """Query a hosted FMCSA adapter service for normalized compliance signals."""
     target_mc = _normalize_mc(mc_number)
@@ -3125,8 +2504,7 @@ def run_verification(
     provider,
     status,
     mc_number=None,
-    carrier_finder_path=None,
-    fmcsa_source="carrier-finder",
+    fmcsa_source="authority-mock",
 ):
     """
     Verification providers:
@@ -3220,105 +2598,7 @@ def run_verification(
             )
             return verification_result, "None"
 
-        if fmcsa_source == "live-fmcsa":
-            live = lookup_fmcsa_live_api(mc_number=mc_number)
-            if live.get("ok"):
-                live_status = live.get("status", "Fail")
-                score = int(live.get("score", 0))
-                badge = "Basic" if live_status == "Success" else "None"
-                verification_result = build_result(
-                    status_value=live_status,
-                    provider_value=NEUTRAL_VERIFICATION_PROVIDER_IDS["fmcsa_live"],
-                    category="Compliance",
-                    method="AuthorityRecordCheck",
-                    assurance_level="AAL1",
-                    score_value=score,
-                    token_value=fm_token,
-                    source_value="live-fmcsa",
-                    source_authority="FMCSA",
-                    extra={
-                        "mcNumber": _normalize_mc(mc_number),
-                        "carrier": {
-                            "usdot": live.get("usdot_number"),
-                            "mc": live.get("mc_number"),
-                            "name": live.get("carrier_name"),
-                            "operatingStatus": live.get("operating_status"),
-                            "hasCurrentInsurance": live.get("has_current_insurance"),
-                            "interstateAuthorityOk": live.get("interstate_authority_ok"),
-                        },
-                    },
-                )
-                return verification_result, badge
-
-            verification_result = build_result(
-                status_value="Fail",
-                provider_value=NEUTRAL_VERIFICATION_PROVIDER_IDS["fmcsa_live"],
-                category="Compliance",
-                method="AuthorityRecordCheck",
-                assurance_level="AAL1",
-                score_value=0,
-                token_value=fm_token,
-                source_value="live-fmcsa",
-                source_authority="FMCSA",
-                extra={
-                    "mcNumber": _normalize_mc(mc_number),
-                    "error": live.get("error", "Unknown FMCSA API error."),
-                },
-            )
-            return verification_result, "None"
-
-        if fmcsa_source == "carrier-finder" and mc_number:
-            live = lookup_fmcsa_with_carrier_finder(
-                mc_number=mc_number,
-                carrier_finder_path=carrier_finder_path
-                or DEFAULT_CARRIER_FINDER_PATH,
-            )
-            if live.get("ok"):
-                live_status = live.get("status", "Fail")
-                score = int(live.get("score", 0))
-                badge = "Basic" if live_status == "Success" else "None"
-                verification_result = build_result(
-                    status_value=live_status,
-                    provider_value=NEUTRAL_VERIFICATION_PROVIDER_IDS["fmcsa_registry"],
-                    category="Compliance",
-                    method="AuthorityRecordCheck",
-                    assurance_level="AAL1",
-                    score_value=score,
-                    token_value=fm_token,
-                    source_value="carrier-finder",
-                    source_authority="FMCSA",
-                    extra={
-                        "mcNumber": _normalize_mc(mc_number),
-                        "carrier": {
-                            "usdot": live.get("usdot_number"),
-                            "mc": live.get("mc_number"),
-                            "name": live.get("carrier_name"),
-                            "operatingStatus": live.get("operating_status"),
-                            "hasCurrentInsurance": live.get("has_current_insurance"),
-                            "interstateAuthorityOk": live.get("interstate_authority_ok"),
-                        },
-                    },
-                )
-                return verification_result, badge
-
-            verification_result = build_result(
-                status_value="Fail",
-                provider_value=NEUTRAL_VERIFICATION_PROVIDER_IDS["fmcsa_registry"],
-                category="Compliance",
-                method="AuthorityRecordCheck",
-                assurance_level="AAL1",
-                score_value=0,
-                token_value=fm_token,
-                source_value="carrier-finder",
-                source_authority="FMCSA",
-                extra={
-                    "mcNumber": _normalize_mc(mc_number),
-                    "error": live.get("error", "Unknown carrier-finder error."),
-                },
-            )
-            return verification_result, "None"
-
-        if fmcsa_source not in {"carrier-finder", "live-fmcsa", "hosted-adapter"}:
+        if fmcsa_source not in {"authority-mock", "hosted-adapter"}:
             verification_result = build_result(
                 status_value="Fail",
                 provider_value=NEUTRAL_VERIFICATION_PROVIDER_IDS["compliance_mock"],
@@ -3850,7 +3130,6 @@ def run_load_flow(args, broker, carrier):
         provider=args.provider,
         status=args.verification_status,
         mc_number=args.mc_number,
-        carrier_finder_path=args.carrier_finder_path,
         fmcsa_source=args.fmcsa_source,
     )
     print("[System] Verification result:")
@@ -3981,7 +3260,6 @@ def run_truck_flow(args, broker, carrier):
         provider="FMCSA",
         status="Success",
         mc_number=verification_mc,
-        carrier_finder_path=args.carrier_finder_path,
         fmcsa_source=args.fmcsa_source,
     )
     print("[System] Truck flow verification result:")

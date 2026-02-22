@@ -40,7 +40,6 @@ def main() -> int:
         state,
         presets,
         "FMCSA hosted adapter (MC 498282)",
-        live_fmcsa_configured=False,
         hosted_fmcsa_configured=False,
     )
     _assert(
@@ -48,40 +47,16 @@ def main() -> int:
         "hosted adapter should downgrade to authority-mock when adapter is not configured",
     )
 
-    apply_preset_to_state(
-        state,
-        presets,
-        "FMCSA live (MC 498282)",
-        live_fmcsa_configured=False,
-        hosted_fmcsa_configured=False,
-    )
     _assert(
         state["quick_preset_select"] == prior_preset_selection,
         "preset selection key should remain user-owned",
     )
     _assert(state["provider_cloud_select"] == "FMCSA (Authority)", "cloud provider label mismatch")
-    _assert(
-        state["fmcsa_source_select_cloud"] == "authority-mock",
-        "live FMCSA should downgrade to authority-mock when no webkey",
-    )
-
-    apply_preset_to_state(
-        state,
-        presets,
-        "FMCSA live (MC 498282)",
-        live_fmcsa_configured=True,
-        hosted_fmcsa_configured=False,
-    )
-    _assert(
-        state["fmcsa_source_select_cloud"] == "live-fmcsa",
-        "live FMCSA should remain selected when webkey exists",
-    )
 
     apply_preset_to_state(
         state,
         presets,
         "FMCSA hosted adapter (MC 498282)",
-        live_fmcsa_configured=False,
         hosted_fmcsa_configured=True,
     )
     _assert(
@@ -93,7 +68,6 @@ def main() -> int:
         state,
         presets,
         "Forced fail demo",
-        live_fmcsa_configured=True,
         hosted_fmcsa_configured=True,
     )
     _assert(state["provider_local_select"] == "MockBiometricProvider", "local provider mismatch")
@@ -104,7 +78,6 @@ def main() -> int:
         state,
         presets,
         "GraceCache with approved exception",
-        live_fmcsa_configured=True,
         hosted_fmcsa_configured=True,
     )
     _assert(state["exception_approved_checkbox"] is True, "exception flag mismatch")

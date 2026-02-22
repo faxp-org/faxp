@@ -5,6 +5,8 @@ FAXP is a runnable protocol demo for autonomous freight booking.
 This repository includes:
 - `faxp_mvp_simulation.py` for CLI simulation (load flow + truck flow).
 - `streamlit_app.py` for interactive demo UI.
+- `adapter/fmcsa_live.py` for FMCSA live-query parser/client code used by builder-hosted adapters.
+- `adapter/INTERFACE.md` for the stable adapter request/response and security contract.
 - `fmcsa_adapter_server.py` as the reference hosted FMCSA adapter implementation.
 - Security controls (message signing, verifier signing, replay/TTL, key rotation, incident drill).
 - CI checks for parser regressions, Streamlit state regressions, and schema compatibility.
@@ -22,6 +24,7 @@ This repository includes:
   - v0.1.1: `/Users/zglitch009/projects/logistics-ai/FAXP/faxp.schema.json`
   - v0.2 compatibility track: `/Users/zglitch009/projects/logistics-ai/FAXP/faxp.v0.2.schema.json`
 - Governance model: `/Users/zglitch009/projects/logistics-ai/FAXP/FAXP_GOVERNANCE_MODEL.md`
+- Builder handoff checklist: `/Users/zglitch009/projects/logistics-ai/FAXP/ADAPTER_IMPLEMENTER_HANDOFF.md`
 - Verification profiles:
   - schema: `/Users/zglitch009/projects/logistics-ai/FAXP/profiles/verification/profile.schema.json`
   - strict: `/Users/zglitch009/projects/logistics-ai/FAXP/profiles/verification/US_FMCSA_STRICT_V1.json`
@@ -32,6 +35,8 @@ This repository includes:
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/certification_registry.sample.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/adapter_profile.schema.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/adapter_profile.sample.json`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/adapter_test_profile.schema.json`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/fmcsa_adapter_test_profile.v1.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/attestation_keys.sample.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/generate_attestation.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/conformance_bundle.py`
@@ -97,12 +102,12 @@ Default secure simulation:
 ./run_secure_demo.sh sim
 ```
 
-Live FMCSA simulation path:
+Hosted FMCSA adapter simulation path:
 
 ```bash
 python3 faxp_mvp_simulation.py \
   --provider FMCSA \
-  --fmcsa-source live-fmcsa \
+  --fmcsa-source hosted-adapter \
   --mc-number 498282 \
   --policy-profile-id US_FMCSA_BALANCED_V1 \
   --risk-tier 1 \
@@ -113,7 +118,7 @@ python3 faxp_mvp_simulation.py \
 Expected success line:
 - `Booking completed successfully ...`
 
-If verification fails in live FMCSA mode, that is expected when authority/insurance checks fail for the MC.
+If verification fails in hosted-adapter mode, that is expected when authority/insurance checks fail for the MC or the adapter fails closed.
 
 Degraded verification policy demo (provisional/hold path):
 
@@ -182,14 +187,6 @@ FAXP_AUTH_MAX_FAILURES="5"
 FAXP_AUTH_LOCKOUT_SECONDS="300"
 ```
 
-Optional live FMCSA (authority API) secrets:
-```toml
-FAXP_FMCSA_WEBKEY="your_fmcsa_webkey"
-FAXP_FMCSA_CLIENT_SECRET="your_fmcsa_client_secret"
-FAXP_FMCSA_API_BASE_URL="https://mobile.fmcsa.dot.gov/qc/services"
-FAXP_FMCSA_API_TIMEOUT_SECONDS="12"
-```
-
 Recommended hosted FMCSA adapter secrets:
 ```toml
 FAXP_FMCSA_ADAPTER_BASE_URL="https://your-hosted-verifier.example/v1/fmcsa/verify"
@@ -202,8 +199,8 @@ FAXP_FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID="adapter-req-2026-02"
 ```
 
 Notes:
-- Cloud FMCSA source selection order is: `hosted-adapter` (if configured), `live-fmcsa` (if configured), otherwise `authority-mock`.
-- Without hosted adapter or live FMCSA credentials, cloud FMCSA mode automatically falls back to `authority-mock`.
+- Cloud FMCSA source selection order is: `hosted-adapter` (if configured), otherwise `authority-mock`.
+- Without hosted adapter credentials, cloud FMCSA mode automatically falls back to `authority-mock`.
 - Access key is enforced when `FAXP_APP_MODE` is non-local.
 
 ### 4.1) Hosted FMCSA Adapter Deployment (Vultr)

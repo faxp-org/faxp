@@ -70,7 +70,7 @@ jobs:
 
       - name: Python compile checks
         run: |
-          python -m py_compile faxp_mvp_simulation.py fmcsa_adapter_server.py streamlit_app.py streamlit_state_logic.py conformance/generate_attestation.py conformance/conformance_bundle.py conformance/verifier_translator.py tests/run_streamlit_state_logic.py tests/run_schema_compatibility.py tests/run_fmcsa_hosted_adapter.py tests/run_certification_artifacts.py tests/run_policy_decisions.py tests/run_generate_attestation.py tests/run_conformance_bundle.py tests/run_verifier_translator.py tests/run_adapter_server_translation.py
+          python -m py_compile faxp_mvp_simulation.py fmcsa_adapter_server.py streamlit_app.py streamlit_state_logic.py adapter/fmcsa_live.py conformance/generate_attestation.py conformance/conformance_bundle.py conformance/verifier_translator.py tests/run_streamlit_state_logic.py tests/run_schema_compatibility.py tests/run_fmcsa_hosted_adapter.py tests/run_certification_artifacts.py tests/run_policy_decisions.py tests/run_generate_attestation.py tests/run_conformance_bundle.py tests/run_verifier_translator.py tests/run_adapter_server_translation.py tests/run_adapter_test_profile.py
 
       - name: Streamlit state regression checks
         run: |
@@ -108,6 +108,10 @@ jobs:
       - name: Adapter server translator wiring checks
         run: |
           python tests/run_adapter_server_translation.py
+
+      - name: Adapter test profile checks
+        run: |
+          python tests/run_adapter_test_profile.py
 
       - name: Quickstart bundle smoke check
         run: |
@@ -173,14 +177,14 @@ jobs:
       - name: FMCSA contract drift detector check
         run: |
           python - <<'PY'
-          from faxp_mvp_simulation import _unknown_fmcsa_top_level_keys
+          from adapter.fmcsa_live import unknown_fmcsa_top_level_keys
 
           payload = {
               "content": {"carrier": {}},
               "meta": {"version": "next"},
               "timestamp": "2026-02-21T00:00:00Z",
           }
-          unknown = _unknown_fmcsa_top_level_keys(payload)
+          unknown = unknown_fmcsa_top_level_keys(payload)
           assert unknown == ["meta", "timestamp"], unknown
           print("FMCSA contract drift detector check passed.")
           PY

@@ -53,7 +53,7 @@ def _legacy_execution_report_v011() -> dict:
                 "provider": "FMCSA",
                 "score": 88,
                 "token": "legacy-token-opaque",
-                "source": "carrier-finder",
+                "source": "authority-mock",
                 "sourceAuthority": "FMCSA",
                 "mcNumber": "498282",
                 "carrier": {"mc": "498282", "operatingStatus": "A"},

@@ -45,7 +45,7 @@ Assert in output:
 Command:
 - `./run_secure_demo.sh sim --use-kms-command --provider FMCSA --verification-status Success --mc-number 498282`
 Assert in output:
-- `VerificationResult.provider = compliance.authority-record.mock` (mock path) or `compliance.authority-record.registry` (carrier-finder path)
+- `VerificationResult.provider = compliance.authority-record.mock` (authority-mock path) or `compliance.authority-record.adapter` (hosted-adapter path)
 - `VerificationResult.category = Compliance`
 - `VerificationResult.method = AuthorityRecordCheck`
 - `VerificationResult.assuranceLevel = AAL1`
@@ -120,8 +120,8 @@ Expected:
 5. FMCSA contract drift detector guard
 Command:
 - `python3 - <<'PY'`
-- `from faxp_mvp_simulation import _unknown_fmcsa_top_level_keys`
-- `print(_unknown_fmcsa_top_level_keys({"content": {}, "meta": {}, "timestamp": "x"}))`
+- `from adapter.fmcsa_live import unknown_fmcsa_top_level_keys`
+- `print(unknown_fmcsa_top_level_keys({"content": {}, "meta": {}, "timestamp": "x"}))`
 - `PY`
 Expected:
 - Returns `["meta", "timestamp"]` with default config.
@@ -152,19 +152,19 @@ Expected:
 Settings:
 - Provider `FMCSA (Authority)`
 Expected:
-- No local carrier-finder path dependency.
+- No local verifier path dependency.
 - No crash.
 
-4. Cloud live FMCSA behavior (when webkey is configured)
+4. Cloud hosted-adapter behavior (when adapter is configured)
 Secrets:
-- `FAXP_FMCSA_WEBKEY=<valid_webkey>`
+- `FAXP_FMCSA_ADAPTER_BASE_URL=<https_endpoint>`
 Settings:
 - Provider `FMCSA (Authority)`
-- FMCSA Source `live-fmcsa`
+- FMCSA Source `hosted-adapter`
 - MC `498282`
 Expected:
-- Verification source is `live-fmcsa`.
-- Verification either succeeds with `VerifiedBadge=Basic` or fails closed with a clear FMCSA/API error.
+- Verification source is `hosted-adapter`.
+- Verification either succeeds with `VerifiedBadge=Basic` or fails closed with a clear adapter/FMCSA error.
 
 ## 7. CI Coverage Mapping
 
@@ -178,6 +178,7 @@ Current CI workflow (`.github/workflows/ci.yml`) covers:
 - security self-test,
 - FMCSA parser regression check,
 - FMCSA contract drift detector check,
+- FMCSA adapter test profile contract check,
 - incident drill (CI mode),
 - per-workflow RunID log artifacts (`faxp-ci-logs-<runid>`).
 

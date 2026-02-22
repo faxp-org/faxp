@@ -23,21 +23,6 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
             "fmcsa_source_local": "hosted-adapter",
             "fmcsa_source_cloud": "hosted-adapter",
         },
-        "FMCSA live (MC 498282)": {
-            "provider": "FMCSA",
-            "policy_profile_id": "US_FMCSA_BALANCED_V1",
-            "risk_tier": 1,
-            "exception_approved": False,
-            "exception_approval_ref": "",
-            "rate_model": "PerMile",
-            "bid_amount": float(default_per_mile_bid),
-            "response_type": "Accept",
-            "verification_status": "Success",
-            "no_match": False,
-            "mc_number": "498282",
-            "fmcsa_source_local": "live-fmcsa",
-            "fmcsa_source_cloud": "live-fmcsa",
-        },
         "FMCSA authority-mock": {
             "provider": "FMCSA",
             "policy_profile_id": "US_FMCSA_BALANCED_V1",
@@ -50,7 +35,7 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
             "verification_status": "Success",
             "no_match": False,
             "mc_number": "498282",
-            "fmcsa_source_local": "carrier-finder",
+            "fmcsa_source_local": "authority-mock",
             "fmcsa_source_cloud": "authority-mock",
         },
         "MockBiometric success": {
@@ -109,7 +94,7 @@ def default_sidebar_state(default_per_mile_bid: float) -> dict[str, Any]:
         "response_type_select": "Accept",
         "provider_local_select": "FMCSA",
         "provider_cloud_select": "MockBiometricProvider",
-        "fmcsa_source_select_local": "carrier-finder",
+        "fmcsa_source_select_local": "authority-mock",
         "fmcsa_source_select_cloud": "authority-mock",
         "mc_number_input": "498282",
         "verification_status_select": "Success",
@@ -130,7 +115,6 @@ def apply_preset_to_state(
     presets: Mapping[str, Mapping[str, Any]],
     preset_name: str,
     *,
-    live_fmcsa_configured: bool,
     hosted_fmcsa_configured: bool = False,
 ) -> None:
     preset = presets.get(preset_name)
@@ -159,13 +143,11 @@ def apply_preset_to_state(
         state["provider_local_select"] = "FMCSA"
         state["provider_cloud_select"] = "FMCSA (Authority)"
         state["fmcsa_source_select_local"] = preset.get(
-            "fmcsa_source_local", "carrier-finder"
+            "fmcsa_source_local", "authority-mock"
         )
         cloud_source = preset.get("fmcsa_source_cloud", "authority-mock")
         if cloud_source == "hosted-adapter" and not hosted_fmcsa_configured:
             cloud_source = "authority-mock"
-        if cloud_source == "live-fmcsa" and not live_fmcsa_configured:
-            cloud_source = "hosted-adapter" if hosted_fmcsa_configured else "authority-mock"
         state["fmcsa_source_select_cloud"] = cloud_source
     else:
         state["provider_local_select"] = "MockBiometricProvider"
