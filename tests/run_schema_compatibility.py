@@ -75,6 +75,13 @@ def _neutral_execution_report_v020(provider: str = "provider-opaque-id") -> dict
             "ContractID": "FAXP-20260221-neutral",
             "Status": "Booked",
             "Timestamp": "2026-02-21T18:01:00Z",
+            "VerificationMode": "Live",
+            "VerificationPolicyProfileID": "US_FMCSA_BALANCED_V1",
+            "DispatchAuthorization": "Allowed",
+            "DecisionReasonCode": "VerificationSuccess",
+            "PolicyRuleID": "policy.live.success.v1",
+            "ReverifyBy": "2026-02-22T18:01:00Z",
+            "EvidenceRefs": ["sha256:ab12cd34ef56"],
             "VerifiedBadge": "Premium",
             "VerificationResult": {
                 "status": "Success",

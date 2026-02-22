@@ -44,6 +44,10 @@ FMCSA_EXPECTED_TOP_LEVEL_KEYS_RAW = os.getenv(
     "FAXP_FMCSA_EXPECTED_TOP_LEVEL_KEYS",
     "content,result,data,error,errors",
 ).strip()
+VERIFICATION_POLICY_PROFILE_ID = os.getenv(
+    "FAXP_VERIFICATION_POLICY_PROFILE_ID",
+    "US_FMCSA_BALANCED_V1",
+).strip()
 FMCSA_ADAPTER_BASE_URL = os.getenv("FAXP_FMCSA_ADAPTER_BASE_URL", "").strip()
 FMCSA_ADAPTER_AUTH_TOKEN = os.getenv("FAXP_FMCSA_ADAPTER_AUTH_TOKEN", "").strip()
 FMCSA_ADAPTER_TIMEOUT_SECONDS_RAW = os.getenv("FAXP_FMCSA_ADAPTER_TIMEOUT_SECONDS", "10").strip()
@@ -1382,6 +1386,8 @@ VALID_BID_RESPONSE_TYPES = {"Accept", "Counter", "Reject"}
 VALID_EXECUTION_STATUSES = {"Booked"}
 VALID_VERIFIED_BADGES = {"None", "Basic", "Premium"}
 VALID_VERIFICATION_STATUSES = {"Success", "Fail", "Pending"}
+VALID_VERIFICATION_MODES = {"Live", "Cached", "Fallback"}
+VALID_DISPATCH_AUTHORIZATIONS = {"Allowed", "Hold", "Blocked"}
 FORBIDDEN_BIOMETRIC_FIELDS = {
     "faceimage",
     "selfieimage",
@@ -1578,6 +1584,34 @@ def _validate_verification_result(result, context):
                 VERIFIER_ED25519_PUBLIC_KEYS,
             ):
                 raise ValueError(f"{context}.attestation signature verification failed.")
+
+
+def _validate_string_array(values, context):
+    if not isinstance(values, list):
+        raise ValueError(f"{context} must be an array.")
+    if not values:
+        raise ValueError(f"{context} must include at least one value.")
+    if len(values) > 20:
+        raise ValueError(f"{context} exceeds max list length (20).")
+    for idx, item in enumerate(values):
+        _bounded_string(item, f"{context}[{idx}]")
+
+
+def _derive_verification_mode(verification_result):
+    source = str((verification_result or {}).get("source") or "").strip().lower()
+    if source in {"live-fmcsa", "hosted-adapter"}:
+        return "Live"
+    if source in {"cache", "cached-fmcsa", "fmcsa-cache"}:
+        return "Cached"
+    return "Fallback"
+
+
+def _derive_policy_rule_id(verification_mode, status_value):
+    normalized_mode = str(verification_mode or "").strip().lower()
+    normalized_status = str(status_value or "").strip().lower()
+    if normalized_status == "success":
+        return f"policy.{normalized_mode or 'unknown'}.success.v1"
+    return f"policy.{normalized_mode or 'unknown'}.degraded.v1"
 
 
 def default_verification_capabilities():
@@ -1818,6 +1852,41 @@ def validate_message_body(message_type, body):
             _bounded_string(body["LoadID"], "ExecutionReport.LoadID")
         if has_truck_id:
             _bounded_string(body["TruckID"], "ExecutionReport.TruckID")
+
+        policy_fields = [
+            "VerificationMode",
+            "VerificationPolicyProfileID",
+            "DispatchAuthorization",
+            "DecisionReasonCode",
+            "PolicyRuleID",
+        ]
+        if any(field in body for field in policy_fields):
+            _require_fields(body, policy_fields, "ExecutionReport")
+            if body["VerificationMode"] not in VALID_VERIFICATION_MODES:
+                raise ValueError(
+                    f"ExecutionReport.VerificationMode must be one of {sorted(VALID_VERIFICATION_MODES)}."
+                )
+            if body["DispatchAuthorization"] not in VALID_DISPATCH_AUTHORIZATIONS:
+                raise ValueError(
+                    "ExecutionReport.DispatchAuthorization must be one of "
+                    f"{sorted(VALID_DISPATCH_AUTHORIZATIONS)}."
+                )
+            _bounded_string(
+                body["VerificationPolicyProfileID"],
+                "ExecutionReport.VerificationPolicyProfileID",
+            )
+            _bounded_string(body["DecisionReasonCode"], "ExecutionReport.DecisionReasonCode")
+            _bounded_string(body["PolicyRuleID"], "ExecutionReport.PolicyRuleID")
+
+            if "ReverifyBy" in body:
+                _validate_iso_datetime(body["ReverifyBy"], "ExecutionReport.ReverifyBy")
+            if "EvidenceRefs" in body:
+                _validate_string_array(body["EvidenceRefs"], "ExecutionReport.EvidenceRefs")
+            if "ExceptionApprovalRef" in body:
+                _bounded_string(
+                    body["ExceptionApprovalRef"],
+                    "ExecutionReport.ExceptionApprovalRef",
+                )
         return
 
     if message_type == "AmendRequest":
@@ -3120,6 +3189,14 @@ class BrokerAgent:
         self, load_id, bid_request, verified_badge, verification_result
     ):
         load = self.loads[load_id]
+        verification_mode = _derive_verification_mode(verification_result)
+        policy_rule_id = _derive_policy_rule_id(
+            verification_mode,
+            verification_result.get("status"),
+        )
+        evidence_refs = []
+        if verification_result.get("evidenceRef"):
+            evidence_refs.append(verification_result["evidenceRef"])
         report = {
             "LoadID": load_id,
             "ContractID": f"FAXP-{datetime.now(timezone.utc).strftime('%Y%m%d')}-{uuid4().hex[:8]}",
@@ -3130,6 +3207,15 @@ class BrokerAgent:
             "Accessorials": [],
             "VerifiedBadge": verified_badge,
             "VerificationResult": verification_result,
+            "VerificationMode": verification_mode,
+            "VerificationPolicyProfileID": VERIFICATION_POLICY_PROFILE_ID,
+            "DispatchAuthorization": "Allowed",
+            "DecisionReasonCode": "VerificationSuccess",
+            "PolicyRuleID": policy_rule_id,
+            "ReverifyBy": (
+                datetime.now(timezone.utc) + timedelta(hours=24)
+            ).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+            "EvidenceRefs": evidence_refs,
         }
         self.completed_bookings[load_id] = report
         return report
@@ -3160,6 +3246,14 @@ class BrokerAgent:
     def create_truck_execution_report(
         self, truck_id, bid_request, verified_badge, verification_result
     ):
+        verification_mode = _derive_verification_mode(verification_result)
+        policy_rule_id = _derive_policy_rule_id(
+            verification_mode,
+            verification_result.get("status"),
+        )
+        evidence_refs = []
+        if verification_result.get("evidenceRef"):
+            evidence_refs.append(verification_result["evidenceRef"])
         report = {
             "TruckID": truck_id,
             "ContractID": f"FAXP-{datetime.now(timezone.utc).strftime('%Y%m%d')}-{uuid4().hex[:8]}",
@@ -3168,6 +3262,15 @@ class BrokerAgent:
             "AgreedRate": bid_request["Rate"],
             "VerifiedBadge": verified_badge,
             "VerificationResult": verification_result,
+            "VerificationMode": verification_mode,
+            "VerificationPolicyProfileID": VERIFICATION_POLICY_PROFILE_ID,
+            "DispatchAuthorization": "Allowed",
+            "DecisionReasonCode": "VerificationSuccess",
+            "PolicyRuleID": policy_rule_id,
+            "ReverifyBy": (
+                datetime.now(timezone.utc) + timedelta(hours=24)
+            ).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+            "EvidenceRefs": evidence_refs,
         }
         self.completed_bookings[truck_id] = report
         return report

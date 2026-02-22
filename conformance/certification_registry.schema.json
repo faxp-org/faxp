@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faxp.org/schema/certification-registry-v1.json",
+  "title": "FAXP Certification Registry",
+  "type": "object",
+  "required": ["registryVersion", "generatedAt", "entries"],
+  "properties": {
+    "registryVersion": {
+      "type": "string"
+    },
+    "generatedAt": {
+      "type": "string"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "adapterId",
+          "providerType",
+          "hostingModel",
+          "certificationTier",
+          "status",
+          "profilesSupported",
+          "securityAttestation",
+          "conformanceReportRef",
+          "lastCertifiedAt",
+          "expiresAt"
+        ],
+        "properties": {
+          "adapterId": {
+            "type": "string"
+          },
+          "providerType": {
+            "type": "string",
+            "enum": ["Compliance", "Identity", "Hybrid"]
+          },
+          "hostingModel": {
+            "type": "string",
+            "enum": ["ImplementerHosted", "ReferenceOnly"]
+          },
+          "certificationTier": {
+            "type": "string",
+            "enum": ["SelfAttested", "Conformant", "TrustedProduction"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["Active", "Suspended", "Revoked"]
+          },
+          "profilesSupported": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "securityAttestation": {
+            "type": "object",
+            "required": ["signedRequests", "signedResponses", "replayProtection"],
+            "properties": {
+              "signedRequests": {
+                "type": "boolean"
+              },
+              "signedResponses": {
+                "type": "boolean"
+              },
+              "replayProtection": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          },
+          "conformanceReportRef": {
+            "type": "string"
+          },
+          "lastCertifiedAt": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

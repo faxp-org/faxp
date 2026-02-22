@@ -288,7 +288,25 @@
           "type": "string",
           "enum": ["None", "Basic", "Premium"]
         },
-        "VerificationResult": { "$ref": "#/$defs/VerificationResult" }
+        "VerificationResult": { "$ref": "#/$defs/VerificationResult" },
+        "VerificationMode": {
+          "type": "string",
+          "enum": ["Live", "Cached", "Fallback"]
+        },
+        "VerificationPolicyProfileID": { "type": "string" },
+        "DispatchAuthorization": {
+          "type": "string",
+          "enum": ["Allowed", "Hold", "Blocked"]
+        },
+        "DecisionReasonCode": { "type": "string" },
+        "PolicyRuleID": { "type": "string" },
+        "ReverifyBy": { "type": "string" },
+        "EvidenceRefs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "ExceptionApprovalRef": { "type": "string" }
       },
       "additionalProperties": true
     },

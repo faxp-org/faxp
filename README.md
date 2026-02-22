@@ -5,7 +5,7 @@ FAXP is a runnable protocol demo for autonomous freight booking.
 This repository includes:
 - `faxp_mvp_simulation.py` for CLI simulation (load flow + truck flow).
 - `streamlit_app.py` for interactive demo UI.
-- `fmcsa_adapter_server.py` for hosted FMCSA adapter service.
+- `fmcsa_adapter_server.py` as the reference hosted FMCSA adapter implementation.
 - Security controls (message signing, verifier signing, replay/TTL, key rotation, incident drill).
 - CI checks for parser regressions, Streamlit state regressions, and schema compatibility.
 
@@ -21,12 +21,22 @@ This repository includes:
 - Schema files:
   - v0.1.1: `/Users/zglitch009/projects/logistics-ai/FAXP/faxp.schema.json`
   - v0.2 compatibility track: `/Users/zglitch009/projects/logistics-ai/FAXP/faxp.v0.2.schema.json`
+- Governance model: `/Users/zglitch009/projects/logistics-ai/FAXP/FAXP_GOVERNANCE_MODEL.md`
+- Verification profiles:
+  - schema: `/Users/zglitch009/projects/logistics-ai/FAXP/profiles/verification/profile.schema.json`
+  - strict: `/Users/zglitch009/projects/logistics-ai/FAXP/profiles/verification/US_FMCSA_STRICT_V1.json`
+  - balanced: `/Users/zglitch009/projects/logistics-ai/FAXP/profiles/verification/US_FMCSA_BALANCED_V1.json`
+- Conformance and registry artifacts:
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/README.md`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/certification_registry.schema.json`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/certification_registry.sample.json`
 
 ## Protocol Neutrality Boundary
 
 - Core FAXP handles envelope format, validation, message signing, replay/TTL controls, and conformance checks.
 - Provider integrations (FMCSA, biometric vendors, future verifiers) are adapter concerns and should remain outside protocol-core contracts.
 - `VerificationResult.provider` remains an opaque string in v0.2 compatibility schema; no vendor enum is required.
+- Production adapters are expected to be implementer-hosted; FAXP provides reference implementation + certification contracts.
 
 ## Legacy Field Deprecation Timeline
 
@@ -215,6 +225,12 @@ Schema compatibility checks (`v0.1.1` and `v0.2`):
 
 ```bash
 python3 tests/run_schema_compatibility.py
+```
+
+Certification/profile artifact checks:
+
+```bash
+python3 tests/run_certification_artifacts.py
 ```
 
 ### 7) Troubleshooting

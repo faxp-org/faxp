@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faxp.org/schema/verification-profile-v1.json",
+  "title": "FAXP Verification Policy Profile",
+  "type": "object",
+  "required": [
+    "profileId",
+    "version",
+    "jurisdiction",
+    "verificationSources",
+    "policyDefaults",
+    "riskTiers",
+    "dispatchRules",
+    "signingRequirements"
+  ],
+  "properties": {
+    "profileId": {
+      "type": "string",
+      "pattern": "^[A-Z0-9_]+_V[0-9]+$"
+    },
+    "version": {
+      "type": "string"
+    },
+    "jurisdiction": {
+      "type": "string"
+    },
+    "verificationSources": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["live-fmcsa", "hosted-adapter", "carrier-finder", "cache"]
+      },
+      "minItems": 1
+    },
+    "policyDefaults": {
+      "type": "object",
+      "required": [
+        "degradedMode",
+        "maxFallbackDurationSeconds",
+        "requireManualEscalationForTier"
+      ],
+      "properties": {
+        "degradedMode": {
+          "type": "string",
+          "enum": ["HardBlock", "SoftHold", "GraceCache"]
+        },
+        "maxFallbackDurationSeconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "requireManualEscalationForTier": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        }
+      },
+      "additionalProperties": false
+    },
+    "riskTiers": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "type": "object",
+        "required": [
+          "tier",
+          "tierLabel",
+          "decisionOnOutage",
+          "dispatchAuthorization",
+          "maxCacheAgeSeconds"
+        ],
+        "properties": {
+          "tier": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "tierLabel": {
+            "type": "string"
+          },
+          "decisionOnOutage": {
+            "type": "string",
+            "enum": ["AllowProvisional", "HoldDispatch", "Block"]
+          },
+          "dispatchAuthorization": {
+            "type": "string",
+            "enum": ["Allowed", "Hold", "Blocked"]
+          },
+          "maxCacheAgeSeconds": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "requiresHumanApproval": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "dispatchRules": {
+      "type": "object",
+      "required": [
+        "reverifyBeforeDispatch",
+        "reverifyWindowSeconds",
+        "allowHazmatWhenDegraded"
+      ],
+      "properties": {
+        "reverifyBeforeDispatch": {
+          "type": "boolean"
+        },
+        "reverifyWindowSeconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "allowHazmatWhenDegraded": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "signingRequirements": {
+      "type": "object",
+      "required": [
+        "requireSignedRequests",
+        "requireSignedResponses",
+        "allowedAlgorithms",
+        "maxClockSkewSeconds"
+      ],
+      "properties": {
+        "requireSignedRequests": {
+          "type": "boolean"
+        },
+        "requireSignedResponses": {
+          "type": "boolean"
+        },
+        "allowedAlgorithms": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["HMAC_SHA256", "ED25519"]
+          },
+          "minItems": 1
+        },
+        "maxClockSkewSeconds": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
