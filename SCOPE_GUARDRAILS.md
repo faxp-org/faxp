@@ -1,0 +1,51 @@
+# FAXP Scope Guardrails
+
+## Purpose
+FAXP remains a booking-plane protocol for agent-to-agent freight matching and booking confirmation.  
+These guardrails prevent scope creep into dispatch operations, tracking operations, and settlement operations.
+
+## In Scope (v0.1.x -> v0.2)
+- Agent messaging envelopes, signatures, replay/TTL checks, validation.
+- Booking workflows:
+  - `NewLoad`, `LoadSearch`
+  - `NewTruck`, `TruckSearch`
+  - `BidRequest`, `BidResponse`
+  - `ExecutionReport`, `AmendRequest`
+- Verification attestations and policy decisions that influence booking outcome.
+- Conformance/certification artifacts, schemas, and test harnesses.
+
+## Out of Scope (Protocol Core)
+- Dispatch execution workflows:
+  - driver assignment
+  - route optimization
+  - stop-level dispatch updates
+- Operational tracking workflows:
+  - telematics ingestion
+  - proof-of-delivery (POD) lifecycle
+  - bill-of-lading (BOL) custody workflows
+- Financial settlement workflows:
+  - invoicing
+  - remittance
+  - payment rails
+  - factoring
+
+## Clarification
+- `DispatchAuthorization` in `ExecutionReport` is currently treated as a booking-time policy gate only.
+- It must not expand into dispatch orchestration message types or downstream dispatch lifecycle state in protocol core.
+
+## Change Control
+- Any proposed expansion into an out-of-scope domain requires an RFC using `/RFC_TEMPLATE.md`.
+- RFCs that cross scope boundaries must be marked as `Scope Expansion` and approved before implementation.
+- Scope-expanding changes must include:
+  - security and compliance impact
+  - interoperability impact
+  - migration/backward-compatibility plan
+  - rationale for why this cannot remain adapter-side or system-side
+
+## CI Enforcement
+- CI runs `python tests/run_scope_guardrails.py`.
+- The linter scans protocol-core artifacts and fails on forbidden out-of-scope terms.
+- Current protocol-core lint targets:
+  - `/faxp_mvp_simulation.py`
+  - `/faxp.schema.json`
+  - `/faxp.v0.2.schema.json`
