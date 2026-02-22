@@ -2672,6 +2672,122 @@ def _validate_carrier_finder_payload(payload, requested_mc):
         raise ValueError("carrier-finder returned Success with found=false.")
 
 
+def _normalize_hosted_adapter_payload(payload, requested_mc):
+    """
+    Accept both legacy carrier-finder style and neutral translator style payloads.
+
+    Returns a normalized compatibility dict with fields consumed by run_verification().
+    """
+    if not isinstance(payload, dict):
+        raise ValueError("hosted adapter payload must be a JSON object.")
+
+    if "VerificationResult" not in payload:
+        legacy_payload = dict(payload)
+        legacy_payload.pop("ok", None)
+        legacy_payload.pop("error", None)
+        _validate_carrier_finder_payload(legacy_payload, requested_mc=requested_mc)
+        return legacy_payload
+
+    verification_result = payload.get("VerificationResult")
+    if not isinstance(verification_result, dict):
+        raise ValueError("hosted adapter VerificationResult must be an object.")
+    _require_fields(
+        verification_result,
+        [
+            "status",
+            "category",
+            "method",
+            "provider",
+            "assuranceLevel",
+            "score",
+            "token",
+            "evidenceRef",
+            "verifiedAt",
+        ],
+        "hosted adapter VerificationResult",
+    )
+    if verification_result["status"] not in VALID_VERIFICATION_STATUSES:
+        raise ValueError(
+            "hosted adapter VerificationResult.status must be one of "
+            f"{sorted(VALID_VERIFICATION_STATUSES)}."
+        )
+    if verification_result["category"] not in KNOWN_VERIFICATION_CATEGORIES:
+        raise ValueError("hosted adapter VerificationResult.category is not recognized.")
+    if verification_result["method"] not in KNOWN_VERIFICATION_METHODS:
+        raise ValueError("hosted adapter VerificationResult.method is not recognized.")
+    if (
+        verification_result["category"],
+        verification_result["method"],
+    ) not in KNOWN_VERIFICATION_CATEGORY_METHOD_PAIRS:
+        raise ValueError("hosted adapter VerificationResult.category/method combination is not recognized.")
+    if not isinstance(verification_result["score"], (int, float)) or not (
+        0 <= verification_result["score"] <= 100
+    ):
+        raise ValueError("hosted adapter VerificationResult.score must be between 0 and 100.")
+    _bounded_string(verification_result["provider"], "hosted adapter VerificationResult.provider")
+    _bounded_string(
+        verification_result["assuranceLevel"],
+        "hosted adapter VerificationResult.assuranceLevel",
+    )
+    _bounded_string(verification_result["token"], "hosted adapter VerificationResult.token")
+    _bounded_string(
+        verification_result["evidenceRef"],
+        "hosted adapter VerificationResult.evidenceRef",
+    )
+    _validate_iso_datetime(
+        verification_result["verifiedAt"],
+        "hosted adapter VerificationResult.verifiedAt",
+    )
+    if _contains_forbidden_biometric_field(verification_result):
+        raise ValueError("hosted adapter VerificationResult must not include raw biometric artifacts.")
+
+    provider_extensions = payload.get("ProviderExtensions")
+    if provider_extensions is None:
+        provider_extensions = {}
+    if not isinstance(provider_extensions, dict):
+        raise ValueError("hosted adapter ProviderExtensions must be an object.")
+
+    carrier = provider_extensions.get("carrier")
+    if carrier is None:
+        carrier = {}
+    if not isinstance(carrier, dict):
+        raise ValueError("hosted adapter ProviderExtensions.carrier must be an object.")
+
+    target_mc = _normalize_mc(requested_mc)
+    mc_number = _normalize_mc(
+        provider_extensions.get("mcNumber")
+        or carrier.get("mc")
+        or target_mc
+    )
+    if target_mc and mc_number and mc_number != target_mc:
+        raise ValueError("hosted adapter returned an MC number that does not match the request.")
+
+    status_value = str(verification_result.get("status") or "Fail")
+    if status_value not in VALID_VERIFICATION_STATUSES:
+        status_value = "Fail"
+
+    score_value = verification_result.get("score", 0)
+    if not isinstance(score_value, (int, float)):
+        raise ValueError("hosted adapter VerificationResult.score must be numeric.")
+    score = int(round(float(score_value)))
+    score = max(0, min(100, score))
+
+    has_current_insurance = bool(carrier.get("hasCurrentInsurance"))
+    interstate_authority_ok = bool(carrier.get("interstateAuthorityOk"))
+    normalized_payload = {
+        "found": bool(mc_number),
+        "status": status_value,
+        "score": score,
+        "usdot_number": carrier.get("usdot"),
+        "mc_number": mc_number or target_mc or None,
+        "carrier_name": carrier.get("name"),
+        "operating_status": carrier.get("operatingStatus"),
+        "has_current_insurance": has_current_insurance,
+        "interstate_authority_ok": interstate_authority_ok,
+    }
+    return normalized_payload
+
+
 def _unwrap_verifier_payload_wrapper(
     wrapper,
     source_name,
@@ -2987,14 +3103,17 @@ def lookup_fmcsa_with_hosted_adapter(mc_number):
     if not isinstance(payload, dict):
         return {"ok": False, "error": "hosted adapter payload must be a JSON object."}
     if payload.get("ok") is False:
-        return {"ok": False, "error": "Hosted adapter returned failure."}
-
-    normalized_payload = dict(payload)
-    normalized_payload.pop("ok", None)
-    normalized_payload.pop("error", None)
+        return {
+            "ok": False,
+            "error": str(
+                payload.get("error")
+                or (payload.get("ProviderExtensions") or {}).get("error")
+                or "Hosted adapter returned failure."
+            ),
+        }
 
     try:
-        _validate_carrier_finder_payload(normalized_payload, requested_mc=target_mc)
+        normalized_payload = _normalize_hosted_adapter_payload(payload, requested_mc=target_mc)
     except ValueError as exc:
         return {"ok": False, "error": f"hosted adapter validation error: {exc}"}
 

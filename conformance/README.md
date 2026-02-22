@@ -83,3 +83,7 @@ result = translate_verifier_payload(
     require_signed_wrapper=True,
 )
 ```
+
+Production note:
+
+- `/Users/zglitch009/projects/logistics-ai/FAXP/fmcsa_adapter_server.py` now routes FMCSA lookup output through this translator wrapper by default before signing responses.

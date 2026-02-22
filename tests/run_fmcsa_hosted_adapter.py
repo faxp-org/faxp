@@ -13,6 +13,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from conformance.verifier_translator import translate_verifier_payload  # noqa: E402
 import faxp_mvp_simulation as sim  # noqa: E402
 
 
@@ -22,16 +23,28 @@ def _assert(condition: bool, message: str) -> None:
 
 
 def _build_payload(mc_number: str) -> dict[str, object]:
+    translated = translate_verifier_payload(
+        "fmcsa",
+        {
+            "status": "Success",
+            "score": 93,
+            "mcNumber": mc_number,
+            "carrier": {
+                "usdot": 1292301,
+                "mc": mc_number,
+                "name": "CA FREIGHT XPRESS INC",
+                "operatingStatus": "ACTIVE",
+                "hasCurrentInsurance": True,
+                "interstateAuthorityOk": True,
+            },
+        },
+        source="hosted-adapter",
+        provider_id="compliance.authority-record.adapter",
+    )
     return {
-        "found": True,
-        "status": "Success",
-        "score": 93,
-        "usdot_number": 1292301,
-        "mc_number": mc_number,
-        "carrier_name": "CA FREIGHT XPRESS INC",
-        "operating_status": "ACTIVE",
-        "has_current_insurance": True,
-        "interstate_authority_ok": True,
+        "ok": True,
+        "VerificationResult": translated["VerificationResult"],
+        "ProviderExtensions": translated["ProviderExtensions"],
     }
 
 

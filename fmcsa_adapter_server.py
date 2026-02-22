@@ -18,6 +18,7 @@ import time
 import traceback
 from uuid import uuid4
 
+from conformance.verifier_translator import TranslationError, translate_verifier_payload
 from faxp_mvp_simulation import (
     VERIFIER_ED25519_ACTIVE_KEY_ID,
     VERIFIER_ED25519_PRIVATE_KEYS,
@@ -51,6 +52,10 @@ ADAPTER_HEALTH_REQUIRE_AUTH = os.getenv("FAXP_ADAPTER_HEALTH_REQUIRE_AUTH", "1")
     "on",
 }
 ADAPTER_AUTH_TOKEN = os.getenv("FAXP_FMCSA_ADAPTER_AUTH_TOKEN", "").strip()
+ADAPTER_PROVIDER_ID = os.getenv(
+    "FAXP_ADAPTER_PROVIDER_ID",
+    "compliance.authority-record.adapter",
+).strip() or "compliance.authority-record.adapter"
 ADAPTER_DEBUG = os.getenv("FAXP_ADAPTER_DEBUG", "0").strip() == "1"
 ADAPTER_MAX_BODY_BYTES = max(256, min(65536, int(os.getenv("FAXP_ADAPTER_MAX_BODY_BYTES", "4096"))))
 ADAPTER_AUTH_FAILURE_DELAY_MS = max(
@@ -109,6 +114,57 @@ def _normalize_mc(value: object) -> str:
     if not digits:
         return ""
     return digits.lstrip("0") or "0"
+
+
+def _normalize_live_result_to_neutral_payload(
+    result: dict[str, object],
+    *,
+    requested_mc: str,
+) -> dict[str, object]:
+    """
+    Normalize FMCSA live lookup output into neutral adapter payload shape.
+
+    Adapter payload contract:
+    {
+      "ok": bool,
+      "VerificationResult": {neutral fields},
+      "ProviderExtensions": {...},
+      "error": "..."  # optional when ok=false
+    }
+    """
+    safe_result = dict(result or {})
+    requested_mc_normalized = _normalize_mc(requested_mc)
+    carrier = {
+        "usdot": safe_result.get("usdot_number"),
+        "mc": safe_result.get("mc_number") or requested_mc_normalized,
+        "name": safe_result.get("carrier_name"),
+        "operatingStatus": safe_result.get("operating_status"),
+        "hasCurrentInsurance": bool(safe_result.get("has_current_insurance")),
+        "interstateAuthorityOk": bool(safe_result.get("interstate_authority_ok")),
+    }
+    native_payload = {
+        "status": safe_result.get("status", "Fail"),
+        "score": safe_result.get("score", 0),
+        "mcNumber": safe_result.get("mc_number") or requested_mc_normalized,
+        "carrier": carrier,
+    }
+    if safe_result.get("error"):
+        native_payload["error"] = str(safe_result.get("error"))
+
+    translated = translate_verifier_payload(
+        "fmcsa",
+        native_payload,
+        source="hosted-adapter",
+        provider_id=ADAPTER_PROVIDER_ID,
+    )
+    payload = {
+        "ok": bool(safe_result.get("ok")),
+        "VerificationResult": translated["VerificationResult"],
+        "ProviderExtensions": translated["ProviderExtensions"],
+    }
+    if not payload["ok"] and safe_result.get("error"):
+        payload["error"] = str(safe_result.get("error"))
+    return payload
 
 
 def _parse_hmac_key_ring(raw_pairs: str) -> dict[str, bytes]:
@@ -449,8 +505,19 @@ class AdapterHandler(BaseHTTPRequestHandler):
             return
 
         result = lookup_fmcsa_live_api(mc_number=mc_number)
-        payload = dict(result)
-        payload["mc_number"] = mc_number
+        try:
+            payload = _normalize_live_result_to_neutral_payload(result, requested_mc=mc_number)
+        except TranslationError as exc:
+            _write_audit_event("verify", request_id, source_ip, "error", "translation-failure")
+            if ADAPTER_DEBUG:
+                self._write_json(
+                    500,
+                    {"error": f"Translation failure: {type(exc).__name__}: {exc}"},
+                    request_id=request_id,
+                )
+            else:
+                self._write_json(500, {"error": "Translation failure."}, request_id=request_id)
+            return
 
         try:
             wrapper = _build_signed_wrapper(payload)
