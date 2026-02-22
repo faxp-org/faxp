@@ -51,6 +51,15 @@ FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER_RAW = os.getenv(
     "FAXP_FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER",
     "1",
 ).strip()
+FMCSA_ADAPTER_SIGN_REQUESTS_RAW = os.getenv("FAXP_FMCSA_ADAPTER_SIGN_REQUESTS", "1").strip()
+FMCSA_ADAPTER_REQUEST_SIGNING_KEYS_RAW = os.getenv(
+    "FAXP_FMCSA_ADAPTER_REQUEST_SIGNING_KEYS",
+    "",
+).strip()
+FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID = os.getenv(
+    "FAXP_FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID",
+    "",
+).strip()
 
 LEGACY_MESSAGE_SIGNING_KEY = os.getenv("FAXP_MESSAGE_SIGNING_KEY", "").encode("utf-8")
 LEGACY_VERIFIER_SIGNING_KEY = os.getenv("FAXP_VERIFIER_SIGNING_KEY", "").encode("utf-8")
@@ -150,6 +159,9 @@ ALLOWED_EXTERNAL_SECRET_KEYS = {
     "FAXP_FMCSA_ADAPTER_AUTH_TOKEN",
     "FAXP_FMCSA_ADAPTER_TIMEOUT_SECONDS",
     "FAXP_FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER",
+    "FAXP_FMCSA_ADAPTER_SIGN_REQUESTS",
+    "FAXP_FMCSA_ADAPTER_REQUEST_SIGNING_KEYS",
+    "FAXP_FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID",
 }
 ROUTE_POLICY = {
     "NewLoad": {("Broker", "Carrier")},
@@ -329,6 +341,18 @@ FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER_RAW = _override_secret_value(
     "FAXP_FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER",
     FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER_RAW,
 ).strip()
+FMCSA_ADAPTER_SIGN_REQUESTS_RAW = _override_secret_value(
+    "FAXP_FMCSA_ADAPTER_SIGN_REQUESTS",
+    FMCSA_ADAPTER_SIGN_REQUESTS_RAW,
+).strip()
+FMCSA_ADAPTER_REQUEST_SIGNING_KEYS_RAW = _override_secret_value(
+    "FAXP_FMCSA_ADAPTER_REQUEST_SIGNING_KEYS",
+    FMCSA_ADAPTER_REQUEST_SIGNING_KEYS_RAW,
+).strip()
+FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID = _override_secret_value(
+    "FAXP_FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID",
+    FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID,
+).strip()
 try:
     FMCSA_ADAPTER_TIMEOUT_SECONDS = int(
         _override_secret_value(
@@ -361,6 +385,7 @@ FMCSA_EXPECTED_TOP_LEVEL_KEYS = _parse_expected_fmcsa_top_level_keys(
 FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER = _is_truthy(
     FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER_RAW
 )
+FMCSA_ADAPTER_SIGN_REQUESTS = _is_truthy(FMCSA_ADAPTER_SIGN_REQUESTS_RAW)
 
 
 def _load_agent_key_registry():
@@ -468,6 +493,20 @@ def verify_signature(payload, signature, key):
         return False
     expected = sign_payload(payload, key)
     return bool(expected) and hmac.compare_digest(expected, signature)
+
+
+def _build_adapter_request_signature(method, path, timestamp_text, nonce, body_bytes, key):
+    body_hash = hashlib.sha256(body_bytes).hexdigest()
+    signing_payload = "\n".join(
+        [
+            str(method or "").upper(),
+            str(path or "/"),
+            str(timestamp_text or ""),
+            str(nonce or ""),
+            body_hash,
+        ]
+    )
+    return hmac.new(key, signing_payload.encode("utf-8"), hashlib.sha256).hexdigest()
 
 
 def _run_openssl(command):
@@ -794,6 +833,11 @@ MESSAGE_SIGNING_KEYS = _parse_key_ring(
 VERIFIER_SIGNING_KEYS = _parse_key_ring(
     VERIFIER_SIGNING_KEYS_RAW, LEGACY_VERIFIER_SIGNING_KEY, "legacy-verifier"
 )
+FMCSA_ADAPTER_REQUEST_SIGNING_KEYS = _parse_key_ring(
+    FMCSA_ADAPTER_REQUEST_SIGNING_KEYS_RAW,
+    b"",
+    "legacy-adapter-request",
+)
 VERIFIER_ED25519_PRIVATE_KEYS = _parse_path_key_ring(
     VERIFIER_ED25519_PRIVATE_KEYS_RAW,
     "FAXP_VERIFIER_ED25519_PRIVATE_KEYS",
@@ -808,6 +852,11 @@ MESSAGE_SIGNING_ACTIVE_KEY_ID = _resolve_active_key_id(
 VERIFIER_SIGNING_ACTIVE_KEY_ID = _resolve_active_key_id(
     VERIFIER_SIGNING_KEYS, VERIFIER_SIGNING_ACTIVE_KEY_ID, "verifier signing"
 )
+FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID = _resolve_active_key_id(
+    FMCSA_ADAPTER_REQUEST_SIGNING_KEYS,
+    FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID,
+    "FMCSA adapter request signing",
+)
 VERIFIER_ED25519_ACTIVE_KEY_ID = _resolve_active_key_id(
     VERIFIER_ED25519_PUBLIC_KEYS or VERIFIER_ED25519_PRIVATE_KEYS,
     VERIFIER_ED25519_ACTIVE_KEY_ID,
@@ -815,6 +864,10 @@ VERIFIER_ED25519_ACTIVE_KEY_ID = _resolve_active_key_id(
 )
 MESSAGE_SIGNING_KEY = MESSAGE_SIGNING_KEYS.get(MESSAGE_SIGNING_ACTIVE_KEY_ID, b"")
 VERIFIER_SIGNING_KEY = VERIFIER_SIGNING_KEYS.get(VERIFIER_SIGNING_ACTIVE_KEY_ID, b"")
+FMCSA_ADAPTER_REQUEST_SIGNING_KEY = FMCSA_ADAPTER_REQUEST_SIGNING_KEYS.get(
+    FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID,
+    b"",
+)
 VERIFIER_ED25519_PRIVATE_KEY_PATH = VERIFIER_ED25519_PRIVATE_KEYS.get(
     VERIFIER_ED25519_ACTIVE_KEY_ID,
     "",
@@ -2609,13 +2662,47 @@ def lookup_fmcsa_with_hosted_adapter(mc_number):
         return {"ok": False, "error": "Missing FAXP_FMCSA_ADAPTER_BASE_URL for hosted adapter."}
 
     endpoint = base_url.rstrip("/")
+    parsed_endpoint = urllib.parse.urlsplit(endpoint)
+    if parsed_endpoint.scheme not in {"http", "https"}:
+        return {"ok": False, "error": "Invalid hosted adapter URL scheme."}
+    if NON_LOCAL_MODE and parsed_endpoint.scheme != "https":
+        return {"ok": False, "error": "Hosted adapter URL must use HTTPS in non-local mode."}
+    if not parsed_endpoint.netloc:
+        return {"ok": False, "error": "Hosted adapter URL is missing host information."}
+
+    canonical_path = parsed_endpoint.path or "/"
+    if parsed_endpoint.query:
+        canonical_path = canonical_path + "?" + parsed_endpoint.query
+
     request_body = json.dumps({"mcNumber": target_mc}).encode("utf-8")
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
+        "User-Agent": "FAXP-AdapterClient/0.2",
+        "X-FAXP-Request-Id": str(uuid4()),
     }
     if FMCSA_ADAPTER_AUTH_TOKEN:
         headers["Authorization"] = f"Bearer {FMCSA_ADAPTER_AUTH_TOKEN}"
+    if FMCSA_ADAPTER_SIGN_REQUESTS:
+        if not FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID or not FMCSA_ADAPTER_REQUEST_SIGNING_KEY:
+            return {
+                "ok": False,
+                "error": "Hosted adapter request signing is enabled but request key material is missing.",
+            }
+        timestamp_text = now_utc()
+        nonce = uuid4().hex
+        signature = _build_adapter_request_signature(
+            method="POST",
+            path=canonical_path,
+            timestamp_text=timestamp_text,
+            nonce=nonce,
+            body_bytes=request_body,
+            key=FMCSA_ADAPTER_REQUEST_SIGNING_KEY,
+        )
+        headers["X-FAXP-Key-Id"] = FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID
+        headers["X-FAXP-Timestamp"] = timestamp_text
+        headers["X-FAXP-Nonce"] = nonce
+        headers["X-FAXP-Signature"] = signature
 
     request = urllib.request.Request(
         endpoint,
@@ -2628,15 +2715,17 @@ def lookup_fmcsa_with_hosted_adapter(mc_number):
         with urllib.request.urlopen(request, timeout=FMCSA_ADAPTER_TIMEOUT_SECONDS) as response:
             raw_text = response.read().decode("utf-8", errors="replace")
     except urllib.error.HTTPError as exc:
-        body = exc.read().decode("utf-8", errors="replace")
-        return {
-            "ok": False,
-            "error": f"hosted adapter HTTP {exc.code}: {body[:180]}",
-        }
+        if exc.code in {401, 403}:
+            return {"ok": False, "error": "Hosted adapter authentication rejected."}
+        if exc.code == 429:
+            return {"ok": False, "error": "Hosted adapter rate limit exceeded."}
+        if 500 <= exc.code < 600:
+            return {"ok": False, "error": "Hosted adapter upstream error."}
+        return {"ok": False, "error": f"Hosted adapter HTTP error ({exc.code})."}
     except urllib.error.URLError as exc:
-        return {"ok": False, "error": f"hosted adapter network error: {exc.reason}"}
-    except Exception as exc:
-        return {"ok": False, "error": f"hosted adapter call failed: {exc}"}
+        return {"ok": False, "error": "Hosted adapter network error."}
+    except Exception:
+        return {"ok": False, "error": "Hosted adapter call failed."}
 
     try:
         wrapper = json.loads(raw_text)
@@ -2657,7 +2746,7 @@ def lookup_fmcsa_with_hosted_adapter(mc_number):
     if not isinstance(payload, dict):
         return {"ok": False, "error": "hosted adapter payload must be a JSON object."}
     if payload.get("ok") is False:
-        return {"ok": False, "error": payload.get("error", "hosted adapter returned failure.")}
+        return {"ok": False, "error": "Hosted adapter returned failure."}
 
     normalized_payload = dict(payload)
     normalized_payload.pop("ok", None)

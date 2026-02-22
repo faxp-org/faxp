@@ -55,6 +55,8 @@ def _signed_wrapper(
 class _HostedAdapterHandler(BaseHTTPRequestHandler):
     good_wrapper: dict[str, object] = {}
     bad_wrapper: dict[str, object] = {}
+    request_key_id: str = ""
+    request_key: bytes = b""
 
     def do_POST(self) -> None:
         raw_length = self.headers.get("Content-Length", "0")
@@ -67,6 +69,30 @@ class _HostedAdapterHandler(BaseHTTPRequestHandler):
             request_json = json.loads(payload.decode("utf-8"))
         except Exception:
             self._write_json(400, {"error": "invalid-json"})
+            return
+
+        key_id = self.headers.get("X-FAXP-Key-Id", "")
+        timestamp_text = self.headers.get("X-FAXP-Timestamp", "")
+        nonce = self.headers.get("X-FAXP-Nonce", "")
+        signature = self.headers.get("X-FAXP-Signature", "")
+        if (
+            key_id != self.request_key_id
+            or not timestamp_text
+            or not nonce
+            or not signature
+        ):
+            self._write_json(401, {"error": "missing-signed-request-headers"})
+            return
+        expected_signature = sim._build_adapter_request_signature(  # noqa: SLF001
+            method="POST",
+            path=self.path,
+            timestamp_text=timestamp_text,
+            nonce=nonce,
+            body_bytes=payload,
+            key=self.request_key,
+        )
+        if signature != expected_signature:
+            self._write_json(401, {"error": "invalid-request-signature"})
             return
 
         if request_json.get("mcNumber") != "498282":
@@ -104,6 +130,10 @@ def main() -> int:
         "FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER": sim.FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER,
         "FMCSA_ADAPTER_TIMEOUT_SECONDS": sim.FMCSA_ADAPTER_TIMEOUT_SECONDS,
         "FMCSA_ADAPTER_BASE_URL": sim.FMCSA_ADAPTER_BASE_URL,
+        "FMCSA_ADAPTER_SIGN_REQUESTS": sim.FMCSA_ADAPTER_SIGN_REQUESTS,
+        "FMCSA_ADAPTER_REQUEST_SIGNING_KEYS": sim.FMCSA_ADAPTER_REQUEST_SIGNING_KEYS,
+        "FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID": sim.FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID,
+        "FMCSA_ADAPTER_REQUEST_SIGNING_KEY": sim.FMCSA_ADAPTER_REQUEST_SIGNING_KEY,
     }
     server = HTTPServer(("127.0.0.1", 0), _HostedAdapterHandler)
     port = server.server_port
@@ -112,7 +142,11 @@ def main() -> int:
     try:
         verifier_key_id = "adapter-test-kid"
         verifier_key = b"adapter-test-secret"
+        request_signing_key_id = "adapter-request-kid"
+        request_signing_key = b"adapter-request-secret"
         payload = _build_payload("498282")
+        _HostedAdapterHandler.request_key_id = request_signing_key_id
+        _HostedAdapterHandler.request_key = request_signing_key
         _HostedAdapterHandler.good_wrapper = _signed_wrapper(
             payload,
             verifier_key_id,
@@ -132,6 +166,10 @@ def main() -> int:
         sim.VERIFIER_ED25519_PUBLIC_KEYS = {}
         sim.FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER = True
         sim.FMCSA_ADAPTER_TIMEOUT_SECONDS = 5
+        sim.FMCSA_ADAPTER_SIGN_REQUESTS = True
+        sim.FMCSA_ADAPTER_REQUEST_SIGNING_KEYS = {request_signing_key_id: request_signing_key}
+        sim.FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID = request_signing_key_id
+        sim.FMCSA_ADAPTER_REQUEST_SIGNING_KEY = request_signing_key
 
         thread.start()
 
@@ -181,6 +219,16 @@ def main() -> int:
         ]
         sim.FMCSA_ADAPTER_TIMEOUT_SECONDS = original_values["FMCSA_ADAPTER_TIMEOUT_SECONDS"]
         sim.FMCSA_ADAPTER_BASE_URL = original_values["FMCSA_ADAPTER_BASE_URL"]
+        sim.FMCSA_ADAPTER_SIGN_REQUESTS = original_values["FMCSA_ADAPTER_SIGN_REQUESTS"]
+        sim.FMCSA_ADAPTER_REQUEST_SIGNING_KEYS = original_values[
+            "FMCSA_ADAPTER_REQUEST_SIGNING_KEYS"
+        ]
+        sim.FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID = original_values[
+            "FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID"
+        ]
+        sim.FMCSA_ADAPTER_REQUEST_SIGNING_KEY = original_values[
+            "FMCSA_ADAPTER_REQUEST_SIGNING_KEY"
+        ]
 
 
 if __name__ == "__main__":
