@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faxp.org/schema/key-lifecycle-policy-v1.json",
+  "title": "FAXP Key Lifecycle Policy",
+  "type": "object",
+  "required": [
+    "policyVersion",
+    "asOf",
+    "maxKeyAgeDays",
+    "maxKeyValidityDays",
+    "minRotationOverlapDays",
+    "keySets",
+    "signatureBindings"
+  ],
+  "properties": {
+    "policyVersion": {
+      "type": "string"
+    },
+    "asOf": {
+      "type": "string"
+    },
+    "maxKeyAgeDays": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "maxKeyValidityDays": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "minRotationOverlapDays": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "keySets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "keyringRef", "activeKids", "keys"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 3
+          },
+          "keyringRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "activeKids": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 3
+            }
+          },
+          "keys": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["kid", "status", "createdAt", "expiresAt"],
+              "properties": {
+                "kid": {
+                  "type": "string",
+                  "minLength": 3
+                },
+                "status": {
+                  "type": "string",
+                  "enum": ["Active", "Retired", "Revoked"]
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "expiresAt": {
+                  "type": "string"
+                },
+                "rotatedFrom": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "signatureBindings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "documentRef", "expectedKeySet", "kidPath"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 3
+          },
+          "documentRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expectedKeySet": {
+            "type": "string",
+            "minLength": 3
+          },
+          "kidPath": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}
+

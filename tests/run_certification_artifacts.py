@@ -37,6 +37,8 @@ SAMPLE_CONFORMANCE_REPORT_PATH = PROJECT_ROOT / "conformance" / "sample_conforma
 REGISTRY_UPDATE_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "registry_update.schema.json"
 REGISTRY_UPDATE_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "registry_update.sample.json"
 REGISTRY_UPDATE_KEYS_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "registry_update_keys.sample.json"
+KEY_LIFECYCLE_POLICY_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "key_lifecycle_policy.schema.json"
+KEY_LIFECYCLE_POLICY_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "key_lifecycle_policy.sample.json"
 ATTESTATION_KEYS_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "attestation_keys.sample.json"
 
 
@@ -91,6 +93,8 @@ def main() -> int:
     registry_update_schema = _load_json(REGISTRY_UPDATE_SCHEMA_PATH)
     registry_update_sample = _load_json(REGISTRY_UPDATE_SAMPLE_PATH)
     registry_update_keyring = _load_json(REGISTRY_UPDATE_KEYS_SAMPLE_PATH)
+    key_lifecycle_policy_schema = _load_json(KEY_LIFECYCLE_POLICY_SCHEMA_PATH)
+    key_lifecycle_policy_sample = _load_json(KEY_LIFECYCLE_POLICY_SAMPLE_PATH)
     attestation_keyring = _load_json(ATTESTATION_KEYS_SAMPLE_PATH)
     _assert(
         isinstance(registry_update_keyring.get("keys"), dict) and registry_update_keyring["keys"],
@@ -129,6 +133,11 @@ def main() -> int:
         registry_update_schema,
         registry_update_sample,
         "registry update sample",
+    )
+    _validate(
+        key_lifecycle_policy_schema,
+        key_lifecycle_policy_sample,
+        "key lifecycle policy sample",
     )
     verify_request_signature(
         registry_update_sample,

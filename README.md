@@ -42,6 +42,8 @@ This repository includes:
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/submission_manifest.schema.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/submission_manifest.sample.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/submission_manifest_keys.sample.json`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/key_lifecycle_policy.schema.json`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/key_lifecycle_policy.sample.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/sample_conformance_report.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update.schema.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update.sample.json`
@@ -330,6 +332,12 @@ python3 conformance/create_submission_manifest.py \
   --keyring conformance/submission_manifest_keys.sample.json \
   --kid faxp-submission-kid-2026q1 \
   --output /tmp/faxp_submission_manifest.signed.json
+```
+
+Key lifecycle policy checks:
+
+```bash
+python3 tests/run_key_lifecycle_policy.py
 ```
 
 Registry operations artifact checks:

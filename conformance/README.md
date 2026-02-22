@@ -14,6 +14,8 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `submission_manifest.sample.json`: sample certification submission manifest.
 - `submission_manifest_keys.sample.json`: test-only keyring for signing submission manifests.
 - `sample_conformance_report.json`: sample conformance report referenced by submission manifest.
+- `key_lifecycle_policy.schema.json`: schema for key age/rotation overlap governance.
+- `key_lifecycle_policy.sample.json`: sample policy binding active KIDs to signed artifacts.
 - `registry_update.schema.json`: schema for registry operations request payloads.
 - `registry_update.sample.json`: sample registry operations request with upsert/revoke/rollback.
 - `registry_update.sample.audit.log`: sample audit log for registry operations.
@@ -111,6 +113,12 @@ python3 conformance/create_submission_manifest.py \
   --keyring conformance/submission_manifest_keys.sample.json \
   --kid faxp-submission-kid-2026q1 \
   --output /tmp/faxp_submission_manifest.signed.json
+```
+
+Key lifecycle policy checks:
+
+```bash
+python3 tests/run_key_lifecycle_policy.py
 ```
 
 Registry operations artifact check:

@@ -1,0 +1,106 @@
+{
+  "policyVersion": "1.0.0",
+  "asOf": "2026-02-22T00:00:00Z",
+  "maxKeyAgeDays": 365,
+  "maxKeyValidityDays": 400,
+  "minRotationOverlapDays": 30,
+  "keySets": [
+    {
+      "name": "submission_manifest_keys",
+      "keyringRef": "conformance/submission_manifest_keys.sample.json",
+      "activeKids": [
+        "faxp-submission-kid-2026q1"
+      ],
+      "keys": [
+        {
+          "kid": "faxp-submission-kid-2025q4",
+          "status": "Retired",
+          "createdAt": "2025-10-01T00:00:00Z",
+          "expiresAt": "2026-03-15T00:00:00Z"
+        },
+        {
+          "kid": "faxp-submission-kid-2026q1",
+          "status": "Active",
+          "createdAt": "2026-01-01T00:00:00Z",
+          "expiresAt": "2026-12-31T00:00:00Z",
+          "rotatedFrom": "faxp-submission-kid-2025q4"
+        }
+      ]
+    },
+    {
+      "name": "registry_update_keys",
+      "keyringRef": "conformance/registry_update_keys.sample.json",
+      "activeKids": [
+        "faxp-regops-kid-2026q1"
+      ],
+      "keys": [
+        {
+          "kid": "faxp-regops-kid-2025q4",
+          "status": "Retired",
+          "createdAt": "2025-10-01T00:00:00Z",
+          "expiresAt": "2026-03-15T00:00:00Z"
+        },
+        {
+          "kid": "faxp-regops-kid-2026q1",
+          "status": "Active",
+          "createdAt": "2026-01-01T00:00:00Z",
+          "expiresAt": "2026-12-31T00:00:00Z",
+          "rotatedFrom": "faxp-regops-kid-2025q4"
+        }
+      ]
+    },
+    {
+      "name": "attestation_keys",
+      "keyringRef": "conformance/attestation_keys.sample.json",
+      "activeKids": [
+        "faxp-lab-selfattest-2026q1"
+      ],
+      "keys": [
+        {
+          "kid": "faxp-lab-selfattest-2025q4",
+          "status": "Retired",
+          "createdAt": "2025-10-01T00:00:00Z",
+          "expiresAt": "2026-03-15T00:00:00Z"
+        },
+        {
+          "kid": "faxp-lab-selfattest-2026q1",
+          "status": "Active",
+          "createdAt": "2026-01-15T00:00:00Z",
+          "expiresAt": "2026-08-21T20:01:26Z",
+          "rotatedFrom": "faxp-lab-selfattest-2025q4"
+        }
+      ]
+    }
+  ],
+  "signatureBindings": [
+    {
+      "name": "submission_manifest_signature",
+      "documentRef": "conformance/submission_manifest.sample.json",
+      "expectedKeySet": "submission_manifest_keys",
+      "kidPath": [
+        "submissionSignature",
+        "kid"
+      ]
+    },
+    {
+      "name": "registry_update_signature",
+      "documentRef": "conformance/registry_update.sample.json",
+      "expectedKeySet": "registry_update_keys",
+      "kidPath": [
+        "requestSignature",
+        "kid"
+      ]
+    },
+    {
+      "name": "adapter_self_attestation_signature",
+      "documentRef": "conformance/adapter_profile.sample.json",
+      "expectedKeySet": "attestation_keys",
+      "kidPath": [
+        "selfAttestation",
+        "kid"
+      ]
+    }
+  ],
+  "notes": "Sample lifecycle policy for conformance key governance checks."
+}
+
