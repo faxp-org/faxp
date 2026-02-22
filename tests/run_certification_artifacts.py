@@ -23,6 +23,9 @@ ADAPTER_PROFILE_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "adapter_profile.sc
 ADAPTER_PROFILE_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "adapter_profile.sample.json"
 ADAPTER_TEST_PROFILE_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "adapter_test_profile.schema.json"
 FMCSA_ADAPTER_TEST_PROFILE_PATH = PROJECT_ROOT / "conformance" / "fmcsa_adapter_test_profile.v1.json"
+SUBMISSION_MANIFEST_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "submission_manifest.schema.json"
+SUBMISSION_MANIFEST_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "submission_manifest.sample.json"
+SAMPLE_CONFORMANCE_REPORT_PATH = PROJECT_ROOT / "conformance" / "sample_conformance_report.json"
 ATTESTATION_KEYS_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "attestation_keys.sample.json"
 
 
@@ -70,6 +73,9 @@ def main() -> int:
     adapter_profile_sample = _load_json(ADAPTER_PROFILE_SAMPLE_PATH)
     adapter_test_profile_schema = _load_json(ADAPTER_TEST_PROFILE_SCHEMA_PATH)
     fmcsa_adapter_test_profile = _load_json(FMCSA_ADAPTER_TEST_PROFILE_PATH)
+    submission_manifest_schema = _load_json(SUBMISSION_MANIFEST_SCHEMA_PATH)
+    submission_manifest_sample = _load_json(SUBMISSION_MANIFEST_SAMPLE_PATH)
+    sample_conformance_report = _load_json(SAMPLE_CONFORMANCE_REPORT_PATH)
     attestation_keyring = _load_json(ATTESTATION_KEYS_SAMPLE_PATH)
 
     _validate(profile_schema, strict_profile, "strict profile")
@@ -80,6 +86,11 @@ def main() -> int:
         adapter_test_profile_schema,
         fmcsa_adapter_test_profile,
         "fmcsa adapter test profile",
+    )
+    _validate(
+        submission_manifest_schema,
+        submission_manifest_sample,
+        "submission manifest sample",
     )
 
     _assert_tier_coverage(strict_profile, "strict profile")
@@ -201,6 +212,29 @@ def main() -> int:
     _assert(
         "translator_neutral_fields" in fmcsa_adapter_test_profile.get("certificationChecks", []),
         "FMCSA adapter test profile must require neutral translator checks.",
+    )
+    _assert(
+        submission_manifest_sample["adapterId"] == adapter_profile_sample["adapterId"],
+        "submission manifest adapterId must match adapter profile adapterId.",
+    )
+    _assert(
+        submission_manifest_sample["bundle"]["adapterProfileRef"]
+        == "conformance/adapter_profile.sample.json",
+        "submission manifest must reference sample adapter profile path.",
+    )
+    _assert(
+        submission_manifest_sample["bundle"]["registryEntryRef"]
+        == "conformance/certification_registry.sample.json",
+        "submission manifest must reference sample registry path.",
+    )
+    summary = sample_conformance_report.get("summary", {})
+    _assert(
+        summary.get("passed") is True,
+        "sample conformance report summary.passed must be true.",
+    )
+    _assert(
+        sample_conformance_report.get("adapterId") == adapter_profile_sample["adapterId"],
+        "sample conformance report adapterId must match sample adapter profile adapterId.",
     )
 
     print("Certification artifact checks passed.")

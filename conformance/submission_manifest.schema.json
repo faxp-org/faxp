@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faxp.org/schema/submission-manifest-v1.json",
+  "title": "FAXP Certification Submission Manifest",
+  "type": "object",
+  "required": [
+    "submissionVersion",
+    "submissionId",
+    "submittedAt",
+    "adapterId",
+    "requestedTier",
+    "submitter",
+    "bundle",
+    "declarations"
+  ],
+  "properties": {
+    "submissionVersion": {
+      "type": "string"
+    },
+    "submissionId": {
+      "type": "string",
+      "minLength": 8
+    },
+    "submittedAt": {
+      "type": "string"
+    },
+    "adapterId": {
+      "type": "string",
+      "minLength": 3
+    },
+    "requestedTier": {
+      "type": "string",
+      "enum": ["SelfAttested", "Conformant", "TrustedProduction"]
+    },
+    "submitter": {
+      "type": "object",
+      "required": ["organization", "contactEmail", "attestorRole"],
+      "properties": {
+        "organization": {
+          "type": "string",
+          "minLength": 2
+        },
+        "contactEmail": {
+          "type": "string",
+          "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+        },
+        "attestorRole": {
+          "type": "string",
+          "minLength": 2
+        }
+      },
+      "additionalProperties": false
+    },
+    "bundle": {
+      "type": "object",
+      "required": [
+        "adapterProfileRef",
+        "registryEntryRef",
+        "adapterTestProfiles",
+        "attestationKeyringRef",
+        "conformanceReportRef"
+      ],
+      "properties": {
+        "adapterProfileRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "registryEntryRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "adapterTestProfiles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "attestationKeyringRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "conformanceReportRef": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "declarations": {
+      "type": "object",
+      "required": [
+        "implementerHosted",
+        "signedRequests",
+        "signedResponses",
+        "replayProtection",
+        "requireConformancePass"
+      ],
+      "properties": {
+        "implementerHosted": {
+          "type": "boolean"
+        },
+        "signedRequests": {
+          "type": "boolean"
+        },
+        "signedResponses": {
+          "type": "boolean"
+        },
+        "replayProtection": {
+          "type": "boolean"
+        },
+        "requireConformancePass": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "runbookRef": {
+          "type": "string"
+        },
+        "incidentResponseRef": {
+          "type": "string"
+        },
+        "securityReviewRef": {
+          "type": "string"
+        },
+        "slaPolicyRef": {
+          "type": "string"
+        },
+        "keyManagementRef": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}
+

@@ -1,0 +1,38 @@
+{
+  "generatedAt": "2026-02-22T00:00:00Z",
+  "adapterId": "sample-fmcsa-adapter-us-prod",
+  "summary": {
+    "totalChecks": 5,
+    "passedChecks": 5,
+    "failedChecks": 0,
+    "passed": true
+  },
+  "checks": [
+    {
+      "id": "profile_schema",
+      "passed": true,
+      "details": "adapter profile schema validation"
+    },
+    {
+      "id": "registry_schema",
+      "passed": true,
+      "details": "registry schema validation"
+    },
+    {
+      "id": "attestation_signature",
+      "passed": true,
+      "details": "signature verified"
+    },
+    {
+      "id": "registry_match_adapter_id",
+      "passed": true,
+      "details": "adapter ID aligned"
+    },
+    {
+      "id": "registry_match_profiles",
+      "passed": true,
+      "details": "supported profiles aligned"
+    }
+  ]
+}
+

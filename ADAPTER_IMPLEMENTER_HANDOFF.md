@@ -4,8 +4,10 @@ This checklist is the implementation handoff for any builder to host an FMCSA ad
 
 Primary contract references:
 - `/Users/zglitch009/projects/logistics-ai/FAXP/adapter/INTERFACE.md`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/CERTIFICATION_PLAYBOOK.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/adapter_test_profile.schema.json`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/fmcsa_adapter_test_profile.v1.json`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/submission_manifest.schema.json`
 
 ## 1) Build Scope
 

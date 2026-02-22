@@ -25,6 +25,7 @@ This repository includes:
   - v0.2 compatibility track: `/Users/zglitch009/projects/logistics-ai/FAXP/faxp.v0.2.schema.json`
 - Governance model: `/Users/zglitch009/projects/logistics-ai/FAXP/FAXP_GOVERNANCE_MODEL.md`
 - Builder handoff checklist: `/Users/zglitch009/projects/logistics-ai/FAXP/ADAPTER_IMPLEMENTER_HANDOFF.md`
+- Certification playbook: `/Users/zglitch009/projects/logistics-ai/FAXP/CERTIFICATION_PLAYBOOK.md`
 - Verification profiles:
   - schema: `/Users/zglitch009/projects/logistics-ai/FAXP/profiles/verification/profile.schema.json`
   - strict: `/Users/zglitch009/projects/logistics-ai/FAXP/profiles/verification/US_FMCSA_STRICT_V1.json`
@@ -37,6 +38,9 @@ This repository includes:
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/adapter_profile.sample.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/adapter_test_profile.schema.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/fmcsa_adapter_test_profile.v1.json`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/submission_manifest.schema.json`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/submission_manifest.sample.json`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/sample_conformance_report.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/attestation_keys.sample.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/generate_attestation.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/conformance_bundle.py`
@@ -286,6 +290,18 @@ python3 tests/run_conformance_bundle.py \
   --registry-entry conformance/certification_registry.sample.json \
   --keyring conformance/attestation_keys.sample.json \
   --output /tmp/faxp_conformance_report.json
+```
+
+Adapter test profile checks:
+
+```bash
+python3 tests/run_adapter_test_profile.py
+```
+
+Submission manifest bundle checks:
+
+```bash
+python3 tests/run_submission_manifest.py
 ```
 
 Verifier translator checks:

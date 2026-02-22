@@ -1,0 +1,37 @@
+{
+  "submissionVersion": "1.0.0",
+  "submissionId": "faxp-submission-20260222-0001",
+  "submittedAt": "2026-02-22T00:00:00Z",
+  "adapterId": "sample-fmcsa-adapter-us-prod",
+  "requestedTier": "Conformant",
+  "submitter": {
+    "organization": "Example Integrator",
+    "contactEmail": "security@example.com",
+    "attestorRole": "SecurityOfficer"
+  },
+  "bundle": {
+    "adapterProfileRef": "conformance/adapter_profile.sample.json",
+    "registryEntryRef": "conformance/certification_registry.sample.json",
+    "adapterTestProfiles": [
+      "conformance/fmcsa_adapter_test_profile.v1.json"
+    ],
+    "attestationKeyringRef": "conformance/attestation_keys.sample.json",
+    "conformanceReportRef": "conformance/sample_conformance_report.json"
+  },
+  "declarations": {
+    "implementerHosted": true,
+    "signedRequests": true,
+    "signedResponses": true,
+    "replayProtection": true,
+    "requireConformancePass": true
+  },
+  "evidence": {
+    "runbookRef": "CERTIFICATION_PLAYBOOK.md",
+    "incidentResponseRef": "incident_drill.sh",
+    "securityReviewRef": "security_gate.sh",
+    "slaPolicyRef": "ADAPTER_IMPLEMENTER_HANDOFF.md",
+    "keyManagementRef": "rotate_faxp_keys.sh"
+  },
+  "notes": "Sample submission manifest for CI and onboarding verification."
+}
+
