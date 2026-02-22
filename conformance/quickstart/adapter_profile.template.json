@@ -1,0 +1,28 @@
+{
+  "adapterProfileVersion": "1.0.0",
+  "adapterId": "replace-with-adapter-id",
+  "providerType": "Compliance",
+  "hostingModel": "ImplementerHosted",
+  "certificationTier": "SelfAttested",
+  "status": "Active",
+  "endpointBaseUrl": "https://replace-with-adapter-host.example/v1/verify",
+  "profilesSupported": ["US_FMCSA_BALANCED_V1"],
+  "securityCapabilities": {
+    "signedRequests": true,
+    "signedResponses": true,
+    "replayProtection": true,
+    "auditTrail": true,
+    "clockSkewSeconds": 60
+  },
+  "selfAttestation": {
+    "attestedBy": "replace-with-attestor-name",
+    "attestorRole": "SecurityOfficer",
+    "payload": {},
+    "payloadDigestSha256": "sha256:replace-by-generator",
+    "alg": "HMAC_SHA256",
+    "kid": "replace-with-key-id",
+    "sig": "replace-by-generator",
+    "signedAt": "2026-01-01T00:00:00Z",
+    "expiresAt": "2026-07-01T00:00:00Z"
+  }
+}

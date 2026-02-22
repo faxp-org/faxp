@@ -10,6 +10,9 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `adapter_profile.sample.json`: sample adapter profile with self-attestation payload.
 - `attestation_keys.sample.json`: test-only keyring for local/CI attestation verification.
 - `generate_attestation.py`: helper to regenerate payload digest/signature for adapter profiles.
+- `conformance_bundle.py`: reusable conformance evaluator for profile + registry bundles.
+- `verifier_translator.py`: reference wrapper for translating provider-native payloads to neutral FAXP verification output.
+- `quickstart/`: onboarding templates + bundle builder script.
 
 Adapter hosting model:
 
@@ -49,4 +52,34 @@ python3 conformance/generate_attestation.py \
   --keyring conformance/attestation_keys.sample.json \
   --kid faxp-lab-selfattest-2026q1 \
   --in-place
+```
+
+One-command conformance report:
+
+```bash
+python3 tests/run_conformance_bundle.py \
+  --profile conformance/adapter_profile.sample.json \
+  --registry-entry conformance/certification_registry.sample.json \
+  --keyring conformance/attestation_keys.sample.json \
+  --output /tmp/faxp_conformance_report.json
+```
+
+Quickstart bundle:
+
+```bash
+bash conformance/quickstart/make_conformance_bundle.sh
+```
+
+Translator wrapper quick usage:
+
+```python
+from conformance.verifier_translator import translate_verifier_payload
+
+result = translate_verifier_payload(
+    "fmcsa",
+    {"payload": {"mcNumber": "498282"}, "signature": {"alg": "HMAC_SHA256", "kid": "k1", "sig": "..."}},
+    source="hosted-adapter",
+    signature_keys={"k1": "shared-secret"},
+    require_signed_wrapper=True,
+)
 ```

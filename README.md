@@ -34,6 +34,9 @@ This repository includes:
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/adapter_profile.sample.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/attestation_keys.sample.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/generate_attestation.py`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/conformance_bundle.py`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/verifier_translator.py`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/quickstart/`
 
 ## Protocol Neutrality Boundary
 
@@ -278,6 +281,22 @@ Attestation generator checks:
 python3 tests/run_generate_attestation.py
 ```
 
+Conformance bundle checks:
+
+```bash
+python3 tests/run_conformance_bundle.py \
+  --profile conformance/adapter_profile.sample.json \
+  --registry-entry conformance/certification_registry.sample.json \
+  --keyring conformance/attestation_keys.sample.json \
+  --output /tmp/faxp_conformance_report.json
+```
+
+Verifier translator checks:
+
+```bash
+python3 tests/run_verifier_translator.py
+```
+
 Regenerate adapter self-attestation fields (digest/signature):
 
 ```bash
@@ -286,6 +305,12 @@ python3 conformance/generate_attestation.py \
   --keyring conformance/attestation_keys.sample.json \
   --kid faxp-lab-selfattest-2026q1 \
   --in-place
+```
+
+Quickstart onboarding bundle (templates + attestation + report):
+
+```bash
+bash conformance/quickstart/make_conformance_bundle.sh
 ```
 
 ### 7) Troubleshooting
