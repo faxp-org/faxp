@@ -62,6 +62,9 @@ Reference paths:
 - `python3 tests/run_registry_ops_artifacts.py`
 - `python3 tests/run_apply_registry_update.py`
 - `python3 tests/run_create_registry_update.py`
+- `python3 tests/run_conformance_suite.py`
+  - or run one-command full suite:
+  - `python3 conformance/run_all_checks.py --output /tmp/faxp_conformance_suite_report.json`
 3. Implementer submits bundle and conformance output.
 4. FAXP verifier reruns checks in CI.
 5. If all checks pass, registry entry is accepted/updated.

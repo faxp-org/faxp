@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+"""Regression check for conformance/run_all_checks.py."""
+
+from __future__ import annotations
+
+from pathlib import Path
+import json
+import subprocess
+import sys
+import tempfile
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+SCRIPT_PATH = PROJECT_ROOT / "conformance" / "run_all_checks.py"
+
+
+def _assert(condition: bool, message: str) -> None:
+    if not condition:
+        raise AssertionError(message)
+
+
+def _load_json(path: Path) -> dict:
+    with path.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def main() -> int:
+    with tempfile.TemporaryDirectory(prefix="faxp-conformance-suite-") as temp_dir:
+        output_path = Path(temp_dir) / "suite_report.json"
+        log_dir = Path(temp_dir) / "suite_logs"
+
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT_PATH),
+                "--checks",
+                "adapter_test_profile,submission_manifest,key_lifecycle_policy",
+                "--output",
+                str(output_path),
+                "--log-dir",
+                str(log_dir),
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        _assert("[ConformanceSuite] report:" in completed.stdout, "missing suite report output line")
+        _assert(output_path.exists(), "suite report was not written")
+        _assert(log_dir.exists(), "suite log directory was not written")
+
+        report = _load_json(output_path)
+        summary = report.get("summary") or {}
+        checks = report.get("checks") or []
+        _assert(summary.get("passed") is True, "conformance suite summary did not pass")
+        _assert(summary.get("failedChecks") == 0, "conformance suite reported failures")
+        _assert(len(checks) == 3, "conformance suite did not execute expected subset of checks")
+        _assert(
+            all(Path(item.get("stdoutLog", "")).exists() for item in checks),
+            "one or more stdout log files are missing",
+        )
+        _assert(
+            all(Path(item.get("stderrLog", "")).exists() for item in checks),
+            "one or more stderr log files are missing",
+        )
+
+    print("Conformance suite orchestrator checks passed.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -26,6 +26,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `create_submission_manifest.py`: helper to generate signed submission manifests from template payloads.
 - `create_registry_update.py`: helper to generate signed registry update requests from template payloads.
 - `apply_registry_update.py`: deterministic registry update applier (upsert/revoke/rollback).
+- `run_all_checks.py`: one-command conformance orchestrator with JSON summary report.
 - `submission_manifest_signing.py`: shared canonicalization/sign/verify helpers for submission manifests.
 - `registry_update_signing.py`: shared canonicalization/sign/verify helpers for registry update requests.
 - `conformance_bundle.py`: reusable conformance evaluator for profile + registry bundles.
@@ -119,6 +120,13 @@ Key lifecycle policy checks:
 
 ```bash
 python3 tests/run_key_lifecycle_policy.py
+```
+
+One-command conformance suite:
+
+```bash
+python3 conformance/run_all_checks.py \
+  --output /tmp/faxp_conformance_suite_report.json
 ```
 
 Registry operations artifact check:

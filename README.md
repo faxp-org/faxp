@@ -55,6 +55,7 @@ This repository includes:
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/create_submission_manifest.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/create_registry_update.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/apply_registry_update.py`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/run_all_checks.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/submission_manifest_signing.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update_signing.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/conformance_bundle.py`
@@ -338,6 +339,19 @@ Key lifecycle policy checks:
 
 ```bash
 python3 tests/run_key_lifecycle_policy.py
+```
+
+Conformance suite orchestrator check:
+
+```bash
+python3 tests/run_conformance_suite.py
+```
+
+Run full conformance suite and emit one report:
+
+```bash
+python3 conformance/run_all_checks.py \
+  --output /tmp/faxp_conformance_suite_report.json
 ```
 
 Registry operations artifact checks:
