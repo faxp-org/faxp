@@ -1,0 +1,53 @@
+{
+  "requestVersion": "1.0.0",
+  "changeSetId": "faxp-regops-20260222-0001",
+  "submittedAt": "2026-02-22T00:00:00Z",
+  "baseRegistryRef": "conformance/certification_registry.sample.json",
+  "requestedBy": {
+    "organization": "FAXP Certification Committee",
+    "contactEmail": "registry-ops@faxp.org"
+  },
+  "approvals": {
+    "policyApproved": true,
+    "approverRef": "review-ticket-20260222-001"
+  },
+  "operations": [
+    {
+      "opId": "op-001",
+      "action": "UPSERT",
+      "adapterId": "sample-fmcsa-adapter-us-prod",
+      "reasonCode": "EXPIRY_RENEWAL",
+      "effectiveAt": "2026-02-22T00:05:00Z",
+      "expectedCurrentStatus": "Active",
+      "patch": {
+        "certificationTier": "TrustedProduction",
+        "expiresAt": "2026-12-31T00:00:00Z",
+        "notes": "Promoted after production evidence review."
+      }
+    },
+    {
+      "opId": "op-002",
+      "action": "REVOKE",
+      "adapterId": "sample-fmcsa-adapter-us-prod",
+      "reasonCode": "KEY_COMPROMISE",
+      "effectiveAt": "2026-02-22T01:10:00Z",
+      "expectedCurrentStatus": "Active",
+      "notes": "Emergency revoke during signing key compromise investigation."
+    },
+    {
+      "opId": "op-003",
+      "action": "ROLLBACK",
+      "adapterId": "sample-fmcsa-adapter-us-prod",
+      "reasonCode": "ERRONEOUS_ACTION",
+      "effectiveAt": "2026-02-22T02:30:00Z",
+      "expectedCurrentStatus": "Revoked",
+      "rollback": {
+        "targetOpId": "op-002"
+      },
+      "notes": "Revoke rolled back after false positive and confirmed key integrity."
+    }
+  ],
+  "auditTrailRef": "conformance/registry_update.sample.audit.log",
+  "notes": "Sample registry update flow covering upsert, revoke, and rollback."
+}
+

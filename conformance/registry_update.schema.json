@@ -1,0 +1,209 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faxp.org/schema/registry-update-v1.json",
+  "title": "FAXP Registry Update Request",
+  "type": "object",
+  "required": [
+    "requestVersion",
+    "changeSetId",
+    "submittedAt",
+    "baseRegistryRef",
+    "requestedBy",
+    "approvals",
+    "operations"
+  ],
+  "properties": {
+    "requestVersion": {
+      "type": "string"
+    },
+    "changeSetId": {
+      "type": "string",
+      "minLength": 8
+    },
+    "submittedAt": {
+      "type": "string"
+    },
+    "baseRegistryRef": {
+      "type": "string",
+      "minLength": 1
+    },
+    "requestedBy": {
+      "type": "object",
+      "required": ["organization", "contactEmail"],
+      "properties": {
+        "organization": {
+          "type": "string",
+          "minLength": 2
+        },
+        "contactEmail": {
+          "type": "string",
+          "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "approvals": {
+      "type": "object",
+      "required": ["policyApproved", "approverRef"],
+      "properties": {
+        "policyApproved": {
+          "type": "boolean"
+        },
+        "approverRef": {
+          "type": "string",
+          "minLength": 3
+        }
+      },
+      "additionalProperties": false
+    },
+    "operations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["opId", "action", "adapterId", "reasonCode", "effectiveAt"],
+        "properties": {
+          "opId": {
+            "type": "string",
+            "minLength": 3
+          },
+          "action": {
+            "type": "string",
+            "enum": ["UPSERT", "SUSPEND", "REVOKE", "ROLLBACK"]
+          },
+          "adapterId": {
+            "type": "string",
+            "minLength": 3
+          },
+          "reasonCode": {
+            "type": "string",
+            "enum": [
+              "SECURITY_INCIDENT",
+              "KEY_COMPROMISE",
+              "CONTROL_FAILURE",
+              "ATTESTATION_MISMATCH",
+              "EXPIRY_RENEWAL",
+              "REMEDIATION_COMPLETE",
+              "ERRONEOUS_ACTION",
+              "OTHER"
+            ]
+          },
+          "effectiveAt": {
+            "type": "string"
+          },
+          "expectedCurrentStatus": {
+            "type": "string",
+            "enum": ["Active", "Suspended", "Revoked"]
+          },
+          "patch": {
+            "type": "object",
+            "minProperties": 1,
+            "properties": {
+              "certificationTier": {
+                "type": "string",
+                "enum": ["SelfAttested", "Conformant", "TrustedProduction"]
+              },
+              "status": {
+                "type": "string",
+                "enum": ["Active", "Suspended", "Revoked"]
+              },
+              "profilesSupported": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              },
+              "conformanceReportRef": {
+                "type": "string"
+              },
+              "expiresAt": {
+                "type": "string"
+              },
+              "notes": {
+                "type": "string"
+              },
+              "securityAttestation": {
+                "type": "object",
+                "required": ["signedRequests", "signedResponses", "replayProtection"],
+                "properties": {
+                  "signedRequests": { "type": "boolean" },
+                  "signedResponses": { "type": "boolean" },
+                  "replayProtection": { "type": "boolean" }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "rollback": {
+            "type": "object",
+            "required": ["targetOpId"],
+            "properties": {
+              "targetOpId": {
+                "type": "string",
+                "minLength": 3
+              }
+            },
+            "additionalProperties": false
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "action": { "const": "UPSERT" }
+              }
+            },
+            "then": {
+              "required": ["patch"],
+              "not": {
+                "required": ["rollback"]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "action": { "const": "ROLLBACK" }
+              }
+            },
+            "then": {
+              "required": ["rollback"],
+              "not": {
+                "required": ["patch"]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "action": { "enum": ["SUSPEND", "REVOKE"] }
+              }
+            },
+            "then": {
+              "not": {
+                "anyOf": [
+                  { "required": ["patch"] },
+                  { "required": ["rollback"] }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "auditTrailRef": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}
+

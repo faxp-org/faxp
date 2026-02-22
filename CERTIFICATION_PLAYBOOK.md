@@ -39,6 +39,8 @@ Reference paths:
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/certification_registry.schema.json`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/adapter_test_profile.schema.json`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/submission_manifest.schema.json`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update.schema.json`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/REGISTRY_OPERATIONS_RUNBOOK.md`
 
 ## 3) Intake Workflow
 
@@ -48,6 +50,7 @@ Reference paths:
 - `python3 tests/run_conformance_bundle.py`
 - `python3 tests/run_adapter_test_profile.py`
 - `python3 tests/run_submission_manifest.py`
+- `python3 tests/run_registry_ops_artifacts.py`
 3. Implementer submits bundle and conformance output.
 4. FAXP verifier reruns checks in CI.
 5. If all checks pass, registry entry is accepted/updated.
@@ -96,4 +99,3 @@ Reject when:
 Revocation action:
 - Mark registry entry `Revoked` or `Suspended`.
 - Record rationale and timestamp in registry notes/audit logs.
-

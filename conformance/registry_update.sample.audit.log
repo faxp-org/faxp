@@ -1,0 +1,3 @@
+2026-02-22T00:05:00Z changeSet=faxp-regops-20260222-0001 op=op-001 action=UPSERT status=applied
+2026-02-22T01:10:00Z changeSet=faxp-regops-20260222-0001 op=op-002 action=REVOKE status=applied
+2026-02-22T02:30:00Z changeSet=faxp-regops-20260222-0001 op=op-003 action=ROLLBACK target=op-002 status=applied

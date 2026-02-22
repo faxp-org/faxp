@@ -13,6 +13,9 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `submission_manifest.schema.json`: schema for certification submission manifest bundles.
 - `submission_manifest.sample.json`: sample certification submission manifest.
 - `sample_conformance_report.json`: sample conformance report referenced by submission manifest.
+- `registry_update.schema.json`: schema for registry operations request payloads.
+- `registry_update.sample.json`: sample registry operations request with upsert/revoke/rollback.
+- `registry_update.sample.audit.log`: sample audit log for registry operations.
 - `attestation_keys.sample.json`: test-only keyring for local/CI attestation verification.
 - `generate_attestation.py`: helper to regenerate payload digest/signature for adapter profiles.
 - `conformance_bundle.py`: reusable conformance evaluator for profile + registry bundles.
@@ -22,6 +25,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 Human-readable adapter contract:
 - `adapter/INTERFACE.md`: implementer handoff contract for request/response, security, and conformance expectations.
 - `CERTIFICATION_PLAYBOOK.md`: certification intake workflow and tier decision rules.
+- `REGISTRY_OPERATIONS_RUNBOOK.md`: operational process for update/revoke/rollback and rollback safety.
 
 Adapter hosting model:
 
@@ -89,6 +93,12 @@ Submission manifest bundle check:
 
 ```bash
 python3 tests/run_submission_manifest.py
+```
+
+Registry operations artifact check:
+
+```bash
+python3 tests/run_registry_ops_artifacts.py
 ```
 
 Translator wrapper quick usage:

@@ -26,6 +26,7 @@ This repository includes:
 - Governance model: `/Users/zglitch009/projects/logistics-ai/FAXP/FAXP_GOVERNANCE_MODEL.md`
 - Builder handoff checklist: `/Users/zglitch009/projects/logistics-ai/FAXP/ADAPTER_IMPLEMENTER_HANDOFF.md`
 - Certification playbook: `/Users/zglitch009/projects/logistics-ai/FAXP/CERTIFICATION_PLAYBOOK.md`
+- Registry operations runbook: `/Users/zglitch009/projects/logistics-ai/FAXP/REGISTRY_OPERATIONS_RUNBOOK.md`
 - Verification profiles:
   - schema: `/Users/zglitch009/projects/logistics-ai/FAXP/profiles/verification/profile.schema.json`
   - strict: `/Users/zglitch009/projects/logistics-ai/FAXP/profiles/verification/US_FMCSA_STRICT_V1.json`
@@ -41,6 +42,9 @@ This repository includes:
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/submission_manifest.schema.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/submission_manifest.sample.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/sample_conformance_report.json`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update.schema.json`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update.sample.json`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update.sample.audit.log`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/attestation_keys.sample.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/generate_attestation.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/conformance_bundle.py`
@@ -302,6 +306,12 @@ Submission manifest bundle checks:
 
 ```bash
 python3 tests/run_submission_manifest.py
+```
+
+Registry operations artifact checks:
+
+```bash
+python3 tests/run_registry_ops_artifacts.py
 ```
 
 Verifier translator checks:

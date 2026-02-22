@@ -26,6 +26,8 @@ FMCSA_ADAPTER_TEST_PROFILE_PATH = PROJECT_ROOT / "conformance" / "fmcsa_adapter_
 SUBMISSION_MANIFEST_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "submission_manifest.schema.json"
 SUBMISSION_MANIFEST_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "submission_manifest.sample.json"
 SAMPLE_CONFORMANCE_REPORT_PATH = PROJECT_ROOT / "conformance" / "sample_conformance_report.json"
+REGISTRY_UPDATE_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "registry_update.schema.json"
+REGISTRY_UPDATE_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "registry_update.sample.json"
 ATTESTATION_KEYS_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "attestation_keys.sample.json"
 
 
@@ -76,6 +78,8 @@ def main() -> int:
     submission_manifest_schema = _load_json(SUBMISSION_MANIFEST_SCHEMA_PATH)
     submission_manifest_sample = _load_json(SUBMISSION_MANIFEST_SAMPLE_PATH)
     sample_conformance_report = _load_json(SAMPLE_CONFORMANCE_REPORT_PATH)
+    registry_update_schema = _load_json(REGISTRY_UPDATE_SCHEMA_PATH)
+    registry_update_sample = _load_json(REGISTRY_UPDATE_SAMPLE_PATH)
     attestation_keyring = _load_json(ATTESTATION_KEYS_SAMPLE_PATH)
 
     _validate(profile_schema, strict_profile, "strict profile")
@@ -91,6 +95,11 @@ def main() -> int:
         submission_manifest_schema,
         submission_manifest_sample,
         "submission manifest sample",
+    )
+    _validate(
+        registry_update_schema,
+        registry_update_sample,
+        "registry update sample",
     )
 
     _assert_tier_coverage(strict_profile, "strict profile")
@@ -235,6 +244,22 @@ def main() -> int:
     _assert(
         sample_conformance_report.get("adapterId") == adapter_profile_sample["adapterId"],
         "sample conformance report adapterId must match sample adapter profile adapterId.",
+    )
+    _assert(
+        registry_update_sample.get("baseRegistryRef")
+        == "conformance/certification_registry.sample.json",
+        "registry update sample must reference the sample registry path.",
+    )
+    _assert(
+        bool(registry_update_sample.get("operations")),
+        "registry update sample must include operations.",
+    )
+    rollback_ops = [
+        op for op in registry_update_sample.get("operations", []) if op.get("action") == "ROLLBACK"
+    ]
+    _assert(
+        bool(rollback_ops),
+        "registry update sample should include at least one rollback operation.",
     )
 
     print("Certification artifact checks passed.")
