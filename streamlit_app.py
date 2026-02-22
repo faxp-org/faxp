@@ -59,6 +59,7 @@ elif _cloud_safe_setting in {"0", "false", "no", "off"}:
 else:
     CLOUD_SAFE_MODE = NON_LOCAL_MODE
 LIVE_FMCSA_CONFIGURED = bool(os.getenv("FAXP_FMCSA_WEBKEY", "").strip())
+HOSTED_FMCSA_CONFIGURED = bool(os.getenv("FAXP_FMCSA_ADAPTER_BASE_URL", "").strip())
 MAX_AUTH_FAILURES = int(os.getenv("FAXP_AUTH_MAX_FAILURES", "5"))
 AUTH_LOCKOUT_SECONDS = int(os.getenv("FAXP_AUTH_LOCKOUT_SECONDS", "300"))
 GLOBAL_VERIFICATION_CALL_TIMES = []
@@ -111,6 +112,7 @@ def apply_quick_preset(preset_name):
         QUICK_PRESETS,
         preset_name,
         live_fmcsa_configured=LIVE_FMCSA_CONFIGURED,
+        hosted_fmcsa_configured=HOSTED_FMCSA_CONFIGURED,
     )
 
 
@@ -300,6 +302,7 @@ def run_flow(
         "fmcsa_source": fmcsa_source if provider == "FMCSA" else "n/a",
         "mc_number": (mc_number or "").strip() if provider == "FMCSA" else "",
         "live_fmcsa_configured": LIVE_FMCSA_CONFIGURED,
+        "hosted_fmcsa_configured": HOSTED_FMCSA_CONFIGURED,
         "cloud_safe_mode": CLOUD_SAFE_MODE,
         "result_status": "NotStarted",
         "result_source": "n/a",
@@ -470,9 +473,12 @@ with st.sidebar:
 
     if provider == "FMCSA":
         if CLOUD_SAFE_MODE:
-            options = ["authority-mock"]
+            options = []
+            if HOSTED_FMCSA_CONFIGURED:
+                options.append("hosted-adapter")
             if LIVE_FMCSA_CONFIGURED:
-                options.insert(0, "live-fmcsa")
+                options.append("live-fmcsa")
+            options.append("authority-mock")
             if st.session_state.get("fmcsa_source_select_cloud") not in options:
                 st.session_state.fmcsa_source_select_cloud = options[0]
             cloud_fmcsa_mode = st.selectbox(
@@ -485,22 +491,35 @@ with st.sidebar:
                 fmcsa_source = "live-fmcsa"
                 mc_number = st.text_input("MC Number", key="mc_number_input")
                 st.caption("Live FMCSA mode enabled via FAXP_FMCSA_WEBKEY.")
+            elif cloud_fmcsa_mode == "hosted-adapter":
+                fmcsa_source = "hosted-adapter"
+                mc_number = st.text_input("MC Number", key="mc_number_input")
+                st.caption("Hosted FMCSA adapter mode enabled via FAXP_FMCSA_ADAPTER_BASE_URL.")
             else:
                 fmcsa_source = "carrier-finder"
                 mc_number = ""
                 st.caption("FMCSA authority-mock mode (no external API call).")
             carrier_finder_path = None
         else:
+            local_fmcsa_options = ["carrier-finder", "hosted-adapter", "live-fmcsa"]
             fmcsa_source = st.selectbox(
                 "FMCSA Source",
-                ["carrier-finder", "live-fmcsa"],
+                local_fmcsa_options,
                 key="fmcsa_source_select_local",
-                help="carrier-finder uses local adapter; live-fmcsa calls FMCSA QCMobile API directly.",
+                help="carrier-finder uses local adapter; hosted-adapter calls your hosted FMCSA wrapper; live-fmcsa calls FMCSA QCMobile directly.",
             )
             mc_number = st.text_input("MC Number", key="mc_number_input")
             if fmcsa_source == "carrier-finder":
                 carrier_finder_path = secure_carrier_finder_path()
                 st.caption(f"carrier-finder path: {carrier_finder_path or '[not allowlisted]'}")
+            elif fmcsa_source == "hosted-adapter":
+                carrier_finder_path = None
+                if HOSTED_FMCSA_CONFIGURED:
+                    st.caption("Hosted FMCSA adapter mode enabled via FAXP_FMCSA_ADAPTER_BASE_URL.")
+                else:
+                    st.caption(
+                        "Missing FAXP_FMCSA_ADAPTER_BASE_URL; hosted adapter calls will fail closed."
+                    )
             else:
                 carrier_finder_path = None
                 if LIVE_FMCSA_CONFIGURED:
@@ -591,6 +610,7 @@ else:
             "provider": diag.get("provider", "n/a"),
             "fmcsaSource": diag.get("fmcsa_source", "n/a"),
             "liveFmcsaConfigured": diag.get("live_fmcsa_configured"),
+            "hostedFmcsaConfigured": diag.get("hosted_fmcsa_configured"),
             "cloudSafeMode": diag.get("cloud_safe_mode"),
             "resultStatus": diag.get("result_status", "n/a"),
             "resultProvider": diag.get("result_provider", "n/a"),
@@ -601,14 +621,18 @@ else:
         },
         indent=2,
     )
-    c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3, c4, c5 = st.columns(5)
     c1.metric("Configured Provider", diag.get("provider", "n/a"))
     c2.metric("FMCSA Source", diag.get("fmcsa_source", "n/a"))
     c3.metric(
         "FMCSA WebKey",
         "Configured" if diag.get("live_fmcsa_configured") else "Missing",
     )
-    c4.metric("Last Result", diag.get("result_status", "n/a"))
+    c4.metric(
+        "FMCSA Adapter",
+        "Configured" if diag.get("hosted_fmcsa_configured") else "Missing",
+    )
+    c5.metric("Last Result", diag.get("result_status", "n/a"))
     run_id_value = str(diag.get("run_id", "n/a"))
     st.caption(f"RunID: {run_id_value}")
     if run_id_value and run_id_value != "n/a":
@@ -633,6 +657,7 @@ else:
             "appMode": APP_MODE,
             "cloudSafeMode": CLOUD_SAFE_MODE,
             "liveFmcsaConfigured": LIVE_FMCSA_CONFIGURED,
+            "hostedFmcsaConfigured": HOSTED_FMCSA_CONFIGURED,
             "maxVerificationsPerHour": MAX_VERIFICATION_CALLS_PER_HOUR,
         },
         "diagnostics": json.loads(diag_json),
@@ -680,6 +705,7 @@ else:
             {"Check": "SIGNATURE_SCHEME", "Value": SIGNATURE_SCHEME},
             {"Check": "VERIFIER_SIGNATURE_SCHEME", "Value": VERIFIER_SIGNATURE_SCHEME},
             {"Check": "FMCSA_WEBKEY_CONFIGURED", "Value": LIVE_FMCSA_CONFIGURED},
+            {"Check": "FMCSA_ADAPTER_CONFIGURED", "Value": HOSTED_FMCSA_CONFIGURED},
             {"Check": "CLOUD_SAFE_MODE", "Value": CLOUD_SAFE_MODE},
             {"Check": "APP_MODE", "Value": APP_MODE},
         ]

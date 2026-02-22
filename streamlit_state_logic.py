@@ -8,6 +8,17 @@ from typing import Any, Mapping, MutableMapping
 
 def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]]:
     return {
+        "FMCSA hosted adapter (MC 498282)": {
+            "provider": "FMCSA",
+            "rate_model": "PerMile",
+            "bid_amount": float(default_per_mile_bid),
+            "response_type": "Accept",
+            "verification_status": "Success",
+            "no_match": False,
+            "mc_number": "498282",
+            "fmcsa_source_local": "hosted-adapter",
+            "fmcsa_source_cloud": "hosted-adapter",
+        },
         "FMCSA live (MC 498282)": {
             "provider": "FMCSA",
             "rate_model": "PerMile",
@@ -81,6 +92,7 @@ def apply_preset_to_state(
     preset_name: str,
     *,
     live_fmcsa_configured: bool,
+    hosted_fmcsa_configured: bool = False,
 ) -> None:
     preset = presets.get(preset_name)
     if not preset:
@@ -101,8 +113,10 @@ def apply_preset_to_state(
             "fmcsa_source_local", "carrier-finder"
         )
         cloud_source = preset.get("fmcsa_source_cloud", "authority-mock")
-        if cloud_source == "live-fmcsa" and not live_fmcsa_configured:
+        if cloud_source == "hosted-adapter" and not hosted_fmcsa_configured:
             cloud_source = "authority-mock"
+        if cloud_source == "live-fmcsa" and not live_fmcsa_configured:
+            cloud_source = "hosted-adapter" if hosted_fmcsa_configured else "authority-mock"
         state["fmcsa_source_select_cloud"] = cloud_source
     else:
         state["provider_local_select"] = "MockBiometricProvider"

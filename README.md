@@ -95,6 +95,17 @@ Expected success line:
 
 If verification fails in live FMCSA mode, that is expected when authority/insurance checks fail for the MC.
 
+Hosted FMCSA adapter simulation path:
+
+```bash
+python3 faxp_mvp_simulation.py \
+  --provider FMCSA \
+  --fmcsa-source hosted-adapter \
+  --mc-number 498282 \
+  --response Accept \
+  --verification-status Success
+```
+
 ### 3) Run the Streamlit Demo (Local)
 
 ```bash
@@ -139,8 +150,17 @@ FAXP_FMCSA_API_BASE_URL="https://mobile.fmcsa.dot.gov/qc/services"
 FAXP_FMCSA_API_TIMEOUT_SECONDS="12"
 ```
 
+Recommended hosted FMCSA adapter secrets:
+```toml
+FAXP_FMCSA_ADAPTER_BASE_URL="https://your-hosted-verifier.example/v1/fmcsa/verify"
+FAXP_FMCSA_ADAPTER_AUTH_TOKEN="your_adapter_access_token"
+FAXP_FMCSA_ADAPTER_TIMEOUT_SECONDS="10"
+FAXP_FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER="1"
+```
+
 Notes:
-- Without `FAXP_FMCSA_WEBKEY`, cloud FMCSA mode automatically falls back to `authority-mock`.
+- Cloud FMCSA source selection order is: `hosted-adapter` (if configured), `live-fmcsa` (if configured), otherwise `authority-mock`.
+- Without hosted adapter or live FMCSA credentials, cloud FMCSA mode automatically falls back to `authority-mock`.
 - Access key is enforced when `FAXP_APP_MODE` is non-local.
 
 ### 5) Security/Health Checks

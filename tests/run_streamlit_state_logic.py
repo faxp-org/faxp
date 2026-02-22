@@ -37,8 +37,21 @@ def main() -> int:
     apply_preset_to_state(
         state,
         presets,
+        "FMCSA hosted adapter (MC 498282)",
+        live_fmcsa_configured=False,
+        hosted_fmcsa_configured=False,
+    )
+    _assert(
+        state["fmcsa_source_select_cloud"] == "authority-mock",
+        "hosted adapter should downgrade to authority-mock when adapter is not configured",
+    )
+
+    apply_preset_to_state(
+        state,
+        presets,
         "FMCSA live (MC 498282)",
         live_fmcsa_configured=False,
+        hosted_fmcsa_configured=False,
     )
     _assert(
         state["quick_preset_select"] == prior_preset_selection,
@@ -55,6 +68,7 @@ def main() -> int:
         presets,
         "FMCSA live (MC 498282)",
         live_fmcsa_configured=True,
+        hosted_fmcsa_configured=False,
     )
     _assert(
         state["fmcsa_source_select_cloud"] == "live-fmcsa",
@@ -64,8 +78,21 @@ def main() -> int:
     apply_preset_to_state(
         state,
         presets,
+        "FMCSA hosted adapter (MC 498282)",
+        live_fmcsa_configured=False,
+        hosted_fmcsa_configured=True,
+    )
+    _assert(
+        state["fmcsa_source_select_cloud"] == "hosted-adapter",
+        "hosted adapter should remain selected when configured",
+    )
+
+    apply_preset_to_state(
+        state,
+        presets,
         "Forced fail demo",
         live_fmcsa_configured=True,
+        hosted_fmcsa_configured=True,
     )
     _assert(state["provider_local_select"] == "MockBiometricProvider", "local provider mismatch")
     _assert(state["verification_status_select"] == "Fail", "forced fail status mismatch")

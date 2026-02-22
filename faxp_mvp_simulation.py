@@ -44,6 +44,13 @@ FMCSA_EXPECTED_TOP_LEVEL_KEYS_RAW = os.getenv(
     "FAXP_FMCSA_EXPECTED_TOP_LEVEL_KEYS",
     "content,result,data,error,errors",
 ).strip()
+FMCSA_ADAPTER_BASE_URL = os.getenv("FAXP_FMCSA_ADAPTER_BASE_URL", "").strip()
+FMCSA_ADAPTER_AUTH_TOKEN = os.getenv("FAXP_FMCSA_ADAPTER_AUTH_TOKEN", "").strip()
+FMCSA_ADAPTER_TIMEOUT_SECONDS_RAW = os.getenv("FAXP_FMCSA_ADAPTER_TIMEOUT_SECONDS", "10").strip()
+FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER_RAW = os.getenv(
+    "FAXP_FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER",
+    "1",
+).strip()
 
 LEGACY_MESSAGE_SIGNING_KEY = os.getenv("FAXP_MESSAGE_SIGNING_KEY", "").encode("utf-8")
 LEGACY_VERIFIER_SIGNING_KEY = os.getenv("FAXP_VERIFIER_SIGNING_KEY", "").encode("utf-8")
@@ -139,6 +146,10 @@ ALLOWED_EXTERNAL_SECRET_KEYS = {
     "FAXP_FMCSA_API_TIMEOUT_SECONDS",
     "FAXP_FMCSA_LOG_UNKNOWN_KEYS",
     "FAXP_FMCSA_EXPECTED_TOP_LEVEL_KEYS",
+    "FAXP_FMCSA_ADAPTER_BASE_URL",
+    "FAXP_FMCSA_ADAPTER_AUTH_TOKEN",
+    "FAXP_FMCSA_ADAPTER_TIMEOUT_SECONDS",
+    "FAXP_FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER",
 }
 ROUTE_POLICY = {
     "NewLoad": {("Broker", "Carrier")},
@@ -306,6 +317,28 @@ FMCSA_EXPECTED_TOP_LEVEL_KEYS_RAW = _override_secret_value(
     "FAXP_FMCSA_EXPECTED_TOP_LEVEL_KEYS",
     FMCSA_EXPECTED_TOP_LEVEL_KEYS_RAW,
 ).strip()
+FMCSA_ADAPTER_BASE_URL = _override_secret_value(
+    "FAXP_FMCSA_ADAPTER_BASE_URL",
+    FMCSA_ADAPTER_BASE_URL,
+).strip()
+FMCSA_ADAPTER_AUTH_TOKEN = _override_secret_value(
+    "FAXP_FMCSA_ADAPTER_AUTH_TOKEN",
+    FMCSA_ADAPTER_AUTH_TOKEN,
+).strip()
+FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER_RAW = _override_secret_value(
+    "FAXP_FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER",
+    FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER_RAW,
+).strip()
+try:
+    FMCSA_ADAPTER_TIMEOUT_SECONDS = int(
+        _override_secret_value(
+            "FAXP_FMCSA_ADAPTER_TIMEOUT_SECONDS",
+            FMCSA_ADAPTER_TIMEOUT_SECONDS_RAW,
+        )
+    )
+except ValueError:
+    FMCSA_ADAPTER_TIMEOUT_SECONDS = 10
+FMCSA_ADAPTER_TIMEOUT_SECONDS = max(3, min(30, FMCSA_ADAPTER_TIMEOUT_SECONDS))
 
 
 def _is_truthy(value):
@@ -324,6 +357,9 @@ def _parse_expected_fmcsa_top_level_keys(raw_value):
 FMCSA_LOG_UNKNOWN_KEYS = _is_truthy(FMCSA_LOG_UNKNOWN_KEYS_RAW)
 FMCSA_EXPECTED_TOP_LEVEL_KEYS = _parse_expected_fmcsa_top_level_keys(
     FMCSA_EXPECTED_TOP_LEVEL_KEYS_RAW
+)
+FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER = _is_truthy(
+    FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER_RAW
 )
 
 
@@ -1056,9 +1092,9 @@ def parse_args():
     )
     parser.add_argument(
         "--fmcsa-source",
-        choices=["carrier-finder", "live-fmcsa"],
+        choices=["carrier-finder", "live-fmcsa", "hosted-adapter"],
         default="carrier-finder",
-        help="FMCSA verification source. 'live-fmcsa' uses direct FMCSA QCMobile API.",
+        help="FMCSA verification source. 'hosted-adapter' calls a hosted FMCSA wrapper API.",
     )
     parser.add_argument(
         "--rate-model",
@@ -1331,6 +1367,7 @@ KNOWN_VERIFICATION_CATEGORY_METHOD_PAIRS = {
 KNOWN_VERIFICATION_CATEGORY_METHOD_PAIRS.add(("Identity", "DocumentOnly"))
 NEUTRAL_VERIFICATION_PROVIDER_IDS = {
     "fmcsa_live": "compliance.authority-record.live",
+    "fmcsa_hosted_adapter": "compliance.authority-record.adapter",
     "fmcsa_registry": "compliance.authority-record.registry",
     "compliance_mock": "compliance.authority-record.mock",
     "biometric_mock": "identity.liveness-document.mock",
@@ -2341,6 +2378,59 @@ def _validate_carrier_finder_payload(payload, requested_mc):
         raise ValueError("carrier-finder returned Success with found=false.")
 
 
+def _unwrap_verifier_payload_wrapper(
+    wrapper,
+    source_name,
+    require_payload_wrapper,
+    require_signature,
+):
+    if not isinstance(wrapper, dict):
+        raise ValueError(f"{source_name} output must be a JSON object.")
+    if require_payload_wrapper and "payload" not in wrapper:
+        raise ValueError(f"{source_name} output missing payload wrapper.")
+    if "payload" not in wrapper:
+        return wrapper
+
+    payload = wrapper.get("payload")
+    signature = wrapper.get("signature")
+    signature_key_id = wrapper.get("signature_key_id")
+    signature_algorithm = str(wrapper.get("signature_algorithm") or "").upper()
+
+    if require_signature:
+        if signature_algorithm != VERIFIER_SIGNATURE_SCHEME:
+            raise ValueError("Verifier signature algorithm mismatch.")
+        if not signature_key_id:
+            raise ValueError("Verifier signature key ID missing.")
+        if signature_algorithm == "HMAC_SHA256":
+            if not VERIFIER_SIGNING_KEYS:
+                raise ValueError(
+                    "Missing verifier HMAC signing key material for signed verifier mode."
+                )
+            if signature_key_id not in VERIFIER_SIGNING_KEYS:
+                raise ValueError("Verifier signature key ID is not trusted.")
+            if not _verify_with_key_ring(
+                payload,
+                signature,
+                signature_key_id,
+                VERIFIER_SIGNING_KEYS,
+            ):
+                raise ValueError("Verifier signature validation failed.")
+        elif signature_algorithm == "ED25519":
+            if signature_key_id not in VERIFIER_ED25519_PUBLIC_KEYS:
+                raise ValueError("Verifier ED25519 signature key ID is not trusted.")
+            if not _verify_ed25519_with_public_key_ring(
+                payload,
+                signature,
+                signature_key_id,
+                VERIFIER_ED25519_PUBLIC_KEYS,
+            ):
+                raise ValueError("Verifier ED25519 signature validation failed.")
+        else:
+            raise ValueError("Unsupported verifier signature algorithm.")
+
+    return payload
+
+
 def lookup_fmcsa_with_carrier_finder(mc_number, carrier_finder_path):
     """Query carrier-finder for MC compliance signals."""
     if not mc_number:
@@ -2489,48 +2579,15 @@ def lookup_fmcsa_with_carrier_finder(mc_number, carrier_finder_path):
             "error": "carrier-finder output was not valid JSON.",
         }
 
-    if not isinstance(wrapper, dict) or "payload" not in wrapper:
-        return {"ok": False, "error": "carrier-finder output missing payload wrapper."}
-
-    payload = wrapper.get("payload")
-    signature = wrapper.get("signature")
-    signature_key_id = wrapper.get("signature_key_id")
-    signature_algorithm = str(wrapper.get("signature_algorithm") or "").upper()
-    if REQUIRE_SIGNED_VERIFIER:
-        if signature_algorithm != VERIFIER_SIGNATURE_SCHEME:
-            return {"ok": False, "error": "Verifier signature algorithm mismatch."}
-        if not signature_key_id:
-            return {"ok": False, "error": "Verifier signature key ID missing."}
-        if signature_algorithm == "HMAC_SHA256":
-            if not VERIFIER_SIGNING_KEYS:
-                return {
-                    "ok": False,
-                    "error": "Missing verifier HMAC signing key material for signed verifier mode.",
-                }
-            if signature_key_id not in VERIFIER_SIGNING_KEYS:
-                return {"ok": False, "error": "Verifier signature key ID is not trusted."}
-            if not _verify_with_key_ring(
-                payload,
-                signature,
-                signature_key_id,
-                VERIFIER_SIGNING_KEYS,
-            ):
-                return {"ok": False, "error": "Verifier signature validation failed."}
-        elif signature_algorithm == "ED25519":
-            if signature_key_id not in VERIFIER_ED25519_PUBLIC_KEYS:
-                return {
-                    "ok": False,
-                    "error": "Verifier ED25519 signature key ID is not trusted.",
-                }
-            if not _verify_ed25519_with_public_key_ring(
-                payload,
-                signature,
-                signature_key_id,
-                VERIFIER_ED25519_PUBLIC_KEYS,
-            ):
-                return {"ok": False, "error": "Verifier ED25519 signature validation failed."}
-        else:
-            return {"ok": False, "error": "Unsupported verifier signature algorithm."}
+    try:
+        payload = _unwrap_verifier_payload_wrapper(
+            wrapper=wrapper,
+            source_name="carrier-finder",
+            require_payload_wrapper=True,
+            require_signature=REQUIRE_SIGNED_VERIFIER,
+        )
+    except ValueError as exc:
+        return {"ok": False, "error": str(exc)}
 
     try:
         _validate_carrier_finder_payload(payload, requested_mc=mc_number)
@@ -2539,6 +2596,80 @@ def lookup_fmcsa_with_carrier_finder(mc_number, carrier_finder_path):
 
     payload["ok"] = True
     return payload
+
+
+def lookup_fmcsa_with_hosted_adapter(mc_number):
+    """Query a hosted FMCSA adapter service for normalized compliance signals."""
+    target_mc = _normalize_mc(mc_number)
+    if not target_mc:
+        return {"ok": False, "error": "No MC number provided for hosted FMCSA verification."}
+
+    base_url = (FMCSA_ADAPTER_BASE_URL or "").strip()
+    if not base_url:
+        return {"ok": False, "error": "Missing FAXP_FMCSA_ADAPTER_BASE_URL for hosted adapter."}
+
+    endpoint = base_url.rstrip("/")
+    request_body = json.dumps({"mcNumber": target_mc}).encode("utf-8")
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+    }
+    if FMCSA_ADAPTER_AUTH_TOKEN:
+        headers["Authorization"] = f"Bearer {FMCSA_ADAPTER_AUTH_TOKEN}"
+
+    request = urllib.request.Request(
+        endpoint,
+        data=request_body,
+        headers=headers,
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(request, timeout=FMCSA_ADAPTER_TIMEOUT_SECONDS) as response:
+            raw_text = response.read().decode("utf-8", errors="replace")
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="replace")
+        return {
+            "ok": False,
+            "error": f"hosted adapter HTTP {exc.code}: {body[:180]}",
+        }
+    except urllib.error.URLError as exc:
+        return {"ok": False, "error": f"hosted adapter network error: {exc.reason}"}
+    except Exception as exc:
+        return {"ok": False, "error": f"hosted adapter call failed: {exc}"}
+
+    try:
+        wrapper = json.loads(raw_text)
+    except json.JSONDecodeError:
+        return {"ok": False, "error": "hosted adapter returned non-JSON response."}
+
+    require_signed_wrapper = FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER or REQUIRE_SIGNED_VERIFIER
+    try:
+        payload = _unwrap_verifier_payload_wrapper(
+            wrapper=wrapper,
+            source_name="hosted adapter",
+            require_payload_wrapper=require_signed_wrapper,
+            require_signature=require_signed_wrapper,
+        )
+    except ValueError as exc:
+        return {"ok": False, "error": str(exc)}
+
+    if not isinstance(payload, dict):
+        return {"ok": False, "error": "hosted adapter payload must be a JSON object."}
+    if payload.get("ok") is False:
+        return {"ok": False, "error": payload.get("error", "hosted adapter returned failure.")}
+
+    normalized_payload = dict(payload)
+    normalized_payload.pop("ok", None)
+    normalized_payload.pop("error", None)
+
+    try:
+        _validate_carrier_finder_payload(normalized_payload, requested_mc=target_mc)
+    except ValueError as exc:
+        return {"ok": False, "error": f"hosted adapter validation error: {exc}"}
+
+    normalized_payload["ok"] = True
+    return normalized_payload
 
 
 def run_verification(
@@ -2593,6 +2724,53 @@ def run_verification(
 
     if normalized_provider == "FMCSA":
         fm_token = f"fmcsa-{uuid4().hex[:14]}"
+        if fmcsa_source == "hosted-adapter":
+            live = lookup_fmcsa_with_hosted_adapter(mc_number=mc_number)
+            if live.get("ok"):
+                live_status = live.get("status", "Fail")
+                score = int(live.get("score", 0))
+                badge = "Basic" if live_status == "Success" else "None"
+                verification_result = build_result(
+                    status_value=live_status,
+                    provider_value=NEUTRAL_VERIFICATION_PROVIDER_IDS["fmcsa_hosted_adapter"],
+                    category="Compliance",
+                    method="AuthorityRecordCheck",
+                    assurance_level="AAL1",
+                    score_value=score,
+                    token_value=fm_token,
+                    source_value="hosted-adapter",
+                    source_authority="FMCSA",
+                    extra={
+                        "mcNumber": _normalize_mc(mc_number),
+                        "carrier": {
+                            "usdot": live.get("usdot_number"),
+                            "mc": live.get("mc_number"),
+                            "name": live.get("carrier_name"),
+                            "operatingStatus": live.get("operating_status"),
+                            "hasCurrentInsurance": live.get("has_current_insurance"),
+                            "interstateAuthorityOk": live.get("interstate_authority_ok"),
+                        },
+                    },
+                )
+                return verification_result, badge
+
+            verification_result = build_result(
+                status_value="Fail",
+                provider_value=NEUTRAL_VERIFICATION_PROVIDER_IDS["fmcsa_hosted_adapter"],
+                category="Compliance",
+                method="AuthorityRecordCheck",
+                assurance_level="AAL1",
+                score_value=0,
+                token_value=fm_token,
+                source_value="hosted-adapter",
+                source_authority="FMCSA",
+                extra={
+                    "mcNumber": _normalize_mc(mc_number),
+                    "error": live.get("error", "Unknown hosted FMCSA adapter error."),
+                },
+            )
+            return verification_result, "None"
+
         if fmcsa_source == "live-fmcsa":
             live = lookup_fmcsa_live_api(mc_number=mc_number)
             if live.get("ok"):
@@ -2640,7 +2818,7 @@ def run_verification(
             )
             return verification_result, "None"
 
-        if mc_number:
+        if fmcsa_source == "carrier-finder" and mc_number:
             live = lookup_fmcsa_with_carrier_finder(
                 mc_number=mc_number,
                 carrier_finder_path=carrier_finder_path
@@ -2688,6 +2866,21 @@ def run_verification(
                     "mcNumber": _normalize_mc(mc_number),
                     "error": live.get("error", "Unknown carrier-finder error."),
                 },
+            )
+            return verification_result, "None"
+
+        if fmcsa_source not in {"carrier-finder", "live-fmcsa", "hosted-adapter"}:
+            verification_result = build_result(
+                status_value="Fail",
+                provider_value=NEUTRAL_VERIFICATION_PROVIDER_IDS["compliance_mock"],
+                category="Compliance",
+                method="AuthorityRecordCheck",
+                assurance_level="AAL1",
+                score_value=0,
+                token_value=fm_token,
+                source_value="mock-compliance",
+                source_authority="FMCSA",
+                extra={"error": f"Unsupported FMCSA source: {fmcsa_source}"},
             )
             return verification_result, "None"
 
