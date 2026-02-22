@@ -17,6 +17,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from conformance.registry_update_signing import verify_request_signature  # noqa: E402
+from conformance.submission_manifest_signing import verify_submission_signature  # noqa: E402
 
 PROFILE_SCHEMA_PATH = PROJECT_ROOT / "profiles" / "verification" / "profile.schema.json"
 STRICT_PROFILE_PATH = PROJECT_ROOT / "profiles" / "verification" / "US_FMCSA_STRICT_V1.json"
@@ -29,6 +30,9 @@ ADAPTER_TEST_PROFILE_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "adapter_test_
 FMCSA_ADAPTER_TEST_PROFILE_PATH = PROJECT_ROOT / "conformance" / "fmcsa_adapter_test_profile.v1.json"
 SUBMISSION_MANIFEST_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "submission_manifest.schema.json"
 SUBMISSION_MANIFEST_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "submission_manifest.sample.json"
+SUBMISSION_MANIFEST_KEYS_SAMPLE_PATH = (
+    PROJECT_ROOT / "conformance" / "submission_manifest_keys.sample.json"
+)
 SAMPLE_CONFORMANCE_REPORT_PATH = PROJECT_ROOT / "conformance" / "sample_conformance_report.json"
 REGISTRY_UPDATE_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "registry_update.schema.json"
 REGISTRY_UPDATE_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "registry_update.sample.json"
@@ -82,6 +86,7 @@ def main() -> int:
     fmcsa_adapter_test_profile = _load_json(FMCSA_ADAPTER_TEST_PROFILE_PATH)
     submission_manifest_schema = _load_json(SUBMISSION_MANIFEST_SCHEMA_PATH)
     submission_manifest_sample = _load_json(SUBMISSION_MANIFEST_SAMPLE_PATH)
+    submission_manifest_keyring = _load_json(SUBMISSION_MANIFEST_KEYS_SAMPLE_PATH)
     sample_conformance_report = _load_json(SAMPLE_CONFORMANCE_REPORT_PATH)
     registry_update_schema = _load_json(REGISTRY_UPDATE_SCHEMA_PATH)
     registry_update_sample = _load_json(REGISTRY_UPDATE_SAMPLE_PATH)
@@ -105,6 +110,20 @@ def main() -> int:
         submission_manifest_schema,
         submission_manifest_sample,
         "submission manifest sample",
+    )
+    _assert(
+        isinstance(submission_manifest_keyring.get("keys"), dict)
+        and submission_manifest_keyring["keys"],
+        "submission manifest keyring must contain at least one key.",
+    )
+    verify_submission_signature(
+        submission_manifest_sample,
+        keyring=submission_manifest_keyring,
+        require_signature=True,
+    )
+    _validate_iso_datetime(
+        str((submission_manifest_sample.get("submissionSignature") or {}).get("signedAt") or ""),
+        "submission manifest submissionSignature.signedAt",
     )
     _validate(
         registry_update_schema,

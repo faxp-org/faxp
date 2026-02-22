@@ -41,6 +41,7 @@ This repository includes:
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/fmcsa_adapter_test_profile.v1.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/submission_manifest.schema.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/submission_manifest.sample.json`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/submission_manifest_keys.sample.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/sample_conformance_report.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update.schema.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update.sample.json`
@@ -49,8 +50,10 @@ This repository includes:
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/certification_registry.sample.after_update.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/attestation_keys.sample.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/generate_attestation.py`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/create_submission_manifest.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/create_registry_update.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/apply_registry_update.py`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/submission_manifest_signing.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update_signing.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/conformance_bundle.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/verifier_translator.py`
@@ -311,6 +314,22 @@ Submission manifest bundle checks:
 
 ```bash
 python3 tests/run_submission_manifest.py
+```
+
+Submission manifest create helper checks:
+
+```bash
+python3 tests/run_create_submission_manifest.py
+```
+
+Create signed submission manifest:
+
+```bash
+python3 conformance/create_submission_manifest.py \
+  --template conformance/submission_manifest.sample.json \
+  --keyring conformance/submission_manifest_keys.sample.json \
+  --kid faxp-submission-kid-2026q1 \
+  --output /tmp/faxp_submission_manifest.signed.json
 ```
 
 Registry operations artifact checks:

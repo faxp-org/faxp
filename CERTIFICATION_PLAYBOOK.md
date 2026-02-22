@@ -39,6 +39,8 @@ Reference paths:
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/certification_registry.schema.json`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/adapter_test_profile.schema.json`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/submission_manifest.schema.json`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/submission_manifest_keys.sample.json`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/create_submission_manifest.py`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update.schema.json`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update_keys.sample.json`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/create_registry_update.py`
@@ -53,6 +55,7 @@ Reference paths:
 - `python3 tests/run_conformance_bundle.py`
 - `python3 tests/run_adapter_test_profile.py`
 - `python3 tests/run_submission_manifest.py`
+- `python3 tests/run_create_submission_manifest.py`
 - `python3 tests/run_registry_ops_artifacts.py`
 - `python3 tests/run_apply_registry_update.py`
 - `python3 tests/run_create_registry_update.py`

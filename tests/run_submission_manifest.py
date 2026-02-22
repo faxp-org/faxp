@@ -13,10 +13,16 @@ from jsonschema import Draft202012Validator
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from conformance.submission_manifest_signing import verify_submission_signature  # noqa: E402
+
 CONFORMANCE_DIR = PROJECT_ROOT / "conformance"
 
 MANIFEST_SCHEMA_PATH = CONFORMANCE_DIR / "submission_manifest.schema.json"
 MANIFEST_SAMPLE_PATH = CONFORMANCE_DIR / "submission_manifest.sample.json"
+MANIFEST_KEYS_SAMPLE_PATH = CONFORMANCE_DIR / "submission_manifest_keys.sample.json"
 ADAPTER_PROFILE_SCHEMA_PATH = CONFORMANCE_DIR / "adapter_profile.schema.json"
 REGISTRY_SCHEMA_PATH = CONFORMANCE_DIR / "certification_registry.schema.json"
 ADAPTER_TEST_PROFILE_SCHEMA_PATH = CONFORMANCE_DIR / "adapter_test_profile.schema.json"
@@ -77,17 +83,40 @@ def parse_args() -> argparse.Namespace:
         default=str(MANIFEST_SAMPLE_PATH),
         help="Path to submission manifest JSON.",
     )
+    parser.add_argument(
+        "--keyring",
+        default=str(MANIFEST_KEYS_SAMPLE_PATH),
+        help="Submission manifest signing keyring JSON path.",
+    )
+    parser.add_argument(
+        "--allow-unsigned",
+        action="store_true",
+        help="Allow unsigned manifests (default requires valid submissionSignature).",
+    )
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
     manifest_path = Path(args.manifest).expanduser().resolve()
+    keyring_path = Path(args.keyring).expanduser().resolve()
     manifest = _load_json(manifest_path)
+    keyring = _load_json(keyring_path)
     manifest_schema = _load_json(MANIFEST_SCHEMA_PATH)
     _validate(manifest_schema, manifest, "submission manifest")
 
     _validate_iso_datetime(str(manifest["submittedAt"]), "manifest submittedAt")
+    verify_submission_signature(
+        manifest,
+        keyring=keyring,
+        require_signature=not args.allow_unsigned,
+    )
+    submission_signature = manifest.get("submissionSignature") or {}
+    if submission_signature:
+        _validate_iso_datetime(
+            str(submission_signature.get("signedAt") or ""),
+            "manifest submissionSignature.signedAt",
+        )
 
     adapter_id = str(manifest["adapterId"]).strip()
     requested_tier = str(manifest["requestedTier"]).strip()
@@ -224,4 +253,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

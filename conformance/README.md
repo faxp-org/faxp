@@ -12,6 +12,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `fmcsa_adapter_test_profile.v1.json`: FMCSA adapter certification test profile.
 - `submission_manifest.schema.json`: schema for certification submission manifest bundles.
 - `submission_manifest.sample.json`: sample certification submission manifest.
+- `submission_manifest_keys.sample.json`: test-only keyring for signing submission manifests.
 - `sample_conformance_report.json`: sample conformance report referenced by submission manifest.
 - `registry_update.schema.json`: schema for registry operations request payloads.
 - `registry_update.sample.json`: sample registry operations request with upsert/revoke/rollback.
@@ -20,8 +21,10 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `certification_registry.sample.after_update.json`: expected sample registry after applying `registry_update.sample.json`.
 - `attestation_keys.sample.json`: test-only keyring for local/CI attestation verification.
 - `generate_attestation.py`: helper to regenerate payload digest/signature for adapter profiles.
+- `create_submission_manifest.py`: helper to generate signed submission manifests from template payloads.
 - `create_registry_update.py`: helper to generate signed registry update requests from template payloads.
 - `apply_registry_update.py`: deterministic registry update applier (upsert/revoke/rollback).
+- `submission_manifest_signing.py`: shared canonicalization/sign/verify helpers for submission manifests.
 - `registry_update_signing.py`: shared canonicalization/sign/verify helpers for registry update requests.
 - `conformance_bundle.py`: reusable conformance evaluator for profile + registry bundles.
 - `verifier_translator.py`: reference wrapper for translating provider-native payloads to neutral FAXP verification output.
@@ -98,6 +101,16 @@ Submission manifest bundle check:
 
 ```bash
 python3 tests/run_submission_manifest.py
+```
+
+Submission manifest generation (signed):
+
+```bash
+python3 conformance/create_submission_manifest.py \
+  --template conformance/submission_manifest.sample.json \
+  --keyring conformance/submission_manifest_keys.sample.json \
+  --kid faxp-submission-kid-2026q1 \
+  --output /tmp/faxp_submission_manifest.signed.json
 ```
 
 Registry operations artifact check:

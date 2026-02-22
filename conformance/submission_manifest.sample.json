@@ -32,6 +32,12 @@
     "slaPolicyRef": "ADAPTER_IMPLEMENTER_HANDOFF.md",
     "keyManagementRef": "rotate_faxp_keys.sh"
   },
+  "submissionSignature": {
+    "alg": "HMAC_SHA256",
+    "kid": "faxp-submission-kid-2026q1",
+    "payloadDigestSha256": "sha256:f7630de1df7fe650c1b609009634f2188800d224b5cfb202d600567015c4e532",
+    "sig": "5ebcbf1363a824333417e6cbebcc43147fbb365477b0a29d05c282704491ff14",
+    "signedAt": "2026-02-22T00:00:00Z"
+  },
   "notes": "Sample submission manifest for CI and onboarding verification."
 }
-
