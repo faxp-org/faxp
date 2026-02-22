@@ -16,6 +16,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `registry_update.schema.json`: schema for registry operations request payloads.
 - `registry_update.sample.json`: sample registry operations request with upsert/revoke/rollback.
 - `registry_update.sample.audit.log`: sample audit log for registry operations.
+- `certification_registry.sample.after_update.json`: expected sample registry after applying `registry_update.sample.json`.
 - `attestation_keys.sample.json`: test-only keyring for local/CI attestation verification.
 - `generate_attestation.py`: helper to regenerate payload digest/signature for adapter profiles.
 - `conformance_bundle.py`: reusable conformance evaluator for profile + registry bundles.
@@ -99,6 +100,14 @@ Registry operations artifact check:
 
 ```bash
 python3 tests/run_registry_ops_artifacts.py
+```
+
+Apply registry update request (deterministic output):
+
+```bash
+python3 conformance/apply_registry_update.py \
+  --request conformance/registry_update.sample.json \
+  --output /tmp/faxp_registry_after_update.json
 ```
 
 Translator wrapper quick usage:

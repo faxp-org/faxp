@@ -45,6 +45,7 @@ This repository includes:
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update.schema.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update.sample.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update.sample.audit.log`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/certification_registry.sample.after_update.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/attestation_keys.sample.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/generate_attestation.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/conformance_bundle.py`
@@ -312,6 +313,20 @@ Registry operations artifact checks:
 
 ```bash
 python3 tests/run_registry_ops_artifacts.py
+```
+
+Registry apply tool checks:
+
+```bash
+python3 tests/run_apply_registry_update.py
+```
+
+Apply registry update request and write output:
+
+```bash
+python3 conformance/apply_registry_update.py \
+  --request conformance/registry_update.sample.json \
+  --output /tmp/faxp_registry_after_update.json
 ```
 
 Verifier translator checks:

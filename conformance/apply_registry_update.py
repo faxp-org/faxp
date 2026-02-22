@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-"""Validate registry update/revoke/rollback artifacts and transition safety rules."""
+"""Apply validated registry update operations and emit a deterministic registry artifact."""
 
 from __future__ import annotations
 
+from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 import argparse
 import json
+import sys
 
 from jsonschema import Draft202012Validator
 
@@ -17,12 +19,26 @@ CONFORMANCE_DIR = PROJECT_ROOT / "conformance"
 REGISTRY_SCHEMA_PATH = CONFORMANCE_DIR / "certification_registry.schema.json"
 REGISTRY_UPDATE_SCHEMA_PATH = CONFORMANCE_DIR / "registry_update.schema.json"
 REGISTRY_UPDATE_SAMPLE_PATH = CONFORMANCE_DIR / "registry_update.sample.json"
-REGISTRY_UPDATED_SAMPLE_PATH = CONFORMANCE_DIR / "certification_registry.sample.after_update.json"
+
+ALLOWED_PATCH_FIELDS = {
+    "certificationTier",
+    "status",
+    "profilesSupported",
+    "conformanceReportRef",
+    "expiresAt",
+    "notes",
+    "securityAttestation",
+}
 
 
 def _load_json(path: Path) -> dict:
     with path.open("r", encoding="utf-8") as handle:
         return json.load(handle)
+
+
+def _write_json(path: Path, payload: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
 def _assert(condition: bool, message: str) -> None:
@@ -55,9 +71,18 @@ def _resolve_ref(path_ref: str) -> Path:
     return resolved
 
 
+def _entry_index_by_adapter(entries: list[dict]) -> dict[str, int]:
+    index: dict[str, int] = {}
+    for idx, entry in enumerate(entries):
+        adapter_id = str(entry.get("adapterId") or "")
+        if adapter_id:
+            index[adapter_id] = idx
+    return index
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Validate registry operations artifacts (update/revoke/rollback)."
+        description="Apply registry update request to a base certification registry."
     )
     parser.add_argument(
         "--request",
@@ -68,6 +93,11 @@ def parse_args() -> argparse.Namespace:
         "--registry",
         default="",
         help="Optional override path to base registry JSON.",
+    )
+    parser.add_argument(
+        "--output",
+        default="",
+        help="Optional output path. If omitted, prints resulting registry JSON to stdout.",
     )
     return parser.parse_args()
 
@@ -93,40 +123,37 @@ def main() -> int:
         base_registry_path = _resolve_ref(request_payload["baseRegistryRef"])
     base_registry = _load_json(base_registry_path)
     _validate(registry_schema, base_registry, "base registry")
-    updated_registry_sample = _load_json(REGISTRY_UPDATED_SAMPLE_PATH)
-    _validate(registry_schema, updated_registry_sample, "updated registry sample")
 
     if request_payload.get("auditTrailRef"):
         _resolve_ref(str(request_payload["auditTrailRef"]))
 
-    entries = base_registry.get("entries", [])
+    result_registry = deepcopy(base_registry)
+    entries = result_registry.get("entries", [])
     _assert(entries, "base registry must include at least one entry.")
-    registry_state: dict[str, dict] = {
-        str(entry["adapterId"]): {
-            "status": str(entry["status"]),
-            "certificationTier": str(entry["certificationTier"]),
-        }
-        for entry in entries
-    }
-
-    operations = request_payload.get("operations", [])
-    _assert(operations, "registry update request must include operations.")
+    adapter_index = _entry_index_by_adapter(entries)
 
     seen_op_ids: set[str] = set()
     op_history: dict[str, dict] = {}
+    latest_effective: datetime | None = None
+
+    operations = request_payload.get("operations", [])
+    _assert(operations, "registry update request must include operations.")
 
     for idx, op in enumerate(operations, start=1):
         op_id = str(op["opId"])
         _assert(op_id not in seen_op_ids, f"duplicate opId detected: {op_id}")
         seen_op_ids.add(op_id)
 
-        _validate_iso_datetime(str(op["effectiveAt"]), f"operations[{idx}].effectiveAt")
+        effective_at = _validate_iso_datetime(str(op["effectiveAt"]), f"operations[{idx}].effectiveAt")
+        if latest_effective is None or effective_at > latest_effective:
+            latest_effective = effective_at
+
         adapter_id = str(op["adapterId"])
         action = str(op["action"])
-        _assert(adapter_id in registry_state, f"unknown adapterId in operation: {adapter_id}")
+        _assert(adapter_id in adapter_index, f"unknown adapterId in operation: {adapter_id}")
+        entry = entries[adapter_index[adapter_id]]
 
-        current_status = registry_state[adapter_id]["status"]
-        current_tier = registry_state[adapter_id]["certificationTier"]
+        current_status = str(entry["status"])
         expected = op.get("expectedCurrentStatus")
         if expected is not None:
             _assert(
@@ -134,29 +161,22 @@ def main() -> int:
                 f"{op_id}: expectedCurrentStatus={expected} but current status is {current_status}",
             )
 
-        pre_status = current_status
-        pre_tier = current_tier
-        post_status = current_status
-        post_tier = current_tier
+        pre_entry = deepcopy(entry)
 
         if action == "UPSERT":
             patch = op.get("patch") or {}
-            if "status" in patch:
-                post_status = str(patch["status"])
-            if "certificationTier" in patch:
-                post_tier = str(patch["certificationTier"])
+            for key, value in patch.items():
+                _assert(key in ALLOWED_PATCH_FIELDS, f"{op_id}: unsupported patch field '{key}'")
+                entry[key] = value
         elif action == "SUSPEND":
-            _assert(
-                current_status == "Active",
-                f"{op_id}: SUSPEND only allowed from Active, got {current_status}",
-            )
-            post_status = "Suspended"
+            _assert(current_status == "Active", f"{op_id}: SUSPEND only allowed from Active, got {current_status}")
+            entry["status"] = "Suspended"
         elif action == "REVOKE":
             _assert(
                 current_status in {"Active", "Suspended"},
                 f"{op_id}: REVOKE only allowed from Active/Suspended, got {current_status}",
             )
-            post_status = "Revoked"
+            entry["status"] = "Revoked"
         elif action == "ROLLBACK":
             rollback = op.get("rollback") or {}
             target_op_id = str(rollback.get("targetOpId") or "").strip()
@@ -167,25 +187,41 @@ def main() -> int:
                 str(target["adapterId"]) == adapter_id,
                 f"{op_id}: rollback target adapter mismatch for target {target_op_id}",
             )
-            post_status = str(target["pre_status"])
-            post_tier = str(target["pre_tier"])
+            restored = deepcopy(target["pre_entry"])
+            entries[adapter_index[adapter_id]] = restored
+            entry = entries[adapter_index[adapter_id]]
         else:
             raise AssertionError(f"{op_id}: unsupported action {action}")
 
-        registry_state[adapter_id]["status"] = post_status
-        registry_state[adapter_id]["certificationTier"] = post_tier
+        entry["lastCertifiedAt"] = str(op["effectiveAt"])
         op_history[op_id] = {
             "adapterId": adapter_id,
             "action": action,
-            "pre_status": pre_status,
-            "post_status": post_status,
-            "pre_tier": pre_tier,
-            "post_tier": post_tier,
+            "pre_entry": pre_entry,
+            "post_entry": deepcopy(entry),
         }
 
-    print("Registry operations artifact checks passed.")
+    if latest_effective is not None:
+        result_registry["generatedAt"] = latest_effective.replace(microsecond=0).isoformat().replace(
+            "+00:00", "Z"
+        )
+
+    _validate(registry_schema, result_registry, "result registry")
+
+    if args.output.strip():
+        output_path = Path(args.output).expanduser().resolve()
+        _write_json(output_path, result_registry)
+        print(f"[RegistryApply] wrote updated registry to {output_path}")
+    else:
+        print(json.dumps(result_registry, indent=2))
+
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except AssertionError as exc:
+        print(f"[RegistryApply] error: {exc}", file=sys.stderr)
+        raise SystemExit(1)
+

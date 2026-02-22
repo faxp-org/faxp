@@ -1,0 +1,29 @@
+{
+  "registryVersion": "1.0.0",
+  "generatedAt": "2026-02-22T02:30:00Z",
+  "entries": [
+    {
+      "adapterId": "sample-fmcsa-adapter-us-prod",
+      "providerType": "Compliance",
+      "hostingModel": "ImplementerHosted",
+      "certificationTier": "TrustedProduction",
+      "status": "Active",
+      "profilesSupported": [
+        "US_FMCSA_BALANCED_V1",
+        "US_FMCSA_STRICT_V1"
+      ],
+      "securityAttestation": {
+        "signedRequests": true,
+        "signedResponses": true,
+        "replayProtection": true
+      },
+      "conformanceReportRef": "sha256:ad12f7e62ea2f98dff7f70a1",
+      "adapterProfileRef": "conformance/adapter_profile.sample.json",
+      "selfAttestationKid": "faxp-lab-selfattest-2026q1",
+      "lastCertifiedAt": "2026-02-22T02:30:00Z",
+      "expiresAt": "2026-12-31T00:00:00Z",
+      "notes": "Promoted after production evidence review."
+    }
+  ]
+}
+
