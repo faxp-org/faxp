@@ -15,10 +15,13 @@ import streamlit.components.v1 as components
 from faxp_mvp_simulation import (
     BrokerAgent,
     CarrierAgent,
+    DEFAULT_RISK_TIER,
     DEFAULT_CARRIER_FINDER_PATH,
     FaxpProtocol,
+    VERIFICATION_POLICY_PROFILE_ID,
     build_envelope,
     default_bid_amount,
+    evaluate_verification_policy_decision,
     format_rate,
     negotiate_verification_capability,
     redact_sensitive,
@@ -66,6 +69,12 @@ GLOBAL_VERIFICATION_CALL_TIMES = []
 DEFAULT_PER_MILE_BID = float(default_bid_amount("PerMile"))
 QUICK_PRESETS = build_quick_presets(DEFAULT_PER_MILE_BID)
 SIDEBAR_DEFAULTS = default_sidebar_state(DEFAULT_PER_MILE_BID)
+POLICY_PROFILE_OPTIONS = ["US_FMCSA_BALANCED_V1", "US_FMCSA_STRICT_V1"]
+DEFAULT_POLICY_PROFILE = (
+    VERIFICATION_POLICY_PROFILE_ID
+    if VERIFICATION_POLICY_PROFILE_ID in POLICY_PROFILE_OPTIONS
+    else "US_FMCSA_BALANCED_V1"
+)
 
 
 def now_utc():
@@ -136,6 +145,7 @@ def reset_state():
     st.session_state.verification_call_times = []
     st.session_state.auth_failures = 0
     st.session_state.auth_locked_until = 0.0
+    st.session_state.policy_decision = None
     st.session_state.last_verifier_diagnostics = {}
     st.session_state.verifier_diagnostics_history = list(existing_history)[:5]
     if "access_key_input" not in st.session_state:
@@ -234,14 +244,26 @@ def update_summary_from_report():
         st.session_state.summary = ""
         return
 
-    st.session_state.summary = (
-        "Booking completed successfully - "
-        f"RunID: {get_protocol_run_id()}, "
-        f"LoadID: {report['LoadID']}, "
-        f"Verified: {st.session_state.verified_badge}, "
-        f"BaseRate: {format_rate(report['AgreedRate'])}, "
-        f"ApprovedAccessorials: ${accessorial_total(report):.2f}"
-    )
+    dispatch_auth = report.get("DispatchAuthorization", "Allowed")
+    load_id = report.get("LoadID", report.get("TruckID", "n/a"))
+    if dispatch_auth == "Hold":
+        st.session_state.summary = (
+            "Booking provisionally completed (dispatch hold) - "
+            f"RunID: {get_protocol_run_id()}, "
+            f"LoadID: {load_id}, "
+            f"Verified: {st.session_state.verified_badge}, "
+            f"BaseRate: {format_rate(report['AgreedRate'])}, "
+            f"ApprovedAccessorials: ${accessorial_total(report):.2f}"
+        )
+    else:
+        st.session_state.summary = (
+            "Booking completed successfully - "
+            f"RunID: {get_protocol_run_id()}, "
+            f"LoadID: {load_id}, "
+            f"Verified: {st.session_state.verified_badge}, "
+            f"BaseRate: {format_rate(report['AgreedRate'])}, "
+            f"ApprovedAccessorials: ${accessorial_total(report):.2f}"
+        )
 
 
 def approve_accessorial(accessorial_type, amount, note):
@@ -291,6 +313,10 @@ def run_flow(
     mc_number,
     carrier_finder_path,
     fmcsa_source,
+    policy_profile_id,
+    risk_tier,
+    exception_approved,
+    exception_approval_ref,
 ):
     reset_state()
     run_id = set_protocol_run_id()
@@ -301,6 +327,10 @@ def run_flow(
         "provider": provider,
         "fmcsa_source": fmcsa_source if provider == "FMCSA" else "n/a",
         "mc_number": (mc_number or "").strip() if provider == "FMCSA" else "",
+        "policy_profile_id": policy_profile_id,
+        "risk_tier": int(risk_tier),
+        "exception_approved": bool(exception_approved),
+        "exception_approval_ref": str(exception_approval_ref or "").strip(),
         "live_fmcsa_configured": LIVE_FMCSA_CONFIGURED,
         "hosted_fmcsa_configured": HOSTED_FMCSA_CONFIGURED,
         "cloud_safe_mode": CLOUD_SAFE_MODE,
@@ -385,14 +415,28 @@ def run_flow(
     diag["result_provider"] = verification_result.get("provider", "n/a")
     diag["result_error"] = verification_result.get("error", "")
     diag["timestamp"] = now_utc()
+
+    policy_decision = evaluate_verification_policy_decision(
+        verification_result,
+        profile_id=policy_profile_id,
+        risk_tier=int(risk_tier),
+        exception_approved=bool(exception_approved),
+        exception_approval_ref=str(exception_approval_ref or "").strip(),
+    )
+    st.session_state.policy_decision = policy_decision
+    diag["policy_dispatch_authorization"] = policy_decision["DispatchAuthorization"]
+    diag["policy_decision_reason_code"] = policy_decision["DecisionReasonCode"]
+    diag["policy_rule_id"] = policy_decision["PolicyRuleID"]
+    diag["policy_should_book"] = policy_decision["ShouldBook"]
+    diag["timestamp"] = now_utc()
     push_verifier_history(diag)
 
-    if verification_result.get("status") != "Success":
-        reason = verification_result.get("error")
-        if reason:
-            st.session_state.status_line = f"Verification unavailable: {reason}"
-        else:
-            st.session_state.status_line = "Verification failed."
+    if not policy_decision["ShouldBook"]:
+        st.session_state.status_line = (
+            "Booking blocked by policy: "
+            f"{policy_decision['DecisionReasonCode']} "
+            f"({policy_decision['DispatchAuthorization']})"
+        )
         return
 
     # 6) ExecutionReport
@@ -401,6 +445,7 @@ def run_flow(
         bid_request=bid_request,
         verified_badge=verified_badge,
         verification_result=verification_result,
+        policy_decision=policy_decision,
     )
     if not append_message(broker.name, carrier.name, "ExecutionReport", execution_report):
         return
@@ -408,7 +453,10 @@ def run_flow(
     # 7) Complete for both parties
     carrier.mark_booking_complete(execution_report)
     st.session_state.execution_report = execution_report
-    st.session_state.status_line = "Booking completed."
+    if execution_report.get("DispatchAuthorization") == "Hold":
+        st.session_state.status_line = "Booking provisionally completed. Dispatch is on hold."
+    else:
+        st.session_state.status_line = "Booking completed."
     update_summary_from_report()
 
 
@@ -420,6 +468,15 @@ if "broker" not in st.session_state:
     reset_state()
 
 ensure_sidebar_defaults()
+if st.session_state.get("policy_profile_select") not in POLICY_PROFILE_OPTIONS:
+    st.session_state.policy_profile_select = DEFAULT_POLICY_PROFILE
+try:
+    parsed_risk_tier = int(st.session_state.get("risk_tier_select", DEFAULT_RISK_TIER))
+except (TypeError, ValueError):
+    parsed_risk_tier = DEFAULT_RISK_TIER
+if parsed_risk_tier not in {0, 1, 2, 3}:
+    parsed_risk_tier = DEFAULT_RISK_TIER
+st.session_state.risk_tier_select = max(0, min(parsed_risk_tier, 3))
 
 if NON_LOCAL_MODE and not ACCESS_KEY:
     st.error("Secure mode requires FAXP_STREAMLIT_ACCESS_KEY.")
@@ -452,6 +509,32 @@ with st.sidebar:
     )
     response_type = st.selectbox(
         "BidResponse", ["Accept", "Counter", "Reject"], key="response_type_select"
+    )
+    policy_profile_id = st.selectbox(
+        "Verification Policy Profile",
+        POLICY_PROFILE_OPTIONS,
+        key="policy_profile_select",
+    )
+    risk_tier = st.selectbox(
+        "Risk Tier",
+        [0, 1, 2, 3],
+        format_func=lambda value: {
+            0: "0 - Low",
+            1: "1 - Medium",
+            2: "2 - High",
+            3: "3 - Critical",
+        }[value],
+        key="risk_tier_select",
+    )
+    exception_approved = st.checkbox(
+        "Exception Approved",
+        key="exception_approved_checkbox",
+        help="Set when a human exception approval was granted for degraded verification.",
+    )
+    exception_approval_ref = st.text_input(
+        "Exception Approval Ref",
+        key="exception_approval_ref_input",
+        placeholder="Example: APPROVAL-2026-0001",
     )
     if CLOUD_SAFE_MODE:
         provider_choice = st.selectbox(
@@ -564,6 +647,10 @@ if run_clicked:
             mc_number=mc_number,
             carrier_finder_path=carrier_finder_path,
             fmcsa_source=fmcsa_source,
+            policy_profile_id=policy_profile_id,
+            risk_tier=int(risk_tier),
+            exception_approved=bool(exception_approved),
+            exception_approval_ref=exception_approval_ref,
         )
 
 if reset_clicked:
@@ -616,6 +703,12 @@ else:
             "resultProvider": diag.get("result_provider", "n/a"),
             "resultSource": diag.get("result_source", "n/a"),
             "resultError": diag.get("result_error", ""),
+            "policyProfile": diag.get("policy_profile_id", "n/a"),
+            "riskTier": diag.get("risk_tier", "n/a"),
+            "policyDispatchAuthorization": diag.get("policy_dispatch_authorization", "n/a"),
+            "policyDecisionReasonCode": diag.get("policy_decision_reason_code", "n/a"),
+            "policyRuleID": diag.get("policy_rule_id", "n/a"),
+            "policyShouldBook": diag.get("policy_should_book", "n/a"),
             "mcNumber": diag.get("mc_number", ""),
             "timestamp": diag.get("timestamp", "n/a"),
         },
@@ -633,6 +726,12 @@ else:
         "Configured" if diag.get("hosted_fmcsa_configured") else "Missing",
     )
     c5.metric("Last Result", diag.get("result_status", "n/a"))
+    st.caption(
+        "Policy: "
+        f"{diag.get('policy_profile_id', 'n/a')} | "
+        f"RiskTier={diag.get('risk_tier', 'n/a')} | "
+        f"Dispatch={diag.get('policy_dispatch_authorization', 'n/a')}"
+    )
     run_id_value = str(diag.get("run_id", "n/a"))
     st.caption(f"RunID: {run_id_value}")
     if run_id_value and run_id_value != "n/a":
@@ -681,6 +780,7 @@ else:
             "validatedMessages": st.session_state.get("validated_messages", 0),
             "validationErrors": st.session_state.get("validation_errors", []),
         },
+        "policyDecision": st.session_state.get("policy_decision"),
     }
     support_bundle_json = json.dumps(support_bundle, indent=2)
     support_bundle_hash = hashlib.sha256(
@@ -743,6 +843,10 @@ if st.session_state.get("search_results") is not None:
 if st.session_state.verification_result is not None:
     st.subheader("Verification Result")
     st.json(redact_sensitive(st.session_state.verification_result))
+
+if st.session_state.policy_decision is not None:
+    st.subheader("Policy Decision")
+    st.json(redact_sensitive(st.session_state.policy_decision))
 
 if st.session_state.execution_report is not None:
     st.subheader("Post-Booking Accessorials (Mock)")

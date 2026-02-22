@@ -97,6 +97,8 @@ python3 faxp_mvp_simulation.py \
   --provider FMCSA \
   --fmcsa-source live-fmcsa \
   --mc-number 498282 \
+  --policy-profile-id US_FMCSA_BALANCED_V1 \
+  --risk-tier 1 \
   --response Accept \
   --verification-status Success
 ```
@@ -105,6 +107,21 @@ Expected success line:
 - `Booking completed successfully ...`
 
 If verification fails in live FMCSA mode, that is expected when authority/insurance checks fail for the MC.
+
+Degraded verification policy demo (provisional/hold path):
+
+```bash
+python3 faxp_mvp_simulation.py \
+  --provider FMCSA \
+  --fmcsa-source hosted-adapter \
+  --mc-number 498282 \
+  --policy-profile-id US_FMCSA_BALANCED_V1 \
+  --risk-tier 2 \
+  --exception-approved \
+  --exception-approval-ref APPROVAL-DEMO-001 \
+  --response Accept \
+  --verification-status Success
+```
 
 Hosted FMCSA adapter simulation path:
 
@@ -135,6 +152,11 @@ Expected:
 - `Status: Booking completed.`
 - `VerifiedBadge: Premium`
 - `Validation Errors: 0`
+
+Policy controls in sidebar:
+- `Verification Policy Profile` (`US_FMCSA_BALANCED_V1` or `US_FMCSA_STRICT_V1`)
+- `Risk Tier` (`0-3`)
+- `Exception Approved` + `Exception Approval Ref`
 
 ### 4) Streamlit Cloud Deployment
 
@@ -231,6 +253,12 @@ Certification/profile artifact checks:
 
 ```bash
 python3 tests/run_certification_artifacts.py
+```
+
+Verification policy decision checks:
+
+```bash
+python3 tests/run_policy_decisions.py
 ```
 
 ### 7) Troubleshooting

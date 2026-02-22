@@ -31,6 +31,8 @@ def main() -> int:
     ensure_state_defaults(state, defaults)
     _assert(state["quick_preset_select"] == "MockBiometric success", "default preset mismatch")
     _assert(state["provider_cloud_select"] == "MockBiometricProvider", "default provider mismatch")
+    _assert(state["policy_profile_select"] == "US_FMCSA_BALANCED_V1", "default policy profile mismatch")
+    _assert(state["risk_tier_select"] == 1, "default risk tier mismatch")
 
     # Regression: applying preset must not mutate the selectbox widget key directly.
     prior_preset_selection = state["quick_preset_select"]
@@ -96,6 +98,20 @@ def main() -> int:
     )
     _assert(state["provider_local_select"] == "MockBiometricProvider", "local provider mismatch")
     _assert(state["verification_status_select"] == "Fail", "forced fail status mismatch")
+    _assert(state["risk_tier_select"] == 2, "forced fail risk tier mismatch")
+
+    apply_preset_to_state(
+        state,
+        presets,
+        "GraceCache with approved exception",
+        live_fmcsa_configured=True,
+        hosted_fmcsa_configured=True,
+    )
+    _assert(state["exception_approved_checkbox"] is True, "exception flag mismatch")
+    _assert(
+        state["exception_approval_ref_input"] == "APPROVAL-DEMO-001",
+        "exception approval ref mismatch",
+    )
 
     source = (PROJECT_ROOT / "streamlit_app.py").read_text(encoding="utf-8")
     _assert(

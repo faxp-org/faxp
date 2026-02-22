@@ -10,6 +10,10 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
     return {
         "FMCSA hosted adapter (MC 498282)": {
             "provider": "FMCSA",
+            "policy_profile_id": "US_FMCSA_BALANCED_V1",
+            "risk_tier": 1,
+            "exception_approved": False,
+            "exception_approval_ref": "",
             "rate_model": "PerMile",
             "bid_amount": float(default_per_mile_bid),
             "response_type": "Accept",
@@ -21,6 +25,10 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
         },
         "FMCSA live (MC 498282)": {
             "provider": "FMCSA",
+            "policy_profile_id": "US_FMCSA_BALANCED_V1",
+            "risk_tier": 1,
+            "exception_approved": False,
+            "exception_approval_ref": "",
             "rate_model": "PerMile",
             "bid_amount": float(default_per_mile_bid),
             "response_type": "Accept",
@@ -32,6 +40,10 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
         },
         "FMCSA authority-mock": {
             "provider": "FMCSA",
+            "policy_profile_id": "US_FMCSA_BALANCED_V1",
+            "risk_tier": 1,
+            "exception_approved": False,
+            "exception_approval_ref": "",
             "rate_model": "PerMile",
             "bid_amount": float(default_per_mile_bid),
             "response_type": "Accept",
@@ -43,6 +55,10 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
         },
         "MockBiometric success": {
             "provider": "MockBiometricProvider",
+            "policy_profile_id": "US_FMCSA_BALANCED_V1",
+            "risk_tier": 1,
+            "exception_approved": False,
+            "exception_approval_ref": "",
             "rate_model": "PerMile",
             "bid_amount": float(default_per_mile_bid),
             "response_type": "Accept",
@@ -52,6 +68,10 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
         },
         "Forced fail demo": {
             "provider": "MockBiometricProvider",
+            "policy_profile_id": "US_FMCSA_BALANCED_V1",
+            "risk_tier": 2,
+            "exception_approved": False,
+            "exception_approval_ref": "",
             "rate_model": "PerMile",
             "bid_amount": float(default_per_mile_bid),
             "response_type": "Accept",
@@ -59,12 +79,31 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
             "no_match": False,
             "mc_number": "",
         },
+        "GraceCache with approved exception": {
+            "provider": "FMCSA",
+            "policy_profile_id": "US_FMCSA_BALANCED_V1",
+            "risk_tier": 2,
+            "exception_approved": True,
+            "exception_approval_ref": "APPROVAL-DEMO-001",
+            "rate_model": "PerMile",
+            "bid_amount": float(default_per_mile_bid),
+            "response_type": "Accept",
+            "verification_status": "Success",
+            "no_match": False,
+            "mc_number": "498282",
+            "fmcsa_source_local": "hosted-adapter",
+            "fmcsa_source_cloud": "hosted-adapter",
+        },
     }
 
 
 def default_sidebar_state(default_per_mile_bid: float) -> dict[str, Any]:
     return {
         "quick_preset_select": "MockBiometric success",
+        "policy_profile_select": "US_FMCSA_BALANCED_V1",
+        "risk_tier_select": 1,
+        "exception_approved_checkbox": False,
+        "exception_approval_ref_input": "",
         "rate_model_select": "PerMile",
         "bid_amount_input": float(default_per_mile_bid),
         "response_type_select": "Accept",
@@ -104,6 +143,16 @@ def apply_preset_to_state(
     state["verification_status_select"] = preset["verification_status"]
     state["no_match_checkbox"] = bool(preset["no_match"])
     state["mc_number_input"] = str(preset.get("mc_number", ""))
+    state["policy_profile_select"] = str(
+        preset.get("policy_profile_id", state.get("policy_profile_select", "US_FMCSA_BALANCED_V1"))
+    )
+    state["risk_tier_select"] = int(preset.get("risk_tier", state.get("risk_tier_select", 1)))
+    state["exception_approved_checkbox"] = bool(
+        preset.get("exception_approved", state.get("exception_approved_checkbox", False))
+    )
+    state["exception_approval_ref_input"] = str(
+        preset.get("exception_approval_ref", state.get("exception_approval_ref_input", ""))
+    )
 
     provider = preset["provider"]
     if provider == "FMCSA":

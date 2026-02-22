@@ -48,6 +48,11 @@ VERIFICATION_POLICY_PROFILE_ID = os.getenv(
     "FAXP_VERIFICATION_POLICY_PROFILE_ID",
     "US_FMCSA_BALANCED_V1",
 ).strip()
+DEFAULT_RISK_TIER_RAW = os.getenv("FAXP_DEFAULT_RISK_TIER", "1").strip()
+try:
+    DEFAULT_RISK_TIER = int(DEFAULT_RISK_TIER_RAW)
+except ValueError:
+    DEFAULT_RISK_TIER = 1
 FMCSA_ADAPTER_BASE_URL = os.getenv("FAXP_FMCSA_ADAPTER_BASE_URL", "").strip()
 FMCSA_ADAPTER_AUTH_TOKEN = os.getenv("FAXP_FMCSA_ADAPTER_AUTH_TOKEN", "").strip()
 FMCSA_ADAPTER_TIMEOUT_SECONDS_RAW = os.getenv("FAXP_FMCSA_ADAPTER_TIMEOUT_SECONDS", "10").strip()
@@ -1181,6 +1186,28 @@ def parse_args():
         action="store_true",
         help="Force verification capability mismatch to exercise fail-closed negotiation path.",
     )
+    parser.add_argument(
+        "--policy-profile-id",
+        default=VERIFICATION_POLICY_PROFILE_ID,
+        help="Verification policy profile ID (for example: US_FMCSA_BALANCED_V1).",
+    )
+    parser.add_argument(
+        "--risk-tier",
+        choices=[0, 1, 2, 3],
+        type=int,
+        default=max(0, min(DEFAULT_RISK_TIER, 3)),
+        help="Risk tier used for degraded verification policy decisions (0=Low, 3=Critical).",
+    )
+    parser.add_argument(
+        "--exception-approved",
+        action="store_true",
+        help="Mark an explicit human exception approval for degraded verification decisions.",
+    )
+    parser.add_argument(
+        "--exception-approval-ref",
+        default="",
+        help="Reference ID for the approving human exception (used for auditability).",
+    )
     return parser.parse_args()
 
 
@@ -1612,6 +1639,151 @@ def _derive_policy_rule_id(verification_mode, status_value):
     if normalized_status == "success":
         return f"policy.{normalized_mode or 'unknown'}.success.v1"
     return f"policy.{normalized_mode or 'unknown'}.degraded.v1"
+
+
+def _coerce_risk_tier(risk_tier):
+    try:
+        value = int(risk_tier)
+    except (TypeError, ValueError):
+        return max(0, min(DEFAULT_RISK_TIER, 3))
+    return max(0, min(value, 3))
+
+
+def _policy_profiles_dir():
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", "verification")
+
+
+def _load_policy_profile(profile_id):
+    normalized_profile_id = str(profile_id or VERIFICATION_POLICY_PROFILE_ID).strip()
+    if not normalized_profile_id:
+        normalized_profile_id = VERIFICATION_POLICY_PROFILE_ID
+    profile_path = os.path.join(_policy_profiles_dir(), f"{normalized_profile_id}.json")
+    with open(profile_path, "r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def _risk_tier_policy(profile, risk_tier):
+    tiers = profile.get("riskTiers", [])
+    for tier in tiers:
+        if int(tier.get("tier", -1)) == int(risk_tier):
+            return tier
+    raise ValueError(f"Risk tier {risk_tier} is not defined in profile {profile.get('profileId')}.")
+
+
+def evaluate_verification_policy_decision(
+    verification_result,
+    *,
+    profile_id,
+    risk_tier,
+    exception_approved=False,
+    exception_approval_ref="",
+):
+    """
+    Derive booking/dispatch behavior from verification status and policy profile.
+
+    Notes:
+    - Verification failures with no infrastructure error are treated as true compliance fails.
+    - Verification failures with an error are treated as degraded/outage mode and use profile policy.
+    """
+    profile = _load_policy_profile(profile_id)
+    policy_profile_id = str(profile.get("profileId") or profile_id or VERIFICATION_POLICY_PROFILE_ID)
+    normalized_risk_tier = _coerce_risk_tier(risk_tier)
+    tier_policy = _risk_tier_policy(profile, normalized_risk_tier)
+
+    verification_status = str((verification_result or {}).get("status") or "Fail").strip()
+    verification_error = str((verification_result or {}).get("error") or "").strip()
+    verification_mode = _derive_verification_mode(verification_result)
+    evidence_refs = []
+    if (verification_result or {}).get("evidenceRef"):
+        evidence_refs.append(verification_result["evidenceRef"])
+
+    reverify_window_seconds = int(
+        (profile.get("dispatchRules") or {}).get("reverifyWindowSeconds", 86400)
+    )
+    fallback_window_seconds = int(
+        (profile.get("policyDefaults") or {}).get("maxFallbackDurationSeconds", 0)
+    )
+    decision_window_seconds = reverify_window_seconds
+
+    dispatch_authorization = "Allowed"
+    decision_reason_code = "VerificationSuccess"
+    should_book = True
+
+    if verification_status != "Success":
+        if not verification_error:
+            dispatch_authorization = "Blocked"
+            decision_reason_code = "VerificationNegativeResult"
+            should_book = False
+        else:
+            decision_window_seconds = max(1, reverify_window_seconds)
+            degraded_mode = str(
+                (profile.get("policyDefaults") or {}).get("degradedMode") or "HardBlock"
+            ).strip()
+            outage_decision = str(tier_policy.get("decisionOnOutage") or "Block").strip()
+            tier_dispatch = str(tier_policy.get("dispatchAuthorization") or "Hold").strip()
+
+            if degraded_mode == "HardBlock":
+                dispatch_authorization = "Blocked"
+                decision_reason_code = "VerificationUnavailableHardBlock"
+            elif degraded_mode == "SoftHold":
+                dispatch_authorization = "Hold"
+                decision_reason_code = "VerificationUnavailableSoftHold"
+            else:
+                # GraceCache uses per-tier outage handling rules.
+                if outage_decision == "AllowProvisional":
+                    dispatch_authorization = tier_dispatch if tier_dispatch in VALID_DISPATCH_AUTHORIZATIONS else "Hold"
+                    decision_reason_code = "VerificationUnavailableGraceCache"
+                elif outage_decision == "HoldDispatch":
+                    dispatch_authorization = "Hold"
+                    decision_reason_code = "VerificationUnavailableHoldDispatch"
+                else:
+                    dispatch_authorization = "Blocked"
+                    decision_reason_code = "VerificationUnavailableBlock"
+
+                if fallback_window_seconds > 0:
+                    decision_window_seconds = min(decision_window_seconds, fallback_window_seconds)
+
+            require_manual_escalation_tier = int(
+                (profile.get("policyDefaults") or {}).get("requireManualEscalationForTier", 3)
+            )
+            tier_requires_human = bool(tier_policy.get("requiresHumanApproval", False))
+            requires_human = tier_requires_human or normalized_risk_tier >= require_manual_escalation_tier
+
+            if requires_human:
+                if exception_approved:
+                    if outage_decision == "Block":
+                        dispatch_authorization = "Blocked"
+                        decision_reason_code = "HumanExceptionDeniedByTierPolicy"
+                    elif dispatch_authorization != "Blocked":
+                        dispatch_authorization = "Allowed"
+                        decision_reason_code = "HumanExceptionApproved"
+                else:
+                    if dispatch_authorization == "Allowed":
+                        dispatch_authorization = "Hold"
+                    decision_reason_code = "PendingHumanApproval"
+
+            should_book = dispatch_authorization != "Blocked"
+
+    decision = {
+        "VerificationMode": verification_mode,
+        "VerificationPolicyProfileID": policy_profile_id,
+        "DispatchAuthorization": dispatch_authorization,
+        "DecisionReasonCode": decision_reason_code,
+        "PolicyRuleID": _derive_policy_rule_id(verification_mode, verification_status),
+        "ReverifyBy": (
+            datetime.now(timezone.utc) + timedelta(seconds=max(1, decision_window_seconds))
+        )
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z"),
+        "EvidenceRefs": evidence_refs,
+        "RiskTier": normalized_risk_tier,
+        "ShouldBook": should_book,
+    }
+    normalized_exception_ref = str(exception_approval_ref or "").strip()
+    if exception_approved and normalized_exception_ref:
+        decision["ExceptionApprovalRef"] = normalized_exception_ref
+    return decision
 
 
 def default_verification_capabilities():
@@ -3186,17 +3358,20 @@ class BrokerAgent:
         }
 
     def create_execution_report(
-        self, load_id, bid_request, verified_badge, verification_result
+        self,
+        load_id,
+        bid_request,
+        verified_badge,
+        verification_result,
+        policy_decision=None,
     ):
         load = self.loads[load_id]
-        verification_mode = _derive_verification_mode(verification_result)
-        policy_rule_id = _derive_policy_rule_id(
-            verification_mode,
-            verification_result.get("status"),
-        )
-        evidence_refs = []
-        if verification_result.get("evidenceRef"):
-            evidence_refs.append(verification_result["evidenceRef"])
+        if policy_decision is None:
+            policy_decision = evaluate_verification_policy_decision(
+                verification_result,
+                profile_id=VERIFICATION_POLICY_PROFILE_ID,
+                risk_tier=DEFAULT_RISK_TIER,
+            )
         report = {
             "LoadID": load_id,
             "ContractID": f"FAXP-{datetime.now(timezone.utc).strftime('%Y%m%d')}-{uuid4().hex[:8]}",
@@ -3207,16 +3382,16 @@ class BrokerAgent:
             "Accessorials": [],
             "VerifiedBadge": verified_badge,
             "VerificationResult": verification_result,
-            "VerificationMode": verification_mode,
-            "VerificationPolicyProfileID": VERIFICATION_POLICY_PROFILE_ID,
-            "DispatchAuthorization": "Allowed",
-            "DecisionReasonCode": "VerificationSuccess",
-            "PolicyRuleID": policy_rule_id,
-            "ReverifyBy": (
-                datetime.now(timezone.utc) + timedelta(hours=24)
-            ).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
-            "EvidenceRefs": evidence_refs,
+            "VerificationMode": policy_decision["VerificationMode"],
+            "VerificationPolicyProfileID": policy_decision["VerificationPolicyProfileID"],
+            "DispatchAuthorization": policy_decision["DispatchAuthorization"],
+            "DecisionReasonCode": policy_decision["DecisionReasonCode"],
+            "PolicyRuleID": policy_decision["PolicyRuleID"],
+            "ReverifyBy": policy_decision["ReverifyBy"],
+            "EvidenceRefs": policy_decision.get("EvidenceRefs", []),
         }
+        if policy_decision.get("ExceptionApprovalRef"):
+            report["ExceptionApprovalRef"] = policy_decision["ExceptionApprovalRef"]
         self.completed_bookings[load_id] = report
         return report
 
@@ -3244,16 +3419,19 @@ class BrokerAgent:
         }
 
     def create_truck_execution_report(
-        self, truck_id, bid_request, verified_badge, verification_result
+        self,
+        truck_id,
+        bid_request,
+        verified_badge,
+        verification_result,
+        policy_decision=None,
     ):
-        verification_mode = _derive_verification_mode(verification_result)
-        policy_rule_id = _derive_policy_rule_id(
-            verification_mode,
-            verification_result.get("status"),
-        )
-        evidence_refs = []
-        if verification_result.get("evidenceRef"):
-            evidence_refs.append(verification_result["evidenceRef"])
+        if policy_decision is None:
+            policy_decision = evaluate_verification_policy_decision(
+                verification_result,
+                profile_id=VERIFICATION_POLICY_PROFILE_ID,
+                risk_tier=DEFAULT_RISK_TIER,
+            )
         report = {
             "TruckID": truck_id,
             "ContractID": f"FAXP-{datetime.now(timezone.utc).strftime('%Y%m%d')}-{uuid4().hex[:8]}",
@@ -3262,16 +3440,16 @@ class BrokerAgent:
             "AgreedRate": bid_request["Rate"],
             "VerifiedBadge": verified_badge,
             "VerificationResult": verification_result,
-            "VerificationMode": verification_mode,
-            "VerificationPolicyProfileID": VERIFICATION_POLICY_PROFILE_ID,
-            "DispatchAuthorization": "Allowed",
-            "DecisionReasonCode": "VerificationSuccess",
-            "PolicyRuleID": policy_rule_id,
-            "ReverifyBy": (
-                datetime.now(timezone.utc) + timedelta(hours=24)
-            ).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
-            "EvidenceRefs": evidence_refs,
+            "VerificationMode": policy_decision["VerificationMode"],
+            "VerificationPolicyProfileID": policy_decision["VerificationPolicyProfileID"],
+            "DispatchAuthorization": policy_decision["DispatchAuthorization"],
+            "DecisionReasonCode": policy_decision["DecisionReasonCode"],
+            "PolicyRuleID": policy_decision["PolicyRuleID"],
+            "ReverifyBy": policy_decision["ReverifyBy"],
+            "EvidenceRefs": policy_decision.get("EvidenceRefs", []),
         }
+        if policy_decision.get("ExceptionApprovalRef"):
+            report["ExceptionApprovalRef"] = policy_decision["ExceptionApprovalRef"]
         self.completed_bookings[truck_id] = report
         return report
 
@@ -3560,8 +3738,31 @@ def run_load_flow(args, broker, carrier):
     print(json.dumps(redact_sensitive(verification_result), indent=2))
     print(f"[System] VerifiedBadge assigned: {verified_badge}")
 
-    if verification_result["status"] != "Success":
-        print("\n[System] Verification failed. Load booking not completed.")
+    policy_decision = evaluate_verification_policy_decision(
+        verification_result,
+        profile_id=args.policy_profile_id,
+        risk_tier=args.risk_tier,
+        exception_approved=args.exception_approved,
+        exception_approval_ref=args.exception_approval_ref,
+    )
+    print("[System] Policy decision:")
+    print(
+        json.dumps(
+            {
+                "profile": policy_decision["VerificationPolicyProfileID"],
+                "riskTier": policy_decision["RiskTier"],
+                "dispatchAuthorization": policy_decision["DispatchAuthorization"],
+                "decisionReasonCode": policy_decision["DecisionReasonCode"],
+                "policyRuleID": policy_decision["PolicyRuleID"],
+                "shouldBook": policy_decision["ShouldBook"],
+                "exceptionApprovalRef": policy_decision.get("ExceptionApprovalRef", ""),
+            },
+            indent=2,
+        )
+    )
+
+    if not policy_decision["ShouldBook"]:
+        print("\n[System] Policy blocked booking. Load booking not completed.")
         return
 
     # 6) Broker sends ExecutionReport confirming the booking.
@@ -3570,6 +3771,7 @@ def run_load_flow(args, broker, carrier):
         bid_request=bid_request,
         verified_badge=verified_badge,
         verification_result=verification_result,
+        policy_decision=policy_decision,
     )
     log_message(broker.name, carrier.name, "ExecutionReport", execution_report)
 
@@ -3581,13 +3783,23 @@ def run_load_flow(args, broker, carrier):
         f"\n[System] Booking completion state -> Broker: {broker_complete}, Carrier: {carrier_complete}"
     )
 
-    print(
-        "Booking completed successfully - "
-        f"RunID: {get_protocol_run_id()}, "
-        f"LoadID: {bid_request['LoadID']}, "
-        f"Verified: {verified_badge}, "
-        f"Rate: {format_rate(bid_request['Rate'])}"
-    )
+    if execution_report["DispatchAuthorization"] == "Hold":
+        print(
+            "Booking provisionally completed - "
+            f"RunID: {get_protocol_run_id()}, "
+            f"LoadID: {bid_request['LoadID']}, "
+            f"Verified: {verified_badge}, "
+            f"DispatchAuthorization: Hold, "
+            f"Rate: {format_rate(bid_request['Rate'])}"
+        )
+    else:
+        print(
+            "Booking completed successfully - "
+            f"RunID: {get_protocol_run_id()}, "
+            f"LoadID: {bid_request['LoadID']}, "
+            f"Verified: {verified_badge}, "
+            f"Rate: {format_rate(bid_request['Rate'])}"
+        )
 
 
 def run_truck_flow(args, broker, carrier):
@@ -3657,8 +3869,31 @@ def run_truck_flow(args, broker, carrier):
     print(json.dumps(redact_sensitive(verification_result), indent=2))
     print(f"[System] Truck flow VerifiedBadge assigned: {verified_badge}")
 
-    if verification_result["status"] != "Success":
-        print("\n[System] Truck flow verification failed. Truck booking not completed.")
+    policy_decision = evaluate_verification_policy_decision(
+        verification_result,
+        profile_id=args.policy_profile_id,
+        risk_tier=args.risk_tier,
+        exception_approved=args.exception_approved,
+        exception_approval_ref=args.exception_approval_ref,
+    )
+    print("[System] Truck flow policy decision:")
+    print(
+        json.dumps(
+            {
+                "profile": policy_decision["VerificationPolicyProfileID"],
+                "riskTier": policy_decision["RiskTier"],
+                "dispatchAuthorization": policy_decision["DispatchAuthorization"],
+                "decisionReasonCode": policy_decision["DecisionReasonCode"],
+                "policyRuleID": policy_decision["PolicyRuleID"],
+                "shouldBook": policy_decision["ShouldBook"],
+                "exceptionApprovalRef": policy_decision.get("ExceptionApprovalRef", ""),
+            },
+            indent=2,
+        )
+    )
+
+    if not policy_decision["ShouldBook"]:
+        print("\n[System] Truck flow policy blocked booking. Truck booking not completed.")
         return
 
     # 6) Broker sends ExecutionReport confirming truck capacity booking.
@@ -3667,6 +3902,7 @@ def run_truck_flow(args, broker, carrier):
         bid_request=truck_bid_request,
         verified_badge=verified_badge,
         verification_result=verification_result,
+        policy_decision=policy_decision,
     )
     log_message(broker.name, carrier.name, "ExecutionReport", truck_execution_report)
 
@@ -3677,13 +3913,23 @@ def run_truck_flow(args, broker, carrier):
     print(
         f"\n[System] Truck booking completion state -> Broker: {broker_complete}, Carrier: {carrier_complete}"
     )
-    print(
-        "Truck capacity booking complete - "
-        f"RunID: {get_protocol_run_id()}, "
-        f"TruckID: {selected_truck['TruckID']}, "
-        f"Verified: {verified_badge}, "
-        f"Rate: {format_rate(truck_bid_request['Rate'])}"
-    )
+    if truck_execution_report["DispatchAuthorization"] == "Hold":
+        print(
+            "Truck capacity booking provisionally completed - "
+            f"RunID: {get_protocol_run_id()}, "
+            f"TruckID: {selected_truck['TruckID']}, "
+            f"Verified: {verified_badge}, "
+            f"DispatchAuthorization: Hold, "
+            f"Rate: {format_rate(truck_bid_request['Rate'])}"
+        )
+    else:
+        print(
+            "Truck capacity booking complete - "
+            f"RunID: {get_protocol_run_id()}, "
+            f"TruckID: {selected_truck['TruckID']}, "
+            f"Verified: {verified_badge}, "
+            f"Rate: {format_rate(truck_bid_request['Rate'])}"
+        )
 
 
 def main():
@@ -3717,6 +3963,13 @@ def main():
     print(json.dumps(broker.verification_capabilities, indent=2))
     print("VerificationCapabilities (Carrier):")
     print(json.dumps(carrier.verification_capabilities, indent=2))
+    print(
+        "\n[System] Policy controls: "
+        f"profile={args.policy_profile_id}, "
+        f"riskTier={args.risk_tier}, "
+        f"exceptionApproved={args.exception_approved}, "
+        f"exceptionApprovalRef={args.exception_approval_ref or '[none]'}"
+    )
 
     # Show AmendRequest exists in protocol but do not execute it in these happy paths.
     amend_preview = FaxpProtocol.amend_request_example("example-load-id")
