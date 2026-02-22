@@ -30,6 +30,9 @@ This repository includes:
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/README.md`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/certification_registry.schema.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/certification_registry.sample.json`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/adapter_profile.schema.json`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/adapter_profile.sample.json`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/attestation_keys.sample.json`
 
 ## Protocol Neutrality Boundary
 
@@ -254,6 +257,13 @@ Certification/profile artifact checks:
 ```bash
 python3 tests/run_certification_artifacts.py
 ```
+
+This check now validates:
+
+- verification policy profile schemas,
+- certification registry schemas,
+- adapter self-attestation payload digest and HMAC signature,
+- registry/profile consistency (ID, tier, hosting model, supported profiles, key ID).
 
 Verification policy decision checks:
 

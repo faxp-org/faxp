@@ -8,13 +8,15 @@
       "hostingModel": "ImplementerHosted",
       "certificationTier": "Conformant",
       "status": "Active",
-      "profilesSupported": ["US_FMCSA_BALANCED_V1"],
+      "profilesSupported": ["US_FMCSA_BALANCED_V1", "US_FMCSA_STRICT_V1"],
       "securityAttestation": {
         "signedRequests": true,
         "signedResponses": true,
         "replayProtection": true
       },
       "conformanceReportRef": "sha256:ad12f7e62ea2f98dff7f70a1",
+      "adapterProfileRef": "conformance/adapter_profile.sample.json",
+      "selfAttestationKid": "faxp-lab-selfattest-2026q1",
       "lastCertifiedAt": "2026-02-22T00:00:00Z",
       "expiresAt": "2026-08-22T00:00:00Z",
       "notes": "Sample entry for certification registry contract tests."

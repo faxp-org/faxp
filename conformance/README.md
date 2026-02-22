@@ -6,6 +6,9 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 
 - `certification_registry.schema.json`: schema for registry metadata.
 - `certification_registry.sample.json`: sample registry entry.
+- `adapter_profile.schema.json`: schema for adapter self-attestation profile.
+- `adapter_profile.sample.json`: sample adapter profile with self-attestation payload.
+- `attestation_keys.sample.json`: test-only keyring for local/CI attestation verification.
 
 Adapter hosting model:
 
@@ -24,3 +27,15 @@ Required minimum controls for `Conformant`:
 1. Signed adapter requests and responses.
 2. Replay protection and timestamp skew enforcement.
 3. Auditable decision trail.
+
+Self-attestation profile checks:
+
+1. Profile JSON must validate against `adapter_profile.schema.json`.
+2. `selfAttestation.payloadDigestSha256` must match canonical payload hash.
+3. `selfAttestation.sig` must verify using the declared `kid` in the attestation keyring.
+4. Registry and adapter profile must agree on adapter ID, tier, hosting model, and supported profiles.
+
+Note:
+
+- `attestation_keys.sample.json` is intentionally non-secret and for conformance harness testing only.
+- Production implementers should store attestation keys in their own secure key management system.

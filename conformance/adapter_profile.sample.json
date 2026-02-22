@@ -1,0 +1,40 @@
+{
+  "adapterProfileVersion": "1.0.0",
+  "adapterId": "freightseer-fmcsa-adapter-us-prod",
+  "providerType": "Compliance",
+  "hostingModel": "ImplementerHosted",
+  "certificationTier": "Conformant",
+  "status": "Active",
+  "endpointBaseUrl": "https://verifier.freightseer.example/v1/fmcsa/verify",
+  "profilesSupported": ["US_FMCSA_BALANCED_V1", "US_FMCSA_STRICT_V1"],
+  "securityCapabilities": {
+    "signedRequests": true,
+    "signedResponses": true,
+    "replayProtection": true,
+    "auditTrail": true,
+    "clockSkewSeconds": 30
+  },
+  "selfAttestation": {
+    "attestedBy": "FreightSeer Security Team",
+    "attestorRole": "SecurityOfficer",
+    "payload": {
+      "adapterId": "freightseer-fmcsa-adapter-us-prod",
+      "providerType": "Compliance",
+      "hostingModel": "ImplementerHosted",
+      "profilesSupported": ["US_FMCSA_BALANCED_V1", "US_FMCSA_STRICT_V1"],
+      "securityCapabilities": {
+        "signedRequests": true,
+        "signedResponses": true,
+        "replayProtection": true,
+        "auditTrail": true,
+        "clockSkewSeconds": 30
+      }
+    },
+    "payloadDigestSha256": "sha256:16457296a84cf01db0d24543cc11ee5fa772adec6f7f07d8857875ff666bcc43",
+    "alg": "HMAC_SHA256",
+    "kid": "faxp-lab-selfattest-2026q1",
+    "sig": "9e1c3e2ba15f354aa1fb1b8b47acfb8781052749c753a5c704da502280d4ecd0",
+    "signedAt": "2026-02-22T00:00:00Z",
+    "expiresAt": "2026-08-22T00:00:00Z"
+  }
+}

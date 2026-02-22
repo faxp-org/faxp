@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faxp.org/schema/adapter-profile-v1.json",
+  "title": "FAXP Adapter Profile",
+  "type": "object",
+  "required": [
+    "adapterProfileVersion",
+    "adapterId",
+    "providerType",
+    "hostingModel",
+    "certificationTier",
+    "status",
+    "endpointBaseUrl",
+    "profilesSupported",
+    "securityCapabilities",
+    "selfAttestation"
+  ],
+  "properties": {
+    "adapterProfileVersion": {
+      "type": "string"
+    },
+    "adapterId": {
+      "type": "string"
+    },
+    "providerType": {
+      "type": "string",
+      "enum": ["Compliance", "Identity", "Hybrid"]
+    },
+    "hostingModel": {
+      "type": "string",
+      "enum": ["ImplementerHosted", "ReferenceOnly"]
+    },
+    "certificationTier": {
+      "type": "string",
+      "enum": ["SelfAttested", "Conformant", "TrustedProduction"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["Active", "Suspended", "Revoked"]
+    },
+    "endpointBaseUrl": {
+      "type": "string",
+      "pattern": "^https://"
+    },
+    "profilesSupported": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "securityCapabilities": {
+      "type": "object",
+      "required": [
+        "signedRequests",
+        "signedResponses",
+        "replayProtection",
+        "auditTrail",
+        "clockSkewSeconds"
+      ],
+      "properties": {
+        "signedRequests": {
+          "type": "boolean"
+        },
+        "signedResponses": {
+          "type": "boolean"
+        },
+        "replayProtection": {
+          "type": "boolean"
+        },
+        "auditTrail": {
+          "type": "boolean"
+        },
+        "clockSkewSeconds": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "selfAttestation": {
+      "type": "object",
+      "required": [
+        "attestedBy",
+        "attestorRole",
+        "payload",
+        "payloadDigestSha256",
+        "alg",
+        "kid",
+        "sig",
+        "signedAt",
+        "expiresAt"
+      ],
+      "properties": {
+        "attestedBy": {
+          "type": "string"
+        },
+        "attestorRole": {
+          "type": "string"
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "adapterId",
+            "providerType",
+            "hostingModel",
+            "profilesSupported",
+            "securityCapabilities"
+          ],
+          "properties": {
+            "adapterId": {
+              "type": "string"
+            },
+            "providerType": {
+              "type": "string"
+            },
+            "hostingModel": {
+              "type": "string"
+            },
+            "profilesSupported": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "securityCapabilities": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        },
+        "payloadDigestSha256": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "alg": {
+          "type": "string",
+          "enum": ["HMAC_SHA256"]
+        },
+        "kid": {
+          "type": "string"
+        },
+        "sig": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "signedAt": {
+          "type": "string"
+        },
+        "expiresAt": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -73,6 +73,12 @@
           "conformanceReportRef": {
             "type": "string"
           },
+          "adapterProfileRef": {
+            "type": "string"
+          },
+          "selfAttestationKid": {
+            "type": "string"
+          },
           "lastCertifiedAt": {
             "type": "string"
           },
