@@ -5,6 +5,7 @@ FAXP is a runnable protocol demo for autonomous freight booking.
 This repository includes:
 - `faxp_mvp_simulation.py` for CLI simulation (load flow + truck flow).
 - `streamlit_app.py` for interactive demo UI.
+- `fmcsa_adapter_server.py` for hosted FMCSA adapter service.
 - Security controls (message signing, verifier signing, replay/TTL, key rotation, incident drill).
 - CI checks for parser regressions, Streamlit state regressions, and schema compatibility.
 
@@ -162,6 +163,16 @@ Notes:
 - Cloud FMCSA source selection order is: `hosted-adapter` (if configured), `live-fmcsa` (if configured), otherwise `authority-mock`.
 - Without hosted adapter or live FMCSA credentials, cloud FMCSA mode automatically falls back to `authority-mock`.
 - Access key is enforced when `FAXP_APP_MODE` is non-local.
+
+### 4.1) Hosted FMCSA Adapter Deployment (Vultr)
+
+Vultr deployment artifacts:
+
+- `/Users/zglitch009/projects/logistics-ai/FAXP/fmcsa_adapter_server.py`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/deploy/vultr/README.md`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/deploy/vultr/fmcsa_adapter.env.example`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/deploy/vultr/fmcsa-adapter.service`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/deploy/vultr/Caddyfile.fmcsa-adapter`
 
 ### 5) Security/Health Checks
 

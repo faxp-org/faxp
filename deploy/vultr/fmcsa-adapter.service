@@ -1,0 +1,23 @@
+[Unit]
+Description=FAXP FMCSA Adapter Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=faxp
+Group=faxp
+WorkingDirectory=/opt/faxp/app
+EnvironmentFile=/etc/faxp/fmcsa-adapter.env
+ExecStart=/usr/bin/python3 /opt/faxp/app/fmcsa_adapter_server.py
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/log/faxp /tmp
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

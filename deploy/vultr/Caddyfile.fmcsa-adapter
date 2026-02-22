@@ -1,0 +1,17 @@
+# Replace with your domain.
+adapter.your-domain.com {
+    encode gzip
+
+    @health path /healthz
+    handle @health {
+        reverse_proxy 127.0.0.1:8088
+    }
+
+    @verify path /v1/fmcsa/verify
+    handle @verify {
+        reverse_proxy 127.0.0.1:8088
+    }
+
+    # Deny all other paths.
+    respond "Not found" 404
+}
