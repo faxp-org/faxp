@@ -33,6 +33,7 @@ This repository includes:
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/adapter_profile.schema.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/adapter_profile.sample.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/attestation_keys.sample.json`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/generate_attestation.py`
 
 ## Protocol Neutrality Boundary
 
@@ -269,6 +270,22 @@ Verification policy decision checks:
 
 ```bash
 python3 tests/run_policy_decisions.py
+```
+
+Attestation generator checks:
+
+```bash
+python3 tests/run_generate_attestation.py
+```
+
+Regenerate adapter self-attestation fields (digest/signature):
+
+```bash
+python3 conformance/generate_attestation.py \
+  --profile conformance/adapter_profile.sample.json \
+  --keyring conformance/attestation_keys.sample.json \
+  --kid faxp-lab-selfattest-2026q1 \
+  --in-place
 ```
 
 ### 7) Troubleshooting

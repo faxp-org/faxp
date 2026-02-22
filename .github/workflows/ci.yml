@@ -68,7 +68,7 @@ jobs:
 
       - name: Python compile checks
         run: |
-          python -m py_compile faxp_mvp_simulation.py fmcsa_adapter_server.py streamlit_app.py streamlit_state_logic.py tests/run_streamlit_state_logic.py tests/run_schema_compatibility.py tests/run_fmcsa_hosted_adapter.py tests/run_certification_artifacts.py tests/run_policy_decisions.py
+          python -m py_compile faxp_mvp_simulation.py fmcsa_adapter_server.py streamlit_app.py streamlit_state_logic.py conformance/generate_attestation.py tests/run_streamlit_state_logic.py tests/run_schema_compatibility.py tests/run_fmcsa_hosted_adapter.py tests/run_certification_artifacts.py tests/run_policy_decisions.py tests/run_generate_attestation.py
 
       - name: Streamlit state regression checks
         run: |
@@ -89,6 +89,10 @@ jobs:
       - name: Verification policy decision checks
         run: |
           python tests/run_policy_decisions.py
+
+      - name: Attestation generator checks
+        run: |
+          python tests/run_generate_attestation.py
 
       - name: Security gate (template)
         run: |

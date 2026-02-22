@@ -9,6 +9,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `adapter_profile.schema.json`: schema for adapter self-attestation profile.
 - `adapter_profile.sample.json`: sample adapter profile with self-attestation payload.
 - `attestation_keys.sample.json`: test-only keyring for local/CI attestation verification.
+- `generate_attestation.py`: helper to regenerate payload digest/signature for adapter profiles.
 
 Adapter hosting model:
 
@@ -39,3 +40,13 @@ Note:
 
 - `attestation_keys.sample.json` is intentionally non-secret and for conformance harness testing only.
 - Production implementers should store attestation keys in their own secure key management system.
+
+Attestation helper usage:
+
+```bash
+python3 conformance/generate_attestation.py \
+  --profile conformance/adapter_profile.sample.json \
+  --keyring conformance/attestation_keys.sample.json \
+  --kid faxp-lab-selfattest-2026q1 \
+  --in-place
+```
