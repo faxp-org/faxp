@@ -10,7 +10,8 @@
     "baseRegistryRef",
     "requestedBy",
     "approvals",
-    "operations"
+    "operations",
+    "requestSignature"
   ],
   "properties": {
     "requestVersion": {
@@ -197,6 +198,32 @@
         ]
       }
     },
+    "requestSignature": {
+      "type": "object",
+      "required": ["alg", "kid", "payloadDigestSha256", "sig", "signedAt"],
+      "properties": {
+        "alg": {
+          "type": "string",
+          "enum": ["HMAC_SHA256"]
+        },
+        "kid": {
+          "type": "string",
+          "minLength": 3
+        },
+        "payloadDigestSha256": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "sig": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "signedAt": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "auditTrailRef": {
       "type": "string"
     },
@@ -206,4 +233,3 @@
   },
   "additionalProperties": false
 }
-

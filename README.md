@@ -45,9 +45,13 @@ This repository includes:
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update.schema.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update.sample.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update.sample.audit.log`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update_keys.sample.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/certification_registry.sample.after_update.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/attestation_keys.sample.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/generate_attestation.py`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/create_registry_update.py`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/apply_registry_update.py`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update_signing.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/conformance_bundle.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/verifier_translator.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/quickstart/`
@@ -321,11 +325,28 @@ Registry apply tool checks:
 python3 tests/run_apply_registry_update.py
 ```
 
+Registry update create helper checks:
+
+```bash
+python3 tests/run_create_registry_update.py
+```
+
+Create signed registry update request:
+
+```bash
+python3 conformance/create_registry_update.py \
+  --template conformance/registry_update.sample.json \
+  --keyring conformance/registry_update_keys.sample.json \
+  --kid faxp-regops-kid-2026q1 \
+  --output /tmp/faxp_registry_update.signed.json
+```
+
 Apply registry update request and write output:
 
 ```bash
 python3 conformance/apply_registry_update.py \
   --request conformance/registry_update.sample.json \
+  --keyring conformance/registry_update_keys.sample.json \
   --output /tmp/faxp_registry_after_update.json
 ```
 

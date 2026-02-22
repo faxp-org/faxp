@@ -17,6 +17,7 @@ SCRIPT_PATH = PROJECT_ROOT / "conformance" / "apply_registry_update.py"
 REGISTRY_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "certification_registry.schema.json"
 REQUEST_PATH = PROJECT_ROOT / "conformance" / "registry_update.sample.json"
 EXPECTED_PATH = PROJECT_ROOT / "conformance" / "certification_registry.sample.after_update.json"
+KEYRING_PATH = PROJECT_ROOT / "conformance" / "registry_update_keys.sample.json"
 
 
 def _assert(condition: bool, message: str) -> None:
@@ -38,6 +39,8 @@ def main() -> int:
                 str(SCRIPT_PATH),
                 "--request",
                 str(REQUEST_PATH),
+                "--keyring",
+                str(KEYRING_PATH),
                 "--output",
                 str(output_path),
             ],

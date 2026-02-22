@@ -40,6 +40,8 @@ Reference paths:
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/adapter_test_profile.schema.json`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/submission_manifest.schema.json`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update.schema.json`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update_keys.sample.json`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/create_registry_update.py`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/REGISTRY_OPERATIONS_RUNBOOK.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/apply_registry_update.py`
 
@@ -53,6 +55,7 @@ Reference paths:
 - `python3 tests/run_submission_manifest.py`
 - `python3 tests/run_registry_ops_artifacts.py`
 - `python3 tests/run_apply_registry_update.py`
+- `python3 tests/run_create_registry_update.py`
 3. Implementer submits bundle and conformance output.
 4. FAXP verifier reruns checks in CI.
 5. If all checks pass, registry entry is accepted/updated.

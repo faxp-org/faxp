@@ -12,8 +12,12 @@ import sys
 
 from jsonschema import Draft202012Validator
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from conformance.registry_update_signing import verify_request_signature  # noqa: E402
+
 PROFILE_SCHEMA_PATH = PROJECT_ROOT / "profiles" / "verification" / "profile.schema.json"
 STRICT_PROFILE_PATH = PROJECT_ROOT / "profiles" / "verification" / "US_FMCSA_STRICT_V1.json"
 BALANCED_PROFILE_PATH = PROJECT_ROOT / "profiles" / "verification" / "US_FMCSA_BALANCED_V1.json"
@@ -28,6 +32,7 @@ SUBMISSION_MANIFEST_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "submission_man
 SAMPLE_CONFORMANCE_REPORT_PATH = PROJECT_ROOT / "conformance" / "sample_conformance_report.json"
 REGISTRY_UPDATE_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "registry_update.schema.json"
 REGISTRY_UPDATE_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "registry_update.sample.json"
+REGISTRY_UPDATE_KEYS_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "registry_update_keys.sample.json"
 ATTESTATION_KEYS_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "attestation_keys.sample.json"
 
 
@@ -80,7 +85,12 @@ def main() -> int:
     sample_conformance_report = _load_json(SAMPLE_CONFORMANCE_REPORT_PATH)
     registry_update_schema = _load_json(REGISTRY_UPDATE_SCHEMA_PATH)
     registry_update_sample = _load_json(REGISTRY_UPDATE_SAMPLE_PATH)
+    registry_update_keyring = _load_json(REGISTRY_UPDATE_KEYS_SAMPLE_PATH)
     attestation_keyring = _load_json(ATTESTATION_KEYS_SAMPLE_PATH)
+    _assert(
+        isinstance(registry_update_keyring.get("keys"), dict) and registry_update_keyring["keys"],
+        "registry update keyring must contain at least one key.",
+    )
 
     _validate(profile_schema, strict_profile, "strict profile")
     _validate(profile_schema, balanced_profile, "balanced profile")
@@ -100,6 +110,15 @@ def main() -> int:
         registry_update_schema,
         registry_update_sample,
         "registry update sample",
+    )
+    verify_request_signature(
+        registry_update_sample,
+        keyring=registry_update_keyring,
+        require_signature=True,
+    )
+    _validate_iso_datetime(
+        str((registry_update_sample.get("requestSignature") or {}).get("signedAt") or ""),
+        "registry update requestSignature.signedAt",
     )
 
     _assert_tier_coverage(strict_profile, "strict profile")

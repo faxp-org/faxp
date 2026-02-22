@@ -31,8 +31,9 @@ Goals:
 Required artifacts:
 1. Base registry JSON (`conformance/certification_registry.sample.json` pattern).
 2. Registry update request JSON (`conformance/registry_update.sample.json` pattern).
-3. Evidence references for security-impacting actions.
-4. CI validation output from:
+3. Registry update signing keyring (`conformance/registry_update_keys.sample.json` pattern for CI/local harness).
+4. Evidence references for security-impacting actions.
+5. CI validation output from:
 - `python3 tests/run_registry_ops_artifacts.py`
 - `python3 tests/run_certification_artifacts.py`
 
@@ -41,9 +42,12 @@ Required artifacts:
 1. Author change set:
 - Populate `changeSetId`, `submittedAt`, `requestedBy`, and `operations`.
 - Include `baseRegistryRef` and `approvals` metadata.
+- Generate/refresh request signature with:
+  - `python3 conformance/create_registry_update.py --template <request.json> --keyring <keyring.json> --kid <kid> --in-place`
 
 2. Pre-merge checks:
 - Schema validity for registry update payload.
+- Registry update signature validity (`kid`, digest, signature).
 - Operation ordering and `opId` uniqueness.
 - Transition validity (`Active -> Suspended -> Revoked`).
 - Rollback target integrity (`targetOpId` must exist and match adapter).
@@ -112,4 +116,3 @@ Validation requirements:
 2. Do not silently mutate history; represent corrective actions explicitly.
 3. Prefer `SUSPEND` first when incident facts are incomplete.
 4. Use `REVOKE` when risk is confirmed or control integrity is lost.
-

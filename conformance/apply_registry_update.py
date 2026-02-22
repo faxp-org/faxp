@@ -11,6 +11,7 @@ import json
 import sys
 
 from jsonschema import Draft202012Validator
+from registry_update_signing import verify_request_signature
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -19,6 +20,7 @@ CONFORMANCE_DIR = PROJECT_ROOT / "conformance"
 REGISTRY_SCHEMA_PATH = CONFORMANCE_DIR / "certification_registry.schema.json"
 REGISTRY_UPDATE_SCHEMA_PATH = CONFORMANCE_DIR / "registry_update.schema.json"
 REGISTRY_UPDATE_SAMPLE_PATH = CONFORMANCE_DIR / "registry_update.sample.json"
+REGISTRY_UPDATE_KEYS_SAMPLE_PATH = CONFORMANCE_DIR / "registry_update_keys.sample.json"
 
 ALLOWED_PATCH_FIELDS = {
     "certificationTier",
@@ -99,16 +101,28 @@ def parse_args() -> argparse.Namespace:
         default="",
         help="Optional output path. If omitted, prints resulting registry JSON to stdout.",
     )
+    parser.add_argument(
+        "--keyring",
+        default=str(REGISTRY_UPDATE_KEYS_SAMPLE_PATH),
+        help="Registry update signing keyring JSON path.",
+    )
+    parser.add_argument(
+        "--allow-unsigned",
+        action="store_true",
+        help="Allow unsigned requests (default is fail-closed requiring requestSignature).",
+    )
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
     request_path = Path(args.request).expanduser().resolve()
+    keyring_path = Path(args.keyring).expanduser().resolve()
 
     registry_schema = _load_json(REGISTRY_SCHEMA_PATH)
     update_schema = _load_json(REGISTRY_UPDATE_SCHEMA_PATH)
     request_payload = _load_json(request_path)
+    keyring_payload = _load_json(keyring_path)
 
     _validate(update_schema, request_payload, "registry update request")
     _validate_iso_datetime(str(request_payload["submittedAt"]), "submittedAt")
@@ -116,6 +130,14 @@ def main() -> int:
         bool(request_payload.get("approvals", {}).get("policyApproved")),
         "approvals.policyApproved must be true.",
     )
+    verify_request_signature(
+        request_payload,
+        keyring=keyring_payload,
+        require_signature=not args.allow_unsigned,
+    )
+    signature = request_payload.get("requestSignature") or {}
+    if signature:
+        _validate_iso_datetime(str(signature.get("signedAt") or ""), "requestSignature.signedAt")
 
     if args.registry.strip():
         base_registry_path = Path(args.registry).expanduser().resolve()
@@ -224,4 +246,3 @@ if __name__ == "__main__":
     except AssertionError as exc:
         print(f"[RegistryApply] error: {exc}", file=sys.stderr)
         raise SystemExit(1)
-

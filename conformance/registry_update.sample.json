@@ -47,7 +47,13 @@
       "notes": "Revoke rolled back after false positive and confirmed key integrity."
     }
   ],
+  "requestSignature": {
+    "alg": "HMAC_SHA256",
+    "kid": "faxp-regops-kid-2026q1",
+    "payloadDigestSha256": "sha256:29095510f72e84cf263165ab34136810860e9bdf710f295b20f564ac0e9bc78d",
+    "sig": "a439fd252933e9283b9b2cc7b9cf272fbb14f4d0075f982ed85a8c4a6bafe778",
+    "signedAt": "2026-02-22T00:00:00Z"
+  },
   "auditTrailRef": "conformance/registry_update.sample.audit.log",
   "notes": "Sample registry update flow covering upsert, revoke, and rollback."
 }
-

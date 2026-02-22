@@ -16,9 +16,13 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `registry_update.schema.json`: schema for registry operations request payloads.
 - `registry_update.sample.json`: sample registry operations request with upsert/revoke/rollback.
 - `registry_update.sample.audit.log`: sample audit log for registry operations.
+- `registry_update_keys.sample.json`: test-only keyring for signing registry update requests.
 - `certification_registry.sample.after_update.json`: expected sample registry after applying `registry_update.sample.json`.
 - `attestation_keys.sample.json`: test-only keyring for local/CI attestation verification.
 - `generate_attestation.py`: helper to regenerate payload digest/signature for adapter profiles.
+- `create_registry_update.py`: helper to generate signed registry update requests from template payloads.
+- `apply_registry_update.py`: deterministic registry update applier (upsert/revoke/rollback).
+- `registry_update_signing.py`: shared canonicalization/sign/verify helpers for registry update requests.
 - `conformance_bundle.py`: reusable conformance evaluator for profile + registry bundles.
 - `verifier_translator.py`: reference wrapper for translating provider-native payloads to neutral FAXP verification output.
 - `quickstart/`: onboarding templates + bundle builder script.
@@ -102,11 +106,22 @@ Registry operations artifact check:
 python3 tests/run_registry_ops_artifacts.py
 ```
 
+Registry update request generation (signed):
+
+```bash
+python3 conformance/create_registry_update.py \
+  --template conformance/registry_update.sample.json \
+  --keyring conformance/registry_update_keys.sample.json \
+  --kid faxp-regops-kid-2026q1 \
+  --output /tmp/faxp_registry_update.signed.json
+```
+
 Apply registry update request (deterministic output):
 
 ```bash
 python3 conformance/apply_registry_update.py \
   --request conformance/registry_update.sample.json \
+  --keyring conformance/registry_update_keys.sample.json \
   --output /tmp/faxp_registry_after_update.json
 ```
 
