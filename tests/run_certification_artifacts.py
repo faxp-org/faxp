@@ -22,6 +22,7 @@ from conformance.submission_manifest_signing import verify_submission_signature 
 PROFILE_SCHEMA_PATH = PROJECT_ROOT / "profiles" / "verification" / "profile.schema.json"
 STRICT_PROFILE_PATH = PROJECT_ROOT / "profiles" / "verification" / "US_FMCSA_STRICT_V1.json"
 BALANCED_PROFILE_PATH = PROJECT_ROOT / "profiles" / "verification" / "US_FMCSA_BALANCED_V1.json"
+SOFTHOLD_PROFILE_PATH = PROJECT_ROOT / "profiles" / "verification" / "US_FMCSA_SOFTHOLD_V1.json"
 REGISTRY_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "certification_registry.schema.json"
 REGISTRY_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "certification_registry.sample.json"
 ADAPTER_PROFILE_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "adapter_profile.schema.json"
@@ -80,6 +81,7 @@ def main() -> int:
     profile_schema = _load_json(PROFILE_SCHEMA_PATH)
     strict_profile = _load_json(STRICT_PROFILE_PATH)
     balanced_profile = _load_json(BALANCED_PROFILE_PATH)
+    softhold_profile = _load_json(SOFTHOLD_PROFILE_PATH)
     registry_schema = _load_json(REGISTRY_SCHEMA_PATH)
     registry_sample = _load_json(REGISTRY_SAMPLE_PATH)
     adapter_profile_schema = _load_json(ADAPTER_PROFILE_SCHEMA_PATH)
@@ -103,6 +105,7 @@ def main() -> int:
 
     _validate(profile_schema, strict_profile, "strict profile")
     _validate(profile_schema, balanced_profile, "balanced profile")
+    _validate(profile_schema, softhold_profile, "softhold profile")
     _validate(registry_schema, registry_sample, "certification registry sample")
     _validate(adapter_profile_schema, adapter_profile_sample, "adapter profile sample")
     _validate(
@@ -151,14 +154,28 @@ def main() -> int:
 
     _assert_tier_coverage(strict_profile, "strict profile")
     _assert_tier_coverage(balanced_profile, "balanced profile")
+    _assert_tier_coverage(softhold_profile, "softhold profile")
 
     _assert(
         strict_profile["policyDefaults"]["degradedMode"] == "HardBlock",
         "strict profile degraded mode should be HardBlock.",
     )
     _assert(
-        balanced_profile["policyDefaults"]["degradedMode"] in {"SoftHold", "GraceCache"},
-        "balanced profile degraded mode should permit continuity behavior.",
+        balanced_profile["policyDefaults"]["degradedMode"] == "GraceCache",
+        "balanced profile degraded mode should be GraceCache.",
+    )
+    _assert(
+        softhold_profile["policyDefaults"]["degradedMode"] == "SoftHold",
+        "softhold profile degraded mode should be SoftHold.",
+    )
+    _assert(
+        {
+            strict_profile["policyDefaults"]["degradedMode"],
+            balanced_profile["policyDefaults"]["degradedMode"],
+            softhold_profile["policyDefaults"]["degradedMode"],
+        }
+        == {"HardBlock", "SoftHold", "GraceCache"},
+        "verification profiles must cover HardBlock, SoftHold, and GraceCache modes.",
     )
     _assert(
         balanced_profile["policyDefaults"]["maxFallbackDurationSeconds"]

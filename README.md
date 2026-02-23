@@ -20,6 +20,7 @@ This repository includes:
 - RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/RFC-v0.2-verification-neutrality.md`
 - Implementation checklist: `/Users/zglitch009/projects/logistics-ai/FAXP/V2_IMPLEMENTATION_CHECKLIST.md`
 - Test matrix: `/Users/zglitch009/projects/logistics-ai/FAXP/TEST_MATRIX_v0.2.md`
+- Policy profiles (normative): `/Users/zglitch009/projects/logistics-ai/FAXP/POLICY_PROFILES.md`
 - Schema files:
   - v0.1.1: `/Users/zglitch009/projects/logistics-ai/FAXP/faxp.schema.json`
   - v0.2 compatibility track: `/Users/zglitch009/projects/logistics-ai/FAXP/faxp.v0.2.schema.json`
@@ -30,6 +31,7 @@ This repository includes:
 - Verification profiles:
   - schema: `/Users/zglitch009/projects/logistics-ai/FAXP/profiles/verification/profile.schema.json`
   - strict: `/Users/zglitch009/projects/logistics-ai/FAXP/profiles/verification/US_FMCSA_STRICT_V1.json`
+  - soft-hold: `/Users/zglitch009/projects/logistics-ai/FAXP/profiles/verification/US_FMCSA_SOFTHOLD_V1.json`
   - balanced: `/Users/zglitch009/projects/logistics-ai/FAXP/profiles/verification/US_FMCSA_BALANCED_V1.json`
 - Conformance and registry artifacts:
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/README.md`
@@ -185,7 +187,7 @@ Expected:
 - `Validation Errors: 0`
 
 Policy controls in sidebar:
-- `Verification Policy Profile` (`US_FMCSA_BALANCED_V1` or `US_FMCSA_STRICT_V1`)
+- `Verification Policy Profile` (`US_FMCSA_BALANCED_V1`, `US_FMCSA_SOFTHOLD_V1`, or `US_FMCSA_STRICT_V1`)
 - `Risk Tier` (`0-3`)
 - `Exception Approved` + `Exception Approval Ref`
 

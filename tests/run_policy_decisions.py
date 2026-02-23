@@ -11,6 +11,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from faxp_mvp_simulation import evaluate_verification_policy_decision  # noqa: E402
+from policy_profile_matrix import load_policy_test_matrix  # noqa: E402
 
 
 def _assert(condition: bool, message: str) -> None:
@@ -18,113 +19,46 @@ def _assert(condition: bool, message: str) -> None:
         raise AssertionError(message)
 
 
+def _run_case(case: dict) -> None:
+    case_id = str(case["id"])
+    decision = evaluate_verification_policy_decision(
+        case["verification"],
+        profile_id=case["profileId"],
+        risk_tier=case["riskTier"],
+        exception_approved=bool(case.get("exceptionApproved", False)),
+        exception_approval_ref=str(case.get("exceptionApprovalRef", "")),
+    )
+
+    _assert(
+        decision["VerificationPolicyProfileID"] == case["profileId"],
+        f"{case_id}: policy profile mismatch",
+    )
+    _assert(decision["RiskTier"] == int(case["riskTier"]), f"{case_id}: risk tier mismatch")
+
+    for key, expected_value in case["expected"].items():
+        actual = decision.get(key)
+        _assert(
+            actual == expected_value,
+            f"{case_id}: expected {key}={expected_value!r} but got {actual!r}",
+        )
+
+    expected_exception_ref = str(case.get("expectedExceptionApprovalRef", "")).strip()
+    if expected_exception_ref:
+        _assert(
+            decision.get("ExceptionApprovalRef") == expected_exception_ref,
+            f"{case_id}: exception approval ref mismatch",
+        )
+
+    _assert(bool(decision.get("PolicyRuleID")), f"{case_id}: PolicyRuleID must be present")
+    _assert(bool(decision.get("ReverifyBy")), f"{case_id}: ReverifyBy must be present")
+
+
 def main() -> int:
-    success_result = {
-        "status": "Success",
-        "source": "hosted-adapter",
-        "provider": "compliance.authority-record.live",
-    }
-    success_decision = evaluate_verification_policy_decision(
-        success_result,
-        profile_id="US_FMCSA_BALANCED_V1",
-        risk_tier=1,
-    )
-    _assert(success_decision["DispatchAuthorization"] == "Allowed", "success should allow dispatch")
-    _assert(success_decision["ShouldBook"] is True, "success should keep booking")
+    cases = load_policy_test_matrix(PROJECT_ROOT)
+    for case in cases:
+        _run_case(case)
 
-    hard_fail = {
-        "status": "Fail",
-        "source": "hosted-adapter",
-        "provider": "compliance.authority-record.live",
-    }
-    hard_fail_decision = evaluate_verification_policy_decision(
-        hard_fail,
-        profile_id="US_FMCSA_BALANCED_V1",
-        risk_tier=0,
-    )
-    _assert(
-        hard_fail_decision["DispatchAuthorization"] == "Blocked",
-        "negative verification result should block",
-    )
-    _assert(hard_fail_decision["ShouldBook"] is False, "negative verification should not book")
-
-    outage_low = {
-        "status": "Fail",
-        "source": "hosted-adapter",
-        "error": "Hosted adapter network error.",
-    }
-    outage_low_decision = evaluate_verification_policy_decision(
-        outage_low,
-        profile_id="US_FMCSA_BALANCED_V1",
-        risk_tier=0,
-    )
-    _assert(
-        outage_low_decision["DispatchAuthorization"] == "Allowed",
-        "balanced tier-0 outage should allow provisional booking",
-    )
-    _assert(outage_low_decision["ShouldBook"] is True, "tier-0 outage should keep booking")
-
-    outage_high_pending = evaluate_verification_policy_decision(
-        outage_low,
-        profile_id="US_FMCSA_BALANCED_V1",
-        risk_tier=2,
-        exception_approved=False,
-    )
-    _assert(
-        outage_high_pending["DispatchAuthorization"] == "Hold",
-        "balanced tier-2 outage should hold when no exception approval",
-    )
-    _assert(
-        outage_high_pending["DecisionReasonCode"] == "PendingHumanApproval",
-        "tier-2 outage should require human approval",
-    )
-    _assert(outage_high_pending["ShouldBook"] is True, "hold should retain provisional booking")
-
-    outage_high_approved = evaluate_verification_policy_decision(
-        outage_low,
-        profile_id="US_FMCSA_BALANCED_V1",
-        risk_tier=2,
-        exception_approved=True,
-        exception_approval_ref="APPROVAL-123",
-    )
-    _assert(
-        outage_high_approved["DispatchAuthorization"] == "Allowed",
-        "approved tier-2 exception should allow dispatch",
-    )
-    _assert(
-        outage_high_approved.get("ExceptionApprovalRef") == "APPROVAL-123",
-        "exception reference should be retained",
-    )
-
-    strict_outage = evaluate_verification_policy_decision(
-        outage_low,
-        profile_id="US_FMCSA_STRICT_V1",
-        risk_tier=1,
-    )
-    _assert(
-        strict_outage["DispatchAuthorization"] == "Blocked",
-        "strict profile outage should hard block",
-    )
-    _assert(strict_outage["ShouldBook"] is False, "strict outage should not book")
-
-    critical_outage_approved = evaluate_verification_policy_decision(
-        outage_low,
-        profile_id="US_FMCSA_BALANCED_V1",
-        risk_tier=3,
-        exception_approved=True,
-        exception_approval_ref="APPROVAL-CRITICAL-1",
-    )
-    _assert(
-        critical_outage_approved["DispatchAuthorization"] == "Blocked",
-        "critical outage should remain blocked even with exception",
-    )
-    _assert(
-        critical_outage_approved["DecisionReasonCode"] == "HumanExceptionDeniedByTierPolicy",
-        "critical block reason mismatch",
-    )
-    _assert(critical_outage_approved["ShouldBook"] is False, "critical outage should not book")
-
-    print("Verification policy decision regression checks passed.")
+    print(f"Verification policy decision regression checks passed ({len(cases)} cases).")
     return 0
 
 
