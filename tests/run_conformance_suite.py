@@ -84,6 +84,10 @@ def main() -> int:
         "conformance suite must include protocol_compatibility_profile in default checks",
     )
     _assert(
+        "protocol_compatibility_signature" in listed_checks.stdout.splitlines(),
+        "conformance suite must include protocol_compatibility_signature in default checks",
+    )
+    _assert(
         "protocol_version_negotiation" in listed_checks.stdout.splitlines(),
         "conformance suite must include protocol_version_negotiation in default checks",
     )

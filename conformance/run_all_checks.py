@@ -46,6 +46,7 @@ def _suite_commands() -> list[tuple[str, list[str]]]:
         ("mcp_profile", [python, str(TESTS_DIR / "run_mcp_profile_check.py")]),
         ("mcp_watch_artifacts", [python, str(TESTS_DIR / "run_mcp_watch_artifacts.py")]),
         ("protocol_compatibility_profile", [python, str(TESTS_DIR / "run_protocol_compatibility_profile.py")]),
+        ("protocol_compatibility_signature", [python, str(TESTS_DIR / "run_protocol_compatibility_signature.py")]),
         ("protocol_version_negotiation", [python, str(TESTS_DIR / "run_protocol_version_negotiation.py")]),
         ("cross_version_fixtures", [python, str(TESTS_DIR / "run_cross_version_fixtures.py")]),
         ("registry_apply", [python, str(TESTS_DIR / "run_apply_registry_update.py")]),
