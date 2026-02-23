@@ -71,6 +71,8 @@ Reference paths:
 6. If checks fail, submission is rejected with explicit failing check IDs.
 7. Reviewer emits a decision artifact using:
 - `/Users/zglitch009/projects/logistics-ai/FAXP/CERTIFICATION_DECISION_RECORD_TEMPLATE.md`
+8. Reviewer follows decision-record operations runbook:
+- `/Users/zglitch009/projects/logistics-ai/FAXP/DECISION_RECORDS_RUNBOOK.md`
 
 ## 4) Pass/Fail Gates
 
@@ -93,6 +95,9 @@ Mandatory gates:
 6. Decision record template checks pass:
 - `python3 tests/run_decision_record_template.py`
 - Decision artifact includes required evidence links and reason codes.
+7. Decision record artifact checks pass:
+- `python3 tests/run_decision_record_artifacts.py`
+- Sample/active decision record cross-links are coherent with conformance + registry artifacts.
 
 Additional gates for `TrustedProduction`:
 1. Operational evidence references are present in manifest.

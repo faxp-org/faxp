@@ -27,6 +27,7 @@ This repository includes:
 - Governance model: `/Users/zglitch009/projects/logistics-ai/FAXP/FAXP_GOVERNANCE_MODEL.md`
 - Builder handoff checklist: `/Users/zglitch009/projects/logistics-ai/FAXP/ADAPTER_IMPLEMENTER_HANDOFF.md`
 - Certification playbook: `/Users/zglitch009/projects/logistics-ai/FAXP/CERTIFICATION_PLAYBOOK.md`
+- Decision records runbook: `/Users/zglitch009/projects/logistics-ai/FAXP/DECISION_RECORDS_RUNBOOK.md`
 - Registry operations runbook: `/Users/zglitch009/projects/logistics-ai/FAXP/REGISTRY_OPERATIONS_RUNBOOK.md`
 - Verification profiles:
   - schema: `/Users/zglitch009/projects/logistics-ai/FAXP/profiles/verification/profile.schema.json`

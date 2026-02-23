@@ -23,6 +23,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `certification_registry.sample.after_update.json`: expected sample registry after applying `registry_update.sample.json`.
 - `../REGISTRY_ADMISSION_POLICY.md`: policy contract for admission/renewal/suspension criteria (normative block).
 - `../CERTIFICATION_DECISION_RECORD_TEMPLATE.md`: decision artifact template for deterministic approval/rejection records.
+- `certification_decision_record.sample.json`: sample decision artifact aligned to template requirements.
 - `attestation_keys.sample.json`: test-only keyring for local/CI attestation verification.
 - `generate_attestation.py`: helper to regenerate payload digest/signature for adapter profiles.
 - `create_submission_manifest.py`: helper to generate signed submission manifests from template payloads.
@@ -147,6 +148,12 @@ Certification decision record template check:
 
 ```bash
 python3 tests/run_decision_record_template.py
+```
+
+Certification decision record artifact check:
+
+```bash
+python3 tests/run_decision_record_artifacts.py
 ```
 
 Registry update request generation (signed):
