@@ -1,10 +1,10 @@
 {
   "trackingVersion": "1.0.0",
-  "upstreamRepo": "modelcontextprotocol/spec",
-  "trackedRef": "main",
-  "trackedRefType": "branch",
+  "upstreamRepo": "modelcontextprotocol/modelcontextprotocol",
+  "trackedRef": "2025-11-25",
+  "trackedRefType": "release",
   "reviewCadence": "Weekly",
-  "lastReviewedAt": "2026-02-23T00:00:00Z",
+  "lastReviewedAt": "2026-02-23T12:00:00Z",
   "owner": "FAXP Governance Working Group",
-  "notes": "Baseline reference for automated MCP upstream drift monitoring."
+  "notes": "Baseline reference for automated MCP upstream drift monitoring using the canonical MCP spec repository."
 }

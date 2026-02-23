@@ -41,5 +41,12 @@
   "requiredIncompatibleFixtureReasons": [
     "ProtocolVersionUnsupported",
     "ProtocolVersionInvalidFormat"
-  ]
+  ],
+  "profileSignature": {
+    "alg": "HMAC_SHA256",
+    "kid": "faxp-governance-compat-2026q1",
+    "payloadDigestSha256": "sha256:d3e3c50ccc83a122df34d2405dfe9f1b2868c0bf72c92ed4adc30813e9e6359c",
+    "sig": "fb7d277b6fd448c70c5fe22c211903cf58eae8a2ca3503a75e6ee72c72e27def",
+    "signedAt": "2026-02-23T18:26:35Z"
+  }
 }

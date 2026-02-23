@@ -17,9 +17,11 @@ from faxp_mvp_simulation import (  # noqa: E402
     FaxpProtocol,
     negotiate_protocol_version,
 )
+from conformance.protocol_compatibility_signing import verify_profile_signature  # noqa: E402
 
 
 PROFILE_PATH = PROJECT_ROOT / "conformance" / "protocol_compatibility_profile.v1.json"
+PROFILE_KEYRING_PATH = PROJECT_ROOT / "conformance" / "protocol_compatibility_keys.sample.json"
 FIXTURES_PATH = PROJECT_ROOT / "tests" / "protocol_version_fixtures.json"
 SEMVER_PATTERN = re.compile(r"^\d+\.\d+\.\d+$")
 
@@ -45,6 +47,7 @@ def _validate_versions(values: list[str], context: str) -> None:
 
 def main() -> int:
     profile = _load_json(PROFILE_PATH)
+    profile_keyring = _load_json(PROFILE_KEYRING_PATH)
     fixtures_payload = _load_json(FIXTURES_PATH)
     fixtures = fixtures_payload.get("fixtures")
     _assert(isinstance(fixtures, list) and fixtures, "protocol_version_fixtures must be non-empty.")
@@ -60,11 +63,13 @@ def main() -> int:
         "expectedReasonCodes",
         "requiredFixturePairs",
         "requiredIncompatibleFixtureReasons",
+        "profileSignature",
     ]
     for field in required_fields:
         _assert(field in profile, f"profile missing required field: {field}")
 
     _assert(profile["protocol"] == FaxpProtocol.NAME, "profile protocol must match FaxpProtocol.NAME")
+    verify_profile_signature(profile, keyring=profile_keyring, require_signature=True)
 
     runtime_versions = [str(item) for item in profile["runtimeVersions"]]
     incoming_versions = [str(item) for item in profile["incomingVersions"]]
