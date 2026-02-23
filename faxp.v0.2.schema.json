@@ -112,6 +112,7 @@
         "EquipmentType": { "type": "string" },
         "PickupDate": { "type": "string" },
         "RateModel": { "type": "string", "enum": ["PerMile", "Flat"] },
+        "UnitBasis": { "type": "string" },
         "MaxRate": { "type": "number", "minimum": 0 }
       },
       "additionalProperties": true
@@ -159,6 +160,7 @@
         "AvailableFrom": { "type": "string" },
         "AvailableTo": { "type": "string" },
         "RateModel": { "type": "string", "enum": ["PerMile", "Flat"] },
+        "UnitBasis": { "type": "string" },
         "MinRate": { "type": "number", "minimum": 0 },
         "MaxRate": { "type": "number", "minimum": 0 }
       },
