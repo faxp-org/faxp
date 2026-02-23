@@ -130,6 +130,29 @@ def main() -> int:
     _assert(_is_valid(validator_v011, legacy_msg), "legacy v0.1.1 message should pass v0.1.1 schema")
     _assert(_is_valid(validator_v020, legacy_msg), "legacy v0.1.1 message should pass v0.2 schema")
 
+    legacy_with_rate_extensions = copy.deepcopy(legacy_msg)
+    legacy_with_rate_extensions["Body"]["AgreedRate"] = {
+        "RateModel": "PerMile",
+        "Amount": 2.62,
+        "Currency": "USD",
+        "UnitBasis": "mile",
+        "DistanceMiles": 925.5,
+        "LineHaulAmount": 2100.0,
+        "FuelSurchargeAmount": 180.0,
+        "FuelSurchargePercent": 8.5,
+        "ReferenceID": "lane-tx-ga-001",
+        "Notes": "Reefer temp 34F",
+        "Extensions": {"MultiStopCount": 2},
+    }
+    _assert(
+        _is_valid(validator_v011, legacy_with_rate_extensions),
+        "v0.1.1 schema should accept optional rate metadata extensions.",
+    )
+    _assert(
+        _is_valid(validator_v020, legacy_with_rate_extensions),
+        "v0.2 schema should accept optional rate metadata extensions.",
+    )
+
     neutral_msg = _neutral_execution_report_v020()
     _assert(
         not _is_valid(validator_v011, neutral_msg),
