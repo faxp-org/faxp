@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from pathlib import Path
 import json
 import sys
@@ -21,6 +22,8 @@ from conformance.a2a_bridge_translator import (  # noqa: E402
     load_contract,
 )
 
+FIXTURES_PATH = PROJECT_ROOT / "conformance" / "a2a_roundtrip_fixtures.json"
+
 
 def _assert(condition: bool, message: str) -> None:
     if not condition:
@@ -31,112 +34,85 @@ def _canonical_json(value: object) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"))
 
 
-def _build_envelope(message_type: str, body: dict, *, sender: str = "Broker Agent", receiver: str = "Carrier Agent") -> dict:
-    return {
-        "Protocol": "FAXP",
-        "ProtocolVersion": "0.1.1",
-        "MessageType": message_type,
-        "From": sender,
-        "To": receiver,
-        "Timestamp": "2026-02-23T00:00:00Z",
-        "MessageID": f"msg-{message_type.lower()}-001",
-        "Nonce": f"nonce-{message_type.lower()}-001",
-        "Body": body,
-        "SignatureAlgorithm": "ED25519",
-        "SignatureKeyID": "broker-20260220193123",
-        "Signature": "demo-signature",
-    }
+def _load_fixtures() -> dict:
+    with FIXTURES_PATH.open("r", encoding="utf-8") as handle:
+        payload = json.load(handle)
+    _assert(isinstance(payload, dict), "A2A fixture payload must be an object.")
+    _assert(
+        isinstance(payload.get("envelopeFixtures"), list) and payload["envelopeFixtures"],
+        "A2A fixture payload must include non-empty envelopeFixtures.",
+    )
+    _assert(
+        isinstance(payload.get("taskFixtures"), list) and payload["taskFixtures"],
+        "A2A fixture payload must include non-empty taskFixtures.",
+    )
+    return payload
 
 
 def main() -> int:
     contract = load_contract()
+    fixtures = _load_fixtures()
+    envelope_fixtures = fixtures["envelopeFixtures"]
+    task_fixtures = fixtures["taskFixtures"]
 
-    cases = [
-        _build_envelope(
-            "NewLoad",
-            {
-                "LoadID": "load-1",
-                "Origin": {"city": "Dallas", "state": "TX", "zip": "75201"},
-                "Destination": {"city": "Atlanta", "state": "GA", "zip": "30301"},
-                "Rate": {"RateModel": "PerMile", "Amount": 2.45, "Currency": "USD"},
-            },
-        ),
-        _build_envelope(
-            "LoadSearch",
-            {
-                "OriginState": "TX",
-                "DestinationState": "GA",
-                "EquipmentType": "Reefer",
-            },
-            sender="Carrier Agent",
-            receiver="Broker Agent",
-        ),
-        _build_envelope(
-            "NewTruck",
-            {
-                "TruckID": "truck-1",
-                "Location": {"city": "Fort Worth", "state": "TX", "zip": "76102"},
-                "AvailabilityDate": "2026-02-23",
-                "RateMin": {"RateModel": "PerMile", "Amount": 2.35, "Currency": "USD"},
-            },
-            sender="Carrier Agent",
-            receiver="Broker Agent",
-        ),
-        _build_envelope(
-            "TruckSearch",
-            {
-                "OriginState": "TX",
-                "EquipmentType": "Reefer",
-                "AvailableFrom": "2026-02-23",
-            },
-        ),
-        _build_envelope(
-            "BidRequest",
-            {
-                "LoadID": "load-1",
-                "AvailabilityDate": "2026-02-23",
-                "Rate": {"RateModel": "PerMile", "Amount": 2.62, "Currency": "USD"},
-            },
-            sender="Carrier Agent",
-            receiver="Broker Agent",
-        ),
-        _build_envelope(
-            "BidResponse",
-            {
-                "LoadID": "load-1",
-                "ResponseType": "Accept",
-            },
-        ),
-        _build_envelope(
-            "ExecutionReport",
-            {
-                "LoadID": "load-1",
-                "ContractID": "FAXP-20260223-demo",
-                "Status": "Booked",
-                "Timestamp": "2026-02-23T00:00:10Z",
-                "VerifiedBadge": "Premium",
-            },
-        ),
-        _build_envelope(
-            "AmendRequest",
-            {
-                "LoadID": "load-1",
-                "AmendmentType": "UpdateRate",
-            },
-        ),
-    ]
+    envelope_by_id: dict[str, dict] = {}
+    for item in envelope_fixtures:
+        fixture_id = str(item.get("id") or "").strip()
+        envelope = item.get("envelope")
+        _assert(fixture_id, "Each envelope fixture requires non-empty id.")
+        _assert(isinstance(envelope, dict), f"Envelope fixture {fixture_id} must include envelope object.")
+        envelope_by_id[fixture_id] = envelope
 
-    for envelope in cases:
+    task_by_id: dict[str, dict] = {}
+    for item in task_fixtures:
+        fixture_id = str(item.get("id") or "").strip()
+        task = item.get("task")
+        _assert(fixture_id, "Each task fixture requires non-empty id.")
+        _assert(isinstance(task, dict), f"Task fixture {fixture_id} must include task object.")
+        task_by_id[fixture_id] = task
+
+    for item in envelope_fixtures:
+        fixture_id = str(item["id"])
+        envelope = envelope_by_id[fixture_id]
+        expected_task_type = str(item.get("expectedA2ATaskType") or "").strip()
+
         task = faxp_to_a2a_task(envelope, contract=contract)
+        _assert(expected_task_type, f"{fixture_id}: expectedA2ATaskType must be present.")
+        _assert(
+            task.get("a2aTaskType") == expected_task_type,
+            f"{fixture_id}: translated a2aTaskType mismatch.",
+        )
+        if fixture_id in task_by_id:
+            _assert(
+                _canonical_json(task) == _canonical_json(task_by_id[fixture_id]),
+                f"{fixture_id}: translated task drifted from canonical fixture.",
+            )
+
         restored = a2a_task_to_faxp(task, contract=contract)
         _assert(
             _canonical_json(envelope) == _canonical_json(restored),
-            f"Round-trip mismatch for {envelope['MessageType']}",
+            f"{fixture_id}: envelope round-trip mismatch.",
         )
         assert_round_trip(envelope, contract=contract)
         assert_round_trip_from_a2a(task, contract=contract)
 
-    bad_envelope = _build_envelope("NewLoad", {"LoadID": "load-x"})
+    for fixture_id, task in task_by_id.items():
+        restored = a2a_task_to_faxp(task, contract=contract)
+        translated = faxp_to_a2a_task(restored, contract=contract)
+        _assert(
+            _canonical_json(task) == _canonical_json(translated),
+            f"{fixture_id}: task round-trip mismatch.",
+        )
+        assert_round_trip_from_a2a(task, contract=contract)
+        if fixture_id in envelope_by_id:
+            _assert(
+                _canonical_json(restored) == _canonical_json(envelope_by_id[fixture_id]),
+                f"{fixture_id}: restored envelope mismatch versus canonical fixture.",
+            )
+
+    _assert("msg-newload-001" in envelope_by_id, "Fixture pack must include msg-newload-001 test case.")
+    bad_envelope = deepcopy(envelope_by_id["msg-newload-001"])
+    bad_envelope["Body"] = {"LoadID": "load-x"}
     try:
         faxp_to_a2a_task(bad_envelope, contract=contract)
     except A2ABridgeError as exc:
@@ -144,7 +120,7 @@ def main() -> int:
     else:
         raise AssertionError("Expected failure for missing required NewLoad body fields.")
 
-    valid_task = faxp_to_a2a_task(cases[0], contract=contract)
+    valid_task = deepcopy(task_by_id["msg-newload-001"])
     valid_task["a2aTaskType"] = "faxp.unknown_task"
     try:
         a2a_task_to_faxp(valid_task, contract=contract)

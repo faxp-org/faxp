@@ -10,6 +10,7 @@ This runbook defines how FAXP tracks upstream A2A changes while keeping FAXP cor
 ## Source of Truth
 - Compatibility profile: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/A2A_COMPATIBILITY_PROFILE.md`
 - Translator contract: `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/a2a_translator_contract.json`
+- Round-trip fixtures: `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/a2a_roundtrip_fixtures.json`
 - Tracking config: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/A2A_UPSTREAM_TRACKING.json`
 
 ## Weekly Process
@@ -27,6 +28,18 @@ This runbook defines how FAXP tracks upstream A2A changes while keeping FAXP cor
 ## Escalation Rules
 - Any proposal that introduces A2A runtime dependency into FAXP core must go through RFC using `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC_TEMPLATE.md`.
 - If translator parity cannot be preserved (signature/replay/TTL semantics), fail closed and do not claim compatibility.
+
+## Builder Quickstart
+1. Pull the profile + contract + fixture artifacts into your adapter project.
+2. Implement translator behavior equivalent to:
+   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/a2a_bridge_translator.py`
+3. Run local checks:
+```bash
+cd /Users/zglitch009/projects/logistics-ai/FAXP
+python3 tests/run_a2a_profile_check.py
+python3 tests/run_a2a_roundtrip_translation.py
+```
+4. Submit conformance artifacts with your certification bundle.
 
 ## Manual Command
 ```bash

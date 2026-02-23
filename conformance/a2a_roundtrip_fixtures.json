@@ -1,0 +1,549 @@
+{
+  "fixtureVersion": "1.0.0",
+  "profileRef": "docs/interop/A2A_COMPATIBILITY_PROFILE.md",
+  "contractRef": "conformance/a2a_translator_contract.json",
+  "envelopeFixtures": [
+    {
+      "id": "msg-newload-001",
+      "expectedA2ATaskType": "faxp.new_load",
+      "envelope": {
+        "Protocol": "FAXP",
+        "ProtocolVersion": "0.1.1",
+        "MessageType": "NewLoad",
+        "From": "Broker Agent",
+        "To": "Carrier Agent",
+        "Timestamp": "2026-02-23T00:00:00Z",
+        "MessageID": "msg-newload-001",
+        "Nonce": "nonce-newload-001",
+        "Body": {
+          "LoadID": "load-1",
+          "Origin": {
+            "city": "Dallas",
+            "state": "TX",
+            "zip": "75201"
+          },
+          "Destination": {
+            "city": "Atlanta",
+            "state": "GA",
+            "zip": "30301"
+          },
+          "Rate": {
+            "RateModel": "PerMile",
+            "Amount": 2.45,
+            "Currency": "USD"
+          }
+        },
+        "SignatureAlgorithm": "ED25519",
+        "SignatureKeyID": "broker-20260220193123",
+        "Signature": "demo-signature"
+      }
+    },
+    {
+      "id": "msg-loadsearch-001",
+      "expectedA2ATaskType": "faxp.load_search",
+      "envelope": {
+        "Protocol": "FAXP",
+        "ProtocolVersion": "0.1.1",
+        "MessageType": "LoadSearch",
+        "From": "Carrier Agent",
+        "To": "Broker Agent",
+        "Timestamp": "2026-02-23T00:00:00Z",
+        "MessageID": "msg-loadsearch-001",
+        "Nonce": "nonce-loadsearch-001",
+        "Body": {
+          "OriginState": "TX",
+          "DestinationState": "GA",
+          "EquipmentType": "Reefer"
+        },
+        "SignatureAlgorithm": "ED25519",
+        "SignatureKeyID": "broker-20260220193123",
+        "Signature": "demo-signature"
+      }
+    },
+    {
+      "id": "msg-newtruck-001",
+      "expectedA2ATaskType": "faxp.new_truck",
+      "envelope": {
+        "Protocol": "FAXP",
+        "ProtocolVersion": "0.1.1",
+        "MessageType": "NewTruck",
+        "From": "Carrier Agent",
+        "To": "Broker Agent",
+        "Timestamp": "2026-02-23T00:00:00Z",
+        "MessageID": "msg-newtruck-001",
+        "Nonce": "nonce-newtruck-001",
+        "Body": {
+          "TruckID": "truck-1",
+          "Location": {
+            "city": "Fort Worth",
+            "state": "TX",
+            "zip": "76102"
+          },
+          "AvailabilityDate": "2026-02-23",
+          "RateMin": {
+            "RateModel": "PerMile",
+            "Amount": 2.35,
+            "Currency": "USD"
+          }
+        },
+        "SignatureAlgorithm": "ED25519",
+        "SignatureKeyID": "broker-20260220193123",
+        "Signature": "demo-signature"
+      }
+    },
+    {
+      "id": "msg-trucksearch-001",
+      "expectedA2ATaskType": "faxp.truck_search",
+      "envelope": {
+        "Protocol": "FAXP",
+        "ProtocolVersion": "0.1.1",
+        "MessageType": "TruckSearch",
+        "From": "Broker Agent",
+        "To": "Carrier Agent",
+        "Timestamp": "2026-02-23T00:00:00Z",
+        "MessageID": "msg-trucksearch-001",
+        "Nonce": "nonce-trucksearch-001",
+        "Body": {
+          "OriginState": "TX",
+          "EquipmentType": "Reefer",
+          "AvailableFrom": "2026-02-23"
+        },
+        "SignatureAlgorithm": "ED25519",
+        "SignatureKeyID": "broker-20260220193123",
+        "Signature": "demo-signature"
+      }
+    },
+    {
+      "id": "msg-bidrequest-001",
+      "expectedA2ATaskType": "faxp.bid_request",
+      "envelope": {
+        "Protocol": "FAXP",
+        "ProtocolVersion": "0.1.1",
+        "MessageType": "BidRequest",
+        "From": "Carrier Agent",
+        "To": "Broker Agent",
+        "Timestamp": "2026-02-23T00:00:00Z",
+        "MessageID": "msg-bidrequest-001",
+        "Nonce": "nonce-bidrequest-001",
+        "Body": {
+          "LoadID": "load-1",
+          "AvailabilityDate": "2026-02-23",
+          "Rate": {
+            "RateModel": "PerMile",
+            "Amount": 2.62,
+            "Currency": "USD"
+          }
+        },
+        "SignatureAlgorithm": "ED25519",
+        "SignatureKeyID": "broker-20260220193123",
+        "Signature": "demo-signature"
+      }
+    },
+    {
+      "id": "msg-bidresponse-001",
+      "expectedA2ATaskType": "faxp.bid_response",
+      "envelope": {
+        "Protocol": "FAXP",
+        "ProtocolVersion": "0.1.1",
+        "MessageType": "BidResponse",
+        "From": "Broker Agent",
+        "To": "Carrier Agent",
+        "Timestamp": "2026-02-23T00:00:00Z",
+        "MessageID": "msg-bidresponse-001",
+        "Nonce": "nonce-bidresponse-001",
+        "Body": {
+          "LoadID": "load-1",
+          "ResponseType": "Accept"
+        },
+        "SignatureAlgorithm": "ED25519",
+        "SignatureKeyID": "broker-20260220193123",
+        "Signature": "demo-signature"
+      }
+    },
+    {
+      "id": "msg-executionreport-001",
+      "expectedA2ATaskType": "faxp.execution_report",
+      "envelope": {
+        "Protocol": "FAXP",
+        "ProtocolVersion": "0.1.1",
+        "MessageType": "ExecutionReport",
+        "From": "Broker Agent",
+        "To": "Carrier Agent",
+        "Timestamp": "2026-02-23T00:00:00Z",
+        "MessageID": "msg-executionreport-001",
+        "Nonce": "nonce-executionreport-001",
+        "Body": {
+          "LoadID": "load-1",
+          "ContractID": "FAXP-20260223-demo",
+          "Status": "Booked",
+          "Timestamp": "2026-02-23T00:00:10Z",
+          "VerifiedBadge": "Premium"
+        },
+        "SignatureAlgorithm": "ED25519",
+        "SignatureKeyID": "broker-20260220193123",
+        "Signature": "demo-signature"
+      }
+    },
+    {
+      "id": "msg-amendrequest-001",
+      "expectedA2ATaskType": "faxp.amend_request",
+      "envelope": {
+        "Protocol": "FAXP",
+        "ProtocolVersion": "0.1.1",
+        "MessageType": "AmendRequest",
+        "From": "Broker Agent",
+        "To": "Carrier Agent",
+        "Timestamp": "2026-02-23T00:00:00Z",
+        "MessageID": "msg-amendrequest-001",
+        "Nonce": "nonce-amendrequest-001",
+        "Body": {
+          "LoadID": "load-1",
+          "AmendmentType": "UpdateRate"
+        },
+        "SignatureAlgorithm": "ED25519",
+        "SignatureKeyID": "broker-20260220193123",
+        "Signature": "demo-signature"
+      }
+    }
+  ],
+  "taskFixtures": [
+    {
+      "id": "msg-newload-001",
+      "task": {
+        "a2aTaskType": "faxp.new_load",
+        "taskId": "faxp-msg-newload-001",
+        "contextId": "msg-newload-001",
+        "from": "Broker Agent",
+        "to": "Carrier Agent",
+        "createdAt": "2026-02-23T00:00:00Z",
+        "payload": {
+          "faxpEnvelope": {
+            "Protocol": "FAXP",
+            "ProtocolVersion": "0.1.1",
+            "MessageType": "NewLoad",
+            "From": "Broker Agent",
+            "To": "Carrier Agent",
+            "Timestamp": "2026-02-23T00:00:00Z",
+            "MessageID": "msg-newload-001",
+            "Nonce": "nonce-newload-001",
+            "Body": {
+              "LoadID": "load-1",
+              "Origin": {
+                "city": "Dallas",
+                "state": "TX",
+                "zip": "75201"
+              },
+              "Destination": {
+                "city": "Atlanta",
+                "state": "GA",
+                "zip": "30301"
+              },
+              "Rate": {
+                "RateModel": "PerMile",
+                "Amount": 2.45,
+                "Currency": "USD"
+              }
+            },
+            "SignatureAlgorithm": "ED25519",
+            "SignatureKeyID": "broker-20260220193123",
+            "Signature": "demo-signature"
+          }
+        },
+        "metadata": {
+          "bridgeMode": "TranslatorOnly",
+          "faxpMessageType": "NewLoad",
+          "faxpProtocol": "FAXP",
+          "faxpProtocolVersion": "0.1.1",
+          "faxpMessageId": "msg-newload-001",
+          "faxpNonce": "nonce-newload-001"
+        }
+      }
+    },
+    {
+      "id": "msg-loadsearch-001",
+      "task": {
+        "a2aTaskType": "faxp.load_search",
+        "taskId": "faxp-msg-loadsearch-001",
+        "contextId": "msg-loadsearch-001",
+        "from": "Carrier Agent",
+        "to": "Broker Agent",
+        "createdAt": "2026-02-23T00:00:00Z",
+        "payload": {
+          "faxpEnvelope": {
+            "Protocol": "FAXP",
+            "ProtocolVersion": "0.1.1",
+            "MessageType": "LoadSearch",
+            "From": "Carrier Agent",
+            "To": "Broker Agent",
+            "Timestamp": "2026-02-23T00:00:00Z",
+            "MessageID": "msg-loadsearch-001",
+            "Nonce": "nonce-loadsearch-001",
+            "Body": {
+              "OriginState": "TX",
+              "DestinationState": "GA",
+              "EquipmentType": "Reefer"
+            },
+            "SignatureAlgorithm": "ED25519",
+            "SignatureKeyID": "broker-20260220193123",
+            "Signature": "demo-signature"
+          }
+        },
+        "metadata": {
+          "bridgeMode": "TranslatorOnly",
+          "faxpMessageType": "LoadSearch",
+          "faxpProtocol": "FAXP",
+          "faxpProtocolVersion": "0.1.1",
+          "faxpMessageId": "msg-loadsearch-001",
+          "faxpNonce": "nonce-loadsearch-001"
+        }
+      }
+    },
+    {
+      "id": "msg-newtruck-001",
+      "task": {
+        "a2aTaskType": "faxp.new_truck",
+        "taskId": "faxp-msg-newtruck-001",
+        "contextId": "msg-newtruck-001",
+        "from": "Carrier Agent",
+        "to": "Broker Agent",
+        "createdAt": "2026-02-23T00:00:00Z",
+        "payload": {
+          "faxpEnvelope": {
+            "Protocol": "FAXP",
+            "ProtocolVersion": "0.1.1",
+            "MessageType": "NewTruck",
+            "From": "Carrier Agent",
+            "To": "Broker Agent",
+            "Timestamp": "2026-02-23T00:00:00Z",
+            "MessageID": "msg-newtruck-001",
+            "Nonce": "nonce-newtruck-001",
+            "Body": {
+              "TruckID": "truck-1",
+              "Location": {
+                "city": "Fort Worth",
+                "state": "TX",
+                "zip": "76102"
+              },
+              "AvailabilityDate": "2026-02-23",
+              "RateMin": {
+                "RateModel": "PerMile",
+                "Amount": 2.35,
+                "Currency": "USD"
+              }
+            },
+            "SignatureAlgorithm": "ED25519",
+            "SignatureKeyID": "broker-20260220193123",
+            "Signature": "demo-signature"
+          }
+        },
+        "metadata": {
+          "bridgeMode": "TranslatorOnly",
+          "faxpMessageType": "NewTruck",
+          "faxpProtocol": "FAXP",
+          "faxpProtocolVersion": "0.1.1",
+          "faxpMessageId": "msg-newtruck-001",
+          "faxpNonce": "nonce-newtruck-001"
+        }
+      }
+    },
+    {
+      "id": "msg-trucksearch-001",
+      "task": {
+        "a2aTaskType": "faxp.truck_search",
+        "taskId": "faxp-msg-trucksearch-001",
+        "contextId": "msg-trucksearch-001",
+        "from": "Broker Agent",
+        "to": "Carrier Agent",
+        "createdAt": "2026-02-23T00:00:00Z",
+        "payload": {
+          "faxpEnvelope": {
+            "Protocol": "FAXP",
+            "ProtocolVersion": "0.1.1",
+            "MessageType": "TruckSearch",
+            "From": "Broker Agent",
+            "To": "Carrier Agent",
+            "Timestamp": "2026-02-23T00:00:00Z",
+            "MessageID": "msg-trucksearch-001",
+            "Nonce": "nonce-trucksearch-001",
+            "Body": {
+              "OriginState": "TX",
+              "EquipmentType": "Reefer",
+              "AvailableFrom": "2026-02-23"
+            },
+            "SignatureAlgorithm": "ED25519",
+            "SignatureKeyID": "broker-20260220193123",
+            "Signature": "demo-signature"
+          }
+        },
+        "metadata": {
+          "bridgeMode": "TranslatorOnly",
+          "faxpMessageType": "TruckSearch",
+          "faxpProtocol": "FAXP",
+          "faxpProtocolVersion": "0.1.1",
+          "faxpMessageId": "msg-trucksearch-001",
+          "faxpNonce": "nonce-trucksearch-001"
+        }
+      }
+    },
+    {
+      "id": "msg-bidrequest-001",
+      "task": {
+        "a2aTaskType": "faxp.bid_request",
+        "taskId": "faxp-msg-bidrequest-001",
+        "contextId": "msg-bidrequest-001",
+        "from": "Carrier Agent",
+        "to": "Broker Agent",
+        "createdAt": "2026-02-23T00:00:00Z",
+        "payload": {
+          "faxpEnvelope": {
+            "Protocol": "FAXP",
+            "ProtocolVersion": "0.1.1",
+            "MessageType": "BidRequest",
+            "From": "Carrier Agent",
+            "To": "Broker Agent",
+            "Timestamp": "2026-02-23T00:00:00Z",
+            "MessageID": "msg-bidrequest-001",
+            "Nonce": "nonce-bidrequest-001",
+            "Body": {
+              "LoadID": "load-1",
+              "AvailabilityDate": "2026-02-23",
+              "Rate": {
+                "RateModel": "PerMile",
+                "Amount": 2.62,
+                "Currency": "USD"
+              }
+            },
+            "SignatureAlgorithm": "ED25519",
+            "SignatureKeyID": "broker-20260220193123",
+            "Signature": "demo-signature"
+          }
+        },
+        "metadata": {
+          "bridgeMode": "TranslatorOnly",
+          "faxpMessageType": "BidRequest",
+          "faxpProtocol": "FAXP",
+          "faxpProtocolVersion": "0.1.1",
+          "faxpMessageId": "msg-bidrequest-001",
+          "faxpNonce": "nonce-bidrequest-001"
+        }
+      }
+    },
+    {
+      "id": "msg-bidresponse-001",
+      "task": {
+        "a2aTaskType": "faxp.bid_response",
+        "taskId": "faxp-msg-bidresponse-001",
+        "contextId": "msg-bidresponse-001",
+        "from": "Broker Agent",
+        "to": "Carrier Agent",
+        "createdAt": "2026-02-23T00:00:00Z",
+        "payload": {
+          "faxpEnvelope": {
+            "Protocol": "FAXP",
+            "ProtocolVersion": "0.1.1",
+            "MessageType": "BidResponse",
+            "From": "Broker Agent",
+            "To": "Carrier Agent",
+            "Timestamp": "2026-02-23T00:00:00Z",
+            "MessageID": "msg-bidresponse-001",
+            "Nonce": "nonce-bidresponse-001",
+            "Body": {
+              "LoadID": "load-1",
+              "ResponseType": "Accept"
+            },
+            "SignatureAlgorithm": "ED25519",
+            "SignatureKeyID": "broker-20260220193123",
+            "Signature": "demo-signature"
+          }
+        },
+        "metadata": {
+          "bridgeMode": "TranslatorOnly",
+          "faxpMessageType": "BidResponse",
+          "faxpProtocol": "FAXP",
+          "faxpProtocolVersion": "0.1.1",
+          "faxpMessageId": "msg-bidresponse-001",
+          "faxpNonce": "nonce-bidresponse-001"
+        }
+      }
+    },
+    {
+      "id": "msg-executionreport-001",
+      "task": {
+        "a2aTaskType": "faxp.execution_report",
+        "taskId": "faxp-msg-executionreport-001",
+        "contextId": "msg-executionreport-001",
+        "from": "Broker Agent",
+        "to": "Carrier Agent",
+        "createdAt": "2026-02-23T00:00:00Z",
+        "payload": {
+          "faxpEnvelope": {
+            "Protocol": "FAXP",
+            "ProtocolVersion": "0.1.1",
+            "MessageType": "ExecutionReport",
+            "From": "Broker Agent",
+            "To": "Carrier Agent",
+            "Timestamp": "2026-02-23T00:00:00Z",
+            "MessageID": "msg-executionreport-001",
+            "Nonce": "nonce-executionreport-001",
+            "Body": {
+              "LoadID": "load-1",
+              "ContractID": "FAXP-20260223-demo",
+              "Status": "Booked",
+              "Timestamp": "2026-02-23T00:00:10Z",
+              "VerifiedBadge": "Premium"
+            },
+            "SignatureAlgorithm": "ED25519",
+            "SignatureKeyID": "broker-20260220193123",
+            "Signature": "demo-signature"
+          }
+        },
+        "metadata": {
+          "bridgeMode": "TranslatorOnly",
+          "faxpMessageType": "ExecutionReport",
+          "faxpProtocol": "FAXP",
+          "faxpProtocolVersion": "0.1.1",
+          "faxpMessageId": "msg-executionreport-001",
+          "faxpNonce": "nonce-executionreport-001"
+        }
+      }
+    },
+    {
+      "id": "msg-amendrequest-001",
+      "task": {
+        "a2aTaskType": "faxp.amend_request",
+        "taskId": "faxp-msg-amendrequest-001",
+        "contextId": "msg-amendrequest-001",
+        "from": "Broker Agent",
+        "to": "Carrier Agent",
+        "createdAt": "2026-02-23T00:00:00Z",
+        "payload": {
+          "faxpEnvelope": {
+            "Protocol": "FAXP",
+            "ProtocolVersion": "0.1.1",
+            "MessageType": "AmendRequest",
+            "From": "Broker Agent",
+            "To": "Carrier Agent",
+            "Timestamp": "2026-02-23T00:00:00Z",
+            "MessageID": "msg-amendrequest-001",
+            "Nonce": "nonce-amendrequest-001",
+            "Body": {
+              "LoadID": "load-1",
+              "AmendmentType": "UpdateRate"
+            },
+            "SignatureAlgorithm": "ED25519",
+            "SignatureKeyID": "broker-20260220193123",
+            "Signature": "demo-signature"
+          }
+        },
+        "metadata": {
+          "bridgeMode": "TranslatorOnly",
+          "faxpMessageType": "AmendRequest",
+          "faxpProtocol": "FAXP",
+          "faxpProtocolVersion": "0.1.1",
+          "faxpMessageId": "msg-amendrequest-001",
+          "faxpNonce": "nonce-amendrequest-001"
+        }
+      }
+    }
+  ]
+}

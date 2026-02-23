@@ -40,6 +40,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `verifier_translator.py`: reference wrapper for translating provider-native payloads to neutral FAXP verification output.
 - `a2a_translator_contract.json`: bridge contract for optional A2A translator implementations.
 - `a2a_bridge_translator.py`: reference reversible FAXP<->A2A translator module.
+- `a2a_roundtrip_fixtures.json`: canonical envelope/task fixtures for translator parity checks.
 - `quickstart/`: onboarding templates + bundle builder script.
 
 Human-readable adapter contract:
