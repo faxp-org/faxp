@@ -28,6 +28,7 @@ This repository includes:
 - Active RFC draft: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-schema-version-negotiation.md`
 - Active RFC draft: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-adapter-certification-profile-v2.md`
 - Active RFC draft: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-provisional-booking-policy-contract.md`
+- Active RFC draft: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-a2a-mcp-interop-maturity.md`
 
 ## v0.2 Planning Artifacts
 

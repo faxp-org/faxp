@@ -48,6 +48,7 @@ Scope policy: Booking-plane and certification governance only.
 - Goal: Define maturity criteria for translator/tool evidence interoperability across A2A and MCP tracks.
 - Scope class: `In-Scope`
 - Notes: No mandatory A2A/MCP runtime dependency in FAXP core.
+- Draft file: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-a2a-mcp-interop-maturity.md`
 
 ## Deferred / Explicitly Out-of-Scope for v0.3.0 RFC Batch
 
