@@ -36,6 +36,7 @@ Scope policy: Booking-plane and certification governance only.
 - Goal: Advance certification profile and registry policy requirements for builder-hosted adapters.
 - Scope class: `In-Scope`
 - Notes: Keep provider neutrality and no core vendor coupling.
+- Draft file: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-adapter-certification-profile-v2.md`
 
 5. `RFC-v0.3-provisional-booking-policy-contract`
 - Goal: Standardize policy semantics for `HardBlock`, `SoftHold`, and `GraceCache` outcomes.
