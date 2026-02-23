@@ -24,6 +24,7 @@ This index keeps governance, roadmap, and release artifacts discoverable while k
 - `docs/interop/A2A_COMPATIBILITY_PROFILE.md`
 - `docs/interop/A2A_CHANGE_MANAGEMENT.md`
 - `docs/interop/A2A_UPSTREAM_TRACKING.json`
+- `docs/interop/MCP_COMPATIBILITY_PROFILE.md`
 
 ## Roadmap
 - `docs/roadmap/V2_IMPLEMENTATION_CHECKLIST.md`

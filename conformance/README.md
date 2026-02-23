@@ -41,6 +41,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `a2a_translator_contract.json`: bridge contract for optional A2A translator implementations.
 - `a2a_bridge_translator.py`: reference reversible FAXP<->A2A translator module.
 - `a2a_roundtrip_fixtures.json`: canonical envelope/task fixtures for translator parity checks.
+- `mcp_tooling_contract.json`: loose-coupled MCP tooling contract for optional tool-layer interoperability.
 - `quickstart/`: onboarding templates + bundle builder script.
 
 Human-readable adapter contract:
@@ -197,6 +198,18 @@ A2A conformance one-command wrapper:
 
 ```bash
 ./scripts/run_a2a_conformance.sh
+```
+
+MCP compatibility profile check:
+
+```bash
+python3 tests/run_mcp_profile_check.py
+```
+
+MCP conformance one-command wrapper:
+
+```bash
+./scripts/run_mcp_conformance.sh
 ```
 
 Registry update request generation (signed):

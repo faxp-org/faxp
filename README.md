@@ -24,6 +24,7 @@ This repository includes:
 - A2A compatibility profile: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/A2A_COMPATIBILITY_PROFILE.md`
 - A2A change management: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/A2A_CHANGE_MANAGEMENT.md`
 - A2A upstream tracking config: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/A2A_UPSTREAM_TRACKING.json`
+- MCP compatibility profile: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/MCP_COMPATIBILITY_PROFILE.md`
 - Implementation checklist: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/V2_IMPLEMENTATION_CHECKLIST.md`
 - Test matrix: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/TEST_MATRIX_v0.2.md`
 - Policy profiles (normative): `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/POLICY_PROFILES.md`
@@ -78,6 +79,7 @@ This repository includes:
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/a2a_bridge_translator.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/a2a_translator_contract.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/a2a_roundtrip_fixtures.json`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/mcp_tooling_contract.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/quickstart/`
 
 ## Protocol Neutrality Boundary
@@ -108,6 +110,11 @@ Operational rule:
 A2A bridge quick check:
 ```bash
 ./scripts/run_a2a_conformance.sh
+```
+
+MCP interop quick check:
+```bash
+./scripts/run_mcp_conformance.sh
 ```
 
 ## Runbook

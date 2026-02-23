@@ -1,0 +1,42 @@
+{
+  "contractVersion": "1.0.0",
+  "profileRef": "docs/interop/MCP_COMPATIBILITY_PROFILE.md",
+  "mode": "LooseCoupledInterop",
+  "coreProtocolChangesRequired": false,
+  "mcpRequired": false,
+  "hostingModel": "BuilderHosted",
+  "toolEvidenceSchema": {
+    "requiredFields": [
+      "toolLayer",
+      "serverId",
+      "action",
+      "outputDigest",
+      "executedAt",
+      "policyRef",
+      "correlationRef"
+    ],
+    "digestPattern": "^sha256:[a-f0-9]{8,64}$",
+    "correlationRefPattern": "^[A-Za-z0-9._:-]{6,128}$"
+  },
+  "securityControls": {
+    "leastPrivilegeScopes": true,
+    "serverAllowlist": true,
+    "auditCorrelation": true,
+    "failClosedCriticalChecks": true,
+    "rejectRawSensitivePayloads": true
+  },
+  "faxpCompatibility": {
+    "requiredMessageTypes": [
+      "NewLoad",
+      "LoadSearch",
+      "NewTruck",
+      "TruckSearch",
+      "BidRequest",
+      "BidResponse",
+      "ExecutionReport",
+      "AmendRequest"
+    ],
+    "noCoreEnvelopeMutation": true,
+    "noMandatoryMcpFieldsInCore": true
+  }
+}
