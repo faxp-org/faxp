@@ -1,6 +1,6 @@
 {
   "indexVersion": "1.0.0",
-  "generatedAt": "2026-02-22T20:00:00Z",
+  "generatedAt": "2026-02-23T10:00:00Z",
   "policyArtifacts": [
     "docs/governance/SCOPE_GUARDRAILS.md",
     "docs/rfc/RFC_TEMPLATE.md",
@@ -19,6 +19,7 @@
     "tests/run_registry_changelog_artifacts.py",
     "tests/run_decision_record_template.py",
     "tests/run_decision_record_artifacts.py",
+    "tests/run_protocol_compatibility_profile.py",
     "tests/run_governance_index.py",
     "tests/run_release_readiness.py"
   ],
@@ -28,6 +29,7 @@
     "registry_changelog_artifacts",
     "decision_record_template",
     "decision_record_artifacts",
+    "protocol_compatibility_profile",
     "governance_index",
     "release_readiness"
   ],
@@ -37,6 +39,7 @@
     "registry_changelog_artifacts": "tests/run_registry_changelog_artifacts.py",
     "decision_record_template": "tests/run_decision_record_template.py",
     "decision_record_artifacts": "tests/run_decision_record_artifacts.py",
+    "protocol_compatibility_profile": "tests/run_protocol_compatibility_profile.py",
     "governance_index": "tests/run_governance_index.py",
     "release_readiness": "tests/run_release_readiness.py"
   }

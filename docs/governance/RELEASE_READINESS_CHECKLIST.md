@@ -34,6 +34,7 @@ Use this checklist as the final go/no-go gate before a tagged release.
     "docs/governance/DECISION_RECORDS_RUNBOOK.md",
     "docs/governance/CERTIFICATION_PLAYBOOK.md",
     "docs/governance/GOVERNANCE_INDEX.json",
+    "conformance/protocol_compatibility_profile.v1.json",
     "conformance/certification_registry.sample.json",
     "conformance/certification_registry.sample.after_update.json",
     "conformance/registry_update.sample.json",
@@ -48,6 +49,7 @@ Use this checklist as the final go/no-go gate before a tagged release.
     "tests/run_registry_changelog_artifacts.py",
     "tests/run_decision_record_template.py",
     "tests/run_decision_record_artifacts.py",
+    "tests/run_protocol_compatibility_profile.py",
     "tests/run_governance_index.py",
     "tests/run_release_readiness.py"
   ],
@@ -57,6 +59,7 @@ Use this checklist as the final go/no-go gate before a tagged release.
     "registry_changelog_artifacts",
     "decision_record_template",
     "decision_record_artifacts",
+    "protocol_compatibility_profile",
     "governance_index",
     "release_readiness"
   ],
