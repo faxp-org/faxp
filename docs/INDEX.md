@@ -39,6 +39,7 @@ This index keeps governance, roadmap, and release artifacts discoverable while k
 - `docs/releases/RELEASE_CANDIDATE_v0.2.0-rc.1.md`
 - `docs/releases/RELEASE_CANDIDATE_v0.2.0-rc.2.md`
 - `docs/releases/RELEASE_CANDIDATE_v0.2.0-rc.3.md`
+- `docs/releases/RELEASE_NOTES_v0.2.0.md`
 
 ## Adapter Guidance
 - `docs/adapters/ADAPTER_IMPLEMENTER_HANDOFF.md`
