@@ -74,5 +74,12 @@
     "TruckSearch": {
       "enforceModelRequirements": true
     }
+  },
+  "profileSignature": {
+    "alg": "HMAC_SHA256",
+    "kid": "faxp-governance-rate-profile-2026q1",
+    "payloadDigestSha256": "sha256:1671d049a9bff0905a0c2415b69792caceaf42fdcd33f0f5cb542c4400a58da4",
+    "sig": "72da0612773615697f91f56a7641df7f889b17f945def148bfb82bbcf1b597a8",
+    "signedAt": "2026-02-23T21:36:38Z"
   }
 }
