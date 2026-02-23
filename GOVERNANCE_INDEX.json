@@ -1,0 +1,39 @@
+{
+  "indexVersion": "1.0.0",
+  "generatedAt": "2026-02-22T20:00:00Z",
+  "policyArtifacts": [
+    "SCOPE_GUARDRAILS.md",
+    "RFC_TEMPLATE.md",
+    "POLICY_PROFILES.md",
+    "REGISTRY_ADMISSION_POLICY.md",
+    "REGISTRY_CHANGELOG_POLICY.md",
+    "CERTIFICATION_DECISION_RECORD_TEMPLATE.md",
+    "DECISION_RECORDS_RUNBOOK.md",
+    "CERTIFICATION_PLAYBOOK.md"
+  ],
+  "requiredTests": [
+    "tests/run_scope_guardrails.py",
+    "tests/run_policy_profile_sync.py",
+    "tests/run_registry_admission_policy.py",
+    "tests/run_registry_changelog_artifacts.py",
+    "tests/run_decision_record_template.py",
+    "tests/run_decision_record_artifacts.py",
+    "tests/run_governance_index.py"
+  ],
+  "requiredSuiteChecks": [
+    "policy_profile_sync",
+    "registry_admission_policy",
+    "registry_changelog_artifacts",
+    "decision_record_template",
+    "decision_record_artifacts",
+    "governance_index"
+  ],
+  "suiteCheckToTest": {
+    "policy_profile_sync": "tests/run_policy_profile_sync.py",
+    "registry_admission_policy": "tests/run_registry_admission_policy.py",
+    "registry_changelog_artifacts": "tests/run_registry_changelog_artifacts.py",
+    "decision_record_template": "tests/run_decision_record_template.py",
+    "decision_record_artifacts": "tests/run_decision_record_artifacts.py",
+    "governance_index": "tests/run_governance_index.py"
+  }
+}

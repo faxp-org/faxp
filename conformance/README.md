@@ -23,6 +23,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `certification_registry.sample.after_update.json`: expected sample registry after applying `registry_update.sample.json`.
 - `../REGISTRY_ADMISSION_POLICY.md`: policy contract for admission/renewal/suspension criteria (normative block).
 - `../REGISTRY_CHANGELOG_POLICY.md`: policy contract for changelog integrity and cross-link requirements.
+- `../GOVERNANCE_INDEX.json`: machine-readable index of governance artifacts and required checks.
 - `registry_changelog.sample.json`: sample changelog aligned to registry update operations and snapshots.
 - `../CERTIFICATION_DECISION_RECORD_TEMPLATE.md`: decision artifact template for deterministic approval/rejection records.
 - `certification_decision_record.sample.json`: sample decision artifact aligned to template requirements.
@@ -162,6 +163,12 @@ Certification decision record artifact check:
 
 ```bash
 python3 tests/run_decision_record_artifacts.py
+```
+
+Governance index check:
+
+```bash
+python3 tests/run_governance_index.py
 ```
 
 Registry update request generation (signed):

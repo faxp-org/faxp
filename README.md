@@ -30,6 +30,7 @@ This repository includes:
 - Decision records runbook: `/Users/zglitch009/projects/logistics-ai/FAXP/DECISION_RECORDS_RUNBOOK.md`
 - Registry operations runbook: `/Users/zglitch009/projects/logistics-ai/FAXP/REGISTRY_OPERATIONS_RUNBOOK.md`
 - Registry changelog policy: `/Users/zglitch009/projects/logistics-ai/FAXP/REGISTRY_CHANGELOG_POLICY.md`
+- Governance index: `/Users/zglitch009/projects/logistics-ai/FAXP/GOVERNANCE_INDEX.json`
 - Verification profiles:
   - schema: `/Users/zglitch009/projects/logistics-ai/FAXP/profiles/verification/profile.schema.json`
   - strict: `/Users/zglitch009/projects/logistics-ai/FAXP/profiles/verification/US_FMCSA_STRICT_V1.json`
@@ -53,6 +54,7 @@ This repository includes:
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update.sample.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update.sample.audit.log`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_changelog.sample.json`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_governance_index.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update_keys.sample.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/certification_registry.sample.after_update.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/attestation_keys.sample.json`
