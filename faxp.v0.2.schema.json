@@ -45,9 +45,22 @@
       "type": "object",
       "required": ["RateModel", "Amount", "Currency"],
       "properties": {
-        "RateModel": { "type": "string", "enum": ["PerMile", "Flat"] },
+        "RateModel": {
+          "type": "string",
+          "enum": ["PerMile", "Flat"],
+          "description": "Executable models in v0.1.1/v0.2. Planned models like PerPallet/CWT are tracked in protocol conformance artifacts."
+        },
         "Amount": { "type": "number", "minimum": 0 },
-        "Currency": { "type": "string", "const": "USD" }
+        "Currency": { "type": "string", "const": "USD" },
+        "UnitBasis": { "type": "string" },
+        "Quantity": { "type": "number", "minimum": 0 },
+        "DistanceMiles": { "type": "number", "minimum": 0 },
+        "LineHaulAmount": { "type": "number", "minimum": 0 },
+        "FuelSurchargeAmount": { "type": "number", "minimum": 0 },
+        "FuelSurchargePercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "ReferenceID": { "type": "string" },
+        "Notes": { "type": "string" },
+        "Extensions": { "type": "object" }
       },
       "additionalProperties": true
     },

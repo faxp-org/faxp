@@ -1394,12 +1394,16 @@ def counter_amount(rate_model, floor_amount):
     return round(floor_amount + 0.16, 2)
 
 
-def build_rate(rate_model, amount):
-    return {
+def build_rate(rate_model, amount, **metadata):
+    rate = {
         "RateModel": rate_model,
         "Amount": round(float(amount), 2),
         "Currency": "USD",
     }
+    for key, value in metadata.items():
+        if value is not None:
+            rate[key] = value
+    return rate
 
 
 def format_rate(rate):
@@ -1422,7 +1426,20 @@ def redact_sensitive(value):
     return value
 
 
-VALID_RATE_MODELS = {"PerMile", "Flat"}
+RATE_MODEL_CATALOG = {
+    # Active models supported by executable v0.3 negotiation flows.
+    "PerMile": {"status": "active", "unitBasis": "mile"},
+    "Flat": {"status": "active", "unitBasis": "load"},
+    # Planned models for v0.3+ profile expansion.
+    "PerPallet": {"status": "planned", "unitBasis": "pallet"},
+    "CWT": {"status": "planned", "unitBasis": "cwt"},
+}
+VALID_RATE_MODELS = {
+    name for name, details in RATE_MODEL_CATALOG.items() if details.get("status") == "active"
+}
+PLANNED_RATE_MODELS = {
+    name for name, details in RATE_MODEL_CATALOG.items() if details.get("status") == "planned"
+}
 VALID_BID_RESPONSE_TYPES = {"Accept", "Counter", "Reject"}
 VALID_EXECUTION_STATUSES = {"Booked"}
 VALID_VERIFIED_BADGES = {"None", "Basic", "Premium"}
@@ -1487,16 +1504,53 @@ def _require_fields(payload, required_fields, context):
         raise ValueError(f"{context} missing required fields: {missing}")
 
 
+def _validate_rate_model(rate_model, context):
+    _bounded_string(rate_model, context)
+    if rate_model not in VALID_RATE_MODELS:
+        raise ValueError(f"{context} must be one of {sorted(VALID_RATE_MODELS)}.")
+
+
+def _validate_rate_extensions(rate, context):
+    string_fields = ["UnitBasis", "ReferenceID", "Notes"]
+    numeric_fields = ["DistanceMiles", "Quantity", "LineHaulAmount", "FuelSurchargeAmount"]
+    percent_fields = ["FuelSurchargePercent"]
+
+    for field in string_fields:
+        if field in rate:
+            _bounded_string(rate[field], f"{context}.{field}")
+
+    for field in numeric_fields:
+        if field in rate:
+            value = rate[field]
+            if not isinstance(value, (int, float)) or value < 0:
+                raise ValueError(f"{context}.{field} must be a non-negative number.")
+
+    for field in percent_fields:
+        if field in rate:
+            value = rate[field]
+            if not isinstance(value, (int, float)) or not (0 <= value <= 100):
+                raise ValueError(f"{context}.{field} must be between 0 and 100.")
+
+    if "Extensions" in rate:
+        extensions = rate["Extensions"]
+        if not isinstance(extensions, dict):
+            raise ValueError(f"{context}.Extensions must be an object.")
+        for key, value in extensions.items():
+            _bounded_string(str(key), f"{context}.Extensions key")
+            if isinstance(value, str):
+                _bounded_string(value, f"{context}.Extensions.{key}")
+
+
 def _validate_rate_object(rate, context):
     if not isinstance(rate, dict):
         raise ValueError(f"{context} must be an object.")
     _require_fields(rate, ["RateModel", "Amount", "Currency"], context)
-    if rate["RateModel"] not in VALID_RATE_MODELS:
-        raise ValueError(f"{context}.RateModel must be one of {sorted(VALID_RATE_MODELS)}.")
+    _validate_rate_model(rate["RateModel"], f"{context}.RateModel")
     if not isinstance(rate["Amount"], (int, float)) or rate["Amount"] < 0:
         raise ValueError(f"{context}.Amount must be a non-negative number.")
     if rate["Currency"] != "USD":
         raise ValueError(f"{context}.Currency must be USD for v0.1.1.")
+    _validate_rate_extensions(rate, context)
 
 
 def _contains_forbidden_biometric_field(value):
@@ -1912,8 +1966,7 @@ def validate_message_body(message_type, body):
             ["OriginState", "DestinationState", "EquipmentType", "PickupDate", "RateModel", "MaxRate"],
             "LoadSearch",
         )
-        if body["RateModel"] not in VALID_RATE_MODELS:
-            raise ValueError(f"LoadSearch.RateModel must be one of {sorted(VALID_RATE_MODELS)}.")
+        _validate_rate_model(body["RateModel"], "LoadSearch.RateModel")
         _validate_state_code(body["OriginState"], "LoadSearch.OriginState")
         _validate_state_code(body["DestinationState"], "LoadSearch.DestinationState")
         _bounded_string(body["EquipmentType"], "LoadSearch.EquipmentType")
@@ -1964,8 +2017,7 @@ def validate_message_body(message_type, body):
             ],
             "TruckSearch",
         )
-        if body["RateModel"] not in VALID_RATE_MODELS:
-            raise ValueError(f"TruckSearch.RateModel must be one of {sorted(VALID_RATE_MODELS)}.")
+        _validate_rate_model(body["RateModel"], "TruckSearch.RateModel")
         _validate_state_code(body["OriginState"], "TruckSearch.OriginState")
         _bounded_string(body["EquipmentType"], "TruckSearch.EquipmentType")
         _validate_iso_date(body["AvailableFrom"], "TruckSearch.AvailableFrom")
