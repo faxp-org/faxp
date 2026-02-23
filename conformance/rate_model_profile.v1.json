@@ -1,0 +1,78 @@
+{
+  "profileVersion": "1.0.0",
+  "protocol": "FAXP",
+  "activeRateModels": [
+    "PerMile",
+    "Flat"
+  ],
+  "plannedRateModels": [
+    "PerPallet",
+    "CWT"
+  ],
+  "rateModelCatalog": {
+    "PerMile": {
+      "status": "active",
+      "unitBasis": "mile"
+    },
+    "Flat": {
+      "status": "active",
+      "unitBasis": "load"
+    },
+    "PerPallet": {
+      "status": "planned",
+      "unitBasis": "pallet"
+    },
+    "CWT": {
+      "status": "planned",
+      "unitBasis": "cwt"
+    }
+  },
+  "rateModelRequirements": {
+    "PerMile": {
+      "requiredFields": [
+        "UnitBasis"
+      ],
+      "allowedUnitBasis": [
+        "mile"
+      ],
+      "status": "active"
+    },
+    "Flat": {
+      "requiredFields": [
+        "UnitBasis"
+      ],
+      "allowedUnitBasis": [
+        "load"
+      ],
+      "status": "active"
+    },
+    "PerPallet": {
+      "requiredFields": [
+        "UnitBasis",
+        "Quantity"
+      ],
+      "allowedUnitBasis": [
+        "pallet"
+      ],
+      "status": "planned"
+    },
+    "CWT": {
+      "requiredFields": [
+        "UnitBasis",
+        "Quantity"
+      ],
+      "allowedUnitBasis": [
+        "cwt"
+      ],
+      "status": "planned"
+    }
+  },
+  "searchRequirements": {
+    "LoadSearch": {
+      "enforceModelRequirements": true
+    },
+    "TruckSearch": {
+      "enforceModelRequirements": true
+    }
+  }
+}

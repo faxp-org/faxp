@@ -80,6 +80,10 @@ def main() -> int:
         "conformance suite must include mcp_watch_artifacts in default checks",
     )
     _assert(
+        "rate_model_profile" in listed_checks.stdout.splitlines(),
+        "conformance suite must include rate_model_profile in default checks",
+    )
+    _assert(
         "rate_model_extensibility" in listed_checks.stdout.splitlines(),
         "conformance suite must include rate_model_extensibility in default checks",
     )
