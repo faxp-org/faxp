@@ -19,6 +19,11 @@ This repository includes:
 - `v0.2.0-rc.3`: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/releases/RELEASE_CANDIDATE_v0.2.0-rc.3.md`
 - `v0.2.0`: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/releases/RELEASE_NOTES_v0.2.0.md`
 
+## Post-v0.2 Planning Tracks
+
+- `v0.2.1` patch-only plan: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/V0_2_1_PATCH_PLAN.md`
+- `v0.3.0` RFC backlog (planning-only): `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/V0_3_0_RFC_BACKLOG.md`
+
 ## v0.2 Planning Artifacts
 
 - Docs index: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/INDEX.md`
