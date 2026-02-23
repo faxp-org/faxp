@@ -9,6 +9,7 @@
     "REGISTRY_CHANGELOG_POLICY.md",
     "CERTIFICATION_DECISION_RECORD_TEMPLATE.md",
     "DECISION_RECORDS_RUNBOOK.md",
+    "RELEASE_READINESS_CHECKLIST.md",
     "CERTIFICATION_PLAYBOOK.md"
   ],
   "requiredTests": [
@@ -18,7 +19,8 @@
     "tests/run_registry_changelog_artifacts.py",
     "tests/run_decision_record_template.py",
     "tests/run_decision_record_artifacts.py",
-    "tests/run_governance_index.py"
+    "tests/run_governance_index.py",
+    "tests/run_release_readiness.py"
   ],
   "requiredSuiteChecks": [
     "policy_profile_sync",
@@ -26,7 +28,8 @@
     "registry_changelog_artifacts",
     "decision_record_template",
     "decision_record_artifacts",
-    "governance_index"
+    "governance_index",
+    "release_readiness"
   ],
   "suiteCheckToTest": {
     "policy_profile_sync": "tests/run_policy_profile_sync.py",
@@ -34,6 +37,7 @@
     "registry_changelog_artifacts": "tests/run_registry_changelog_artifacts.py",
     "decision_record_template": "tests/run_decision_record_template.py",
     "decision_record_artifacts": "tests/run_decision_record_artifacts.py",
-    "governance_index": "tests/run_governance_index.py"
+    "governance_index": "tests/run_governance_index.py",
+    "release_readiness": "tests/run_release_readiness.py"
   }
 }

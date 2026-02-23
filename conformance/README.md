@@ -24,6 +24,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `../REGISTRY_ADMISSION_POLICY.md`: policy contract for admission/renewal/suspension criteria (normative block).
 - `../REGISTRY_CHANGELOG_POLICY.md`: policy contract for changelog integrity and cross-link requirements.
 - `../GOVERNANCE_INDEX.json`: machine-readable index of governance artifacts and required checks.
+- `../RELEASE_READINESS_CHECKLIST.md`: go/no-go release gate checklist with test-enforced requirements.
 - `registry_changelog.sample.json`: sample changelog aligned to registry update operations and snapshots.
 - `../CERTIFICATION_DECISION_RECORD_TEMPLATE.md`: decision artifact template for deterministic approval/rejection records.
 - `certification_decision_record.sample.json`: sample decision artifact aligned to template requirements.
@@ -169,6 +170,12 @@ Governance index check:
 
 ```bash
 python3 tests/run_governance_index.py
+```
+
+Release readiness check:
+
+```bash
+python3 tests/run_release_readiness.py
 ```
 
 Registry update request generation (signed):

@@ -49,6 +49,7 @@ Reference paths:
 - `/Users/zglitch009/projects/logistics-ai/FAXP/REGISTRY_OPERATIONS_RUNBOOK.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/REGISTRY_CHANGELOG_POLICY.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/GOVERNANCE_INDEX.json`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/RELEASE_READINESS_CHECKLIST.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/apply_registry_update.py`
 
 ## 3) Intake Workflow
@@ -64,6 +65,7 @@ Reference paths:
 - `python3 tests/run_registry_ops_artifacts.py`
 - `python3 tests/run_registry_changelog_artifacts.py`
 - `python3 tests/run_governance_index.py`
+- `python3 tests/run_release_readiness.py`
 - `python3 tests/run_apply_registry_update.py`
 - `python3 tests/run_create_registry_update.py`
 - `python3 tests/run_conformance_suite.py`
@@ -108,6 +110,9 @@ Mandatory gates:
 9. Governance index checks pass:
 - `python3 tests/run_governance_index.py`
 - `GOVERNANCE_INDEX.json` coverage matches required artifacts, suite checks, and CI references.
+10. Release readiness checks pass:
+- `python3 tests/run_release_readiness.py`
+- `RELEASE_READINESS_CHECKLIST.md` coverage matches required artifacts, tests, suite checks, and governance-index sync.
 
 Additional gates for `TrustedProduction`:
 1. Operational evidence references are present in manifest.
