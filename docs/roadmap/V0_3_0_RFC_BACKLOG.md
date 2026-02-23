@@ -24,6 +24,7 @@ Scope policy: Booking-plane and certification governance only.
 - Goal: Wire existing ShipperAgent stub into an optional shipper -> broker -> carrier booking path.
 - Scope class: `In-Scope`
 - Notes: Preserve current broker-carrier happy path unchanged.
+- Draft file: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-shipper-orchestration-minimal.md`
 
 3. `RFC-v0.3-schema-version-negotiation`
 - Goal: Formalize version negotiation and compatibility behavior for mixed v0.2/v0.3 agents.
