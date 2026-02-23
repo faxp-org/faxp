@@ -67,6 +67,10 @@ def main() -> int:
         "a2a_profile" in listed_checks.stdout.splitlines(),
         "conformance suite must include a2a_profile in default checks",
     )
+    _assert(
+        "a2a_roundtrip" in listed_checks.stdout.splitlines(),
+        "conformance suite must include a2a_roundtrip in default checks",
+    )
 
     with tempfile.TemporaryDirectory(prefix="faxp-conformance-suite-") as temp_dir:
         output_path = Path(temp_dir) / "suite_report.json"

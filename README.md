@@ -74,6 +74,7 @@ This repository includes:
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update_signing.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/conformance_bundle.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/verifier_translator.py`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/a2a_bridge_translator.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/a2a_translator_contract.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/quickstart/`
 

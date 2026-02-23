@@ -39,6 +39,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `conformance_bundle.py`: reusable conformance evaluator for profile + registry bundles.
 - `verifier_translator.py`: reference wrapper for translating provider-native payloads to neutral FAXP verification output.
 - `a2a_translator_contract.json`: bridge contract for optional A2A translator implementations.
+- `a2a_bridge_translator.py`: reference reversible FAXP<->A2A translator module.
 - `quickstart/`: onboarding templates + bundle builder script.
 
 Human-readable adapter contract:
@@ -183,6 +184,12 @@ A2A compatibility profile check:
 
 ```bash
 python3 tests/run_a2a_profile_check.py
+```
+
+A2A round-trip translator check:
+
+```bash
+python3 tests/run_a2a_roundtrip_translation.py
 ```
 
 Registry update request generation (signed):

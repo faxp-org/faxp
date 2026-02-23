@@ -42,6 +42,7 @@ def _suite_commands() -> list[tuple[str, list[str]]]:
         ("governance_index", [python, str(TESTS_DIR / "run_governance_index.py")]),
         ("release_readiness", [python, str(TESTS_DIR / "run_release_readiness.py")]),
         ("a2a_profile", [python, str(TESTS_DIR / "run_a2a_profile_check.py")]),
+        ("a2a_roundtrip", [python, str(TESTS_DIR / "run_a2a_roundtrip_translation.py")]),
         ("registry_apply", [python, str(TESTS_DIR / "run_apply_registry_update.py")]),
         ("certification_artifacts", [python, str(TESTS_DIR / "run_certification_artifacts.py")]),
         ("policy_profile_sync", [python, str(TESTS_DIR / "run_policy_profile_sync.py")]),
