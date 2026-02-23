@@ -18,6 +18,7 @@ Scope policy: Booking-plane and certification governance only.
 - Goal: Extend booking-plane rate model taxonomy beyond `PerMile` and `Flat` while preserving backward compatibility.
 - Scope class: `In-Scope`
 - Notes: Keep accessorial lifecycle consistent with current post-booking policy semantics.
+- Draft file: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-rate-model-extensibility.md`
 
 2. `RFC-v0.3-shipper-orchestration-minimal`
 - Goal: Wire existing ShipperAgent stub into an optional shipper -> broker -> carrier booking path.
