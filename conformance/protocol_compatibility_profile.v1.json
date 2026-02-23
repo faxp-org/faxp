@@ -1,0 +1,45 @@
+{
+  "profileVersion": "1.0.0",
+  "protocol": "FAXP",
+  "runtimeVersions": [
+    "0.1.1",
+    "0.2.0"
+  ],
+  "incomingVersions": [
+    "0.1.1",
+    "0.2.0"
+  ],
+  "compatibilityMatrix": {
+    "0.1.1": {
+      "0.1.1": "Compatible",
+      "0.2.0": "Degradable"
+    },
+    "0.2.0": {
+      "0.1.1": "Degradable",
+      "0.2.0": "Compatible"
+    }
+  },
+  "acceptedStatuses": [
+    "Compatible",
+    "Degradable"
+  ],
+  "rejectedStatus": "Incompatible",
+  "expectedReasonCodes": {
+    "Compatible": "ProtocolVersionCompatible",
+    "Degradable": "ProtocolVersionDegradable",
+    "Unsupported": "ProtocolVersionUnsupported",
+    "InvalidFormat": "ProtocolVersionInvalidFormat",
+    "Missing": "ProtocolVersionMissing",
+    "IncompatiblePair": "ProtocolVersionIncompatiblePair"
+  },
+  "requiredFixturePairs": [
+    "0.1.1->0.1.1",
+    "0.1.1->0.2.0",
+    "0.2.0->0.1.1",
+    "0.2.0->0.2.0"
+  ],
+  "requiredIncompatibleFixtureReasons": [
+    "ProtocolVersionUnsupported",
+    "ProtocolVersionInvalidFormat"
+  ]
+}
