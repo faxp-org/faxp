@@ -1400,6 +1400,10 @@ def build_rate(rate_model, amount, **metadata):
         "Amount": round(float(amount), 2),
         "Currency": "USD",
     }
+    catalog = RATE_MODEL_CATALOG.get(rate_model) or {}
+    default_unit_basis = catalog.get("unitBasis")
+    if default_unit_basis and "UnitBasis" not in metadata:
+        rate["UnitBasis"] = default_unit_basis
     for key, value in metadata.items():
         if value is not None:
             rate[key] = value
@@ -1439,6 +1443,30 @@ VALID_RATE_MODELS = {
 }
 PLANNED_RATE_MODELS = {
     name for name, details in RATE_MODEL_CATALOG.items() if details.get("status") == "planned"
+}
+RATE_MODEL_REQUIREMENTS = {
+    # Active models are enforced in runtime validation.
+    "PerMile": {
+        "requiredFields": ["UnitBasis"],
+        "allowedUnitBasis": ["mile"],
+        "status": "active",
+    },
+    "Flat": {
+        "requiredFields": ["UnitBasis"],
+        "allowedUnitBasis": ["load"],
+        "status": "active",
+    },
+    # Planned models are declared for roadmap visibility, not executable yet.
+    "PerPallet": {
+        "requiredFields": ["UnitBasis", "Quantity"],
+        "allowedUnitBasis": ["pallet"],
+        "status": "planned",
+    },
+    "CWT": {
+        "requiredFields": ["UnitBasis", "Quantity"],
+        "allowedUnitBasis": ["cwt"],
+        "status": "planned",
+    },
 }
 VALID_BID_RESPONSE_TYPES = {"Accept", "Counter", "Reject"}
 VALID_EXECUTION_STATUSES = {"Booked"}
@@ -1541,6 +1569,25 @@ def _validate_rate_extensions(rate, context):
                 _bounded_string(value, f"{context}.Extensions.{key}")
 
 
+def _validate_rate_model_requirements(rate, context):
+    model = rate["RateModel"]
+    requirements = RATE_MODEL_REQUIREMENTS.get(model) or {}
+    if requirements.get("status") != "active":
+        return
+
+    for field in requirements.get("requiredFields", []):
+        if field not in rate:
+            raise ValueError(f"{context}.{field} is required for RateModel '{model}'.")
+
+    allowed_unit_basis = [str(item) for item in requirements.get("allowedUnitBasis", [])]
+    if allowed_unit_basis:
+        unit_basis = rate.get("UnitBasis")
+        if unit_basis not in allowed_unit_basis:
+            raise ValueError(
+                f"{context}.UnitBasis must be one of {allowed_unit_basis} for RateModel '{model}'."
+            )
+
+
 def _validate_rate_object(rate, context):
     if not isinstance(rate, dict):
         raise ValueError(f"{context} must be an object.")
@@ -1551,6 +1598,7 @@ def _validate_rate_object(rate, context):
     if rate["Currency"] != "USD":
         raise ValueError(f"{context}.Currency must be USD for v0.1.1.")
     _validate_rate_extensions(rate, context)
+    _validate_rate_model_requirements(rate, context)
 
 
 def _contains_forbidden_biometric_field(value):
