@@ -83,6 +83,10 @@ def main() -> int:
         "protocol_version_negotiation" in listed_checks.stdout.splitlines(),
         "conformance suite must include protocol_version_negotiation in default checks",
     )
+    _assert(
+        "cross_version_fixtures" in listed_checks.stdout.splitlines(),
+        "conformance suite must include cross_version_fixtures in default checks",
+    )
 
     with tempfile.TemporaryDirectory(prefix="faxp-conformance-suite-") as temp_dir:
         output_path = Path(temp_dir) / "suite_report.json"
