@@ -393,6 +393,18 @@ class FaxpProtocol:
 
     NAME = "FAXP"
     VERSION = "0.1.1"
+    SUPPORTED_PROTOCOL_VERSIONS = ("0.1.1", "0.2.0")
+    VERSION_COMPATIBILITY_MATRIX = {
+        # Runtime version -> incoming version -> compatibility class.
+        "0.1.1": {
+            "0.1.1": "Compatible",
+            "0.2.0": "Degradable",
+        },
+        "0.2.0": {
+            "0.2.0": "Compatible",
+            "0.1.1": "Degradable",
+        },
+    }
 
     MESSAGE_TYPES = [
         "NewLoad",
@@ -415,6 +427,92 @@ class FaxpProtocol:
             "NewRate": 2.75,
             "AmendmentNotes": "Example only for MVP visibility",
         }
+
+
+PROTOCOL_VERSION_PATTERN = re.compile(r"^\d+\.\d+\.\d+$")
+
+
+def negotiate_protocol_version(incoming_version, runtime_version=None):
+    """
+    Evaluate protocol-version compatibility for incoming envelopes.
+
+    Returns:
+      {
+        "status": "Compatible" | "Degradable" | "Incompatible",
+        "reasonCode": "...",
+        "incomingVersion": "...",
+        "runtimeVersion": "...",
+      }
+    """
+    runtime = str(runtime_version or FaxpProtocol.VERSION).strip()
+    incoming = str(incoming_version or "").strip()
+
+    if not runtime:
+        return {
+            "status": "Incompatible",
+            "reasonCode": "RuntimeProtocolVersionMissing",
+            "incomingVersion": incoming,
+            "runtimeVersion": runtime,
+        }
+    if not PROTOCOL_VERSION_PATTERN.fullmatch(runtime):
+        return {
+            "status": "Incompatible",
+            "reasonCode": "RuntimeProtocolVersionInvalid",
+            "incomingVersion": incoming,
+            "runtimeVersion": runtime,
+        }
+    if not incoming:
+        return {
+            "status": "Incompatible",
+            "reasonCode": "ProtocolVersionMissing",
+            "incomingVersion": incoming,
+            "runtimeVersion": runtime,
+        }
+    if not PROTOCOL_VERSION_PATTERN.fullmatch(incoming):
+        return {
+            "status": "Incompatible",
+            "reasonCode": "ProtocolVersionInvalidFormat",
+            "incomingVersion": incoming,
+            "runtimeVersion": runtime,
+        }
+
+    if incoming not in FaxpProtocol.SUPPORTED_PROTOCOL_VERSIONS:
+        return {
+            "status": "Incompatible",
+            "reasonCode": "ProtocolVersionUnsupported",
+            "incomingVersion": incoming,
+            "runtimeVersion": runtime,
+        }
+
+    matrix = FaxpProtocol.VERSION_COMPATIBILITY_MATRIX.get(runtime, {})
+    compatibility = matrix.get(incoming)
+    if compatibility in {"Compatible", "Degradable"}:
+        return {
+            "status": compatibility,
+            "reasonCode": (
+                "ProtocolVersionCompatible"
+                if compatibility == "Compatible"
+                else "ProtocolVersionDegradable"
+            ),
+            "incomingVersion": incoming,
+            "runtimeVersion": runtime,
+        }
+
+    # Fallback path for runtimes without explicit matrix entry.
+    if incoming == runtime:
+        return {
+            "status": "Compatible",
+            "reasonCode": "ProtocolVersionCompatible",
+            "incomingVersion": incoming,
+            "runtimeVersion": runtime,
+        }
+
+    return {
+        "status": "Incompatible",
+        "reasonCode": "ProtocolVersionIncompatiblePair",
+        "incomingVersion": incoming,
+        "runtimeVersion": runtime,
+    }
 
 
 def canonical_json(value):
@@ -2064,8 +2162,14 @@ def validate_envelope(envelope, track_replay=True, track_state=True):
     )
     if envelope["Protocol"] != FaxpProtocol.NAME:
         raise ValueError("Envelope.Protocol mismatch.")
-    if envelope["ProtocolVersion"] != FaxpProtocol.VERSION:
-        raise ValueError("Envelope.ProtocolVersion mismatch.")
+    version_decision = negotiate_protocol_version(envelope.get("ProtocolVersion"))
+    if version_decision["status"] == "Incompatible":
+        raise ValueError(
+            "Envelope.ProtocolVersion rejected. "
+            f"ReasonCode={version_decision['reasonCode']}. "
+            f"Incoming={version_decision['incomingVersion']!r}. "
+            f"Runtime={version_decision['runtimeVersion']!r}."
+        )
     _bounded_string(envelope["From"], "Envelope.From")
     _bounded_string(envelope["To"], "Envelope.To")
     if "RunID" in envelope:
