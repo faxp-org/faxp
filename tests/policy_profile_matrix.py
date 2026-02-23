@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Helpers for loading normative policy-profile cases from POLICY_PROFILES.md."""
+"""Helpers for loading normative policy-profile cases from docs/governance/POLICY_PROFILES.md."""
 
 from __future__ import annotations
 
@@ -15,19 +15,19 @@ def _extract_matrix_block(document: str) -> str:
     start = document.find(MATRIX_BEGIN)
     end = document.find(MATRIX_END)
     if start == -1 or end == -1 or end <= start:
-        raise ValueError("POLICY_PROFILES.md is missing policy test matrix markers.")
+        raise ValueError("docs/governance/POLICY_PROFILES.md is missing policy test matrix markers.")
     return document[start + len(MATRIX_BEGIN) : end].strip()
 
 
 def load_policy_test_matrix(project_root: Path) -> list[dict]:
-    policy_doc_path = project_root / "POLICY_PROFILES.md"
+    policy_doc_path = project_root / "docs" / "governance" / "POLICY_PROFILES.md"
     document = policy_doc_path.read_text(encoding="utf-8")
     matrix_payload = _extract_matrix_block(document)
 
     try:
         cases = json.loads(matrix_payload)
     except json.JSONDecodeError as exc:
-        raise ValueError("POLICY_PROFILES.md matrix block is not valid JSON.") from exc
+        raise ValueError("docs/governance/POLICY_PROFILES.md matrix block is not valid JSON.") from exc
 
     if not isinstance(cases, list) or not cases:
         raise ValueError("Policy test matrix must be a non-empty JSON array.")

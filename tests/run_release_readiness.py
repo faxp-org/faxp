@@ -10,8 +10,8 @@ import sys
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-CHECKLIST_PATH = PROJECT_ROOT / "RELEASE_READINESS_CHECKLIST.md"
-GOVERNANCE_INDEX_PATH = PROJECT_ROOT / "GOVERNANCE_INDEX.json"
+CHECKLIST_PATH = PROJECT_ROOT / "docs" / "governance" / "RELEASE_READINESS_CHECKLIST.md"
+GOVERNANCE_INDEX_PATH = PROJECT_ROOT / "docs" / "governance" / "GOVERNANCE_INDEX.json"
 CI_WORKFLOW_PATH = PROJECT_ROOT / ".github" / "workflows" / "ci.yml"
 CONFORMANCE_SUITE_PATH = PROJECT_ROOT / "conformance" / "run_all_checks.py"
 

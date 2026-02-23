@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SECRETS_DIR="${FAXP_SECRETS_DIR:-$HOME/.faxp-secrets}"
 SECURITY_ENV_FILE="${1:-$SECRETS_DIR/security.env.local}"
 AGENT_REGISTRY_FILE="${2:-$SECRETS_DIR/faxp_agent_keys.local.json}"

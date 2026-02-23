@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SECRETS_DIR="${FAXP_SECRETS_DIR:-$HOME/.faxp-secrets}"
 ENV_FILE="${FAXP_ENV_FILE:-$SECRETS_DIR/security.env.local}"
 LOCAL_ENV_FALLBACK="$PROJECT_DIR/security.env.local"
@@ -97,7 +97,7 @@ source "$ENV_FILE"
 set +a
 
 if [[ "$USE_KMS_COMMAND" -eq 1 ]]; then
-  KMS_BUNDLE_SCRIPT="${FAXP_KMS_BUNDLE_SCRIPT:-$PROJECT_DIR/fetch_faxp_bundle.sh}"
+  KMS_BUNDLE_SCRIPT="${FAXP_KMS_BUNDLE_SCRIPT:-$PROJECT_DIR/scripts/fetch_faxp_bundle.sh}"
   if [[ -z "$KMS_BUNDLE_COMMAND" ]]; then
     if [[ -z "$KMS_BUNDLE_ENV_FILE" ]]; then
       KMS_BUNDLE_ENV_FILE="$ENV_FILE"

@@ -2,15 +2,15 @@
   "indexVersion": "1.0.0",
   "generatedAt": "2026-02-22T20:00:00Z",
   "policyArtifacts": [
-    "SCOPE_GUARDRAILS.md",
-    "RFC_TEMPLATE.md",
-    "POLICY_PROFILES.md",
-    "REGISTRY_ADMISSION_POLICY.md",
-    "REGISTRY_CHANGELOG_POLICY.md",
-    "CERTIFICATION_DECISION_RECORD_TEMPLATE.md",
-    "DECISION_RECORDS_RUNBOOK.md",
-    "RELEASE_READINESS_CHECKLIST.md",
-    "CERTIFICATION_PLAYBOOK.md"
+    "docs/governance/SCOPE_GUARDRAILS.md",
+    "docs/rfc/RFC_TEMPLATE.md",
+    "docs/governance/POLICY_PROFILES.md",
+    "docs/governance/REGISTRY_ADMISSION_POLICY.md",
+    "docs/governance/REGISTRY_CHANGELOG_POLICY.md",
+    "docs/governance/CERTIFICATION_DECISION_RECORD_TEMPLATE.md",
+    "docs/governance/DECISION_RECORDS_RUNBOOK.md",
+    "docs/governance/RELEASE_READINESS_CHECKLIST.md",
+    "docs/governance/CERTIFICATION_PLAYBOOK.md"
   ],
   "requiredTests": [
     "tests/run_scope_guardrails.py",

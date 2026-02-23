@@ -34,7 +34,7 @@ These guardrails prevent scope creep into dispatch operations, tracking operatio
 - It must not expand into dispatch orchestration message types or downstream dispatch lifecycle state in protocol core.
 
 ## Change Control
-- Any proposed expansion into an out-of-scope domain requires an RFC using `/RFC_TEMPLATE.md`.
+- Any proposed expansion into an out-of-scope domain requires an RFC using `/docs/rfc/RFC_TEMPLATE.md`.
 - RFCs that cross scope boundaries must be marked as `Scope Expansion` and approved before implementation.
 - Scope-expanding changes must include:
   - security and compliance impact

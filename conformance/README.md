@@ -21,12 +21,12 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `registry_update.sample.audit.log`: sample audit log for registry operations.
 - `registry_update_keys.sample.json`: test-only keyring for signing registry update requests.
 - `certification_registry.sample.after_update.json`: expected sample registry after applying `registry_update.sample.json`.
-- `../REGISTRY_ADMISSION_POLICY.md`: policy contract for admission/renewal/suspension criteria (normative block).
-- `../REGISTRY_CHANGELOG_POLICY.md`: policy contract for changelog integrity and cross-link requirements.
-- `../GOVERNANCE_INDEX.json`: machine-readable index of governance artifacts and required checks.
-- `../RELEASE_READINESS_CHECKLIST.md`: go/no-go release gate checklist with test-enforced requirements.
+- `../docs/governance/REGISTRY_ADMISSION_POLICY.md`: policy contract for admission/renewal/suspension criteria (normative block).
+- `../docs/governance/REGISTRY_CHANGELOG_POLICY.md`: policy contract for changelog integrity and cross-link requirements.
+- `../docs/governance/GOVERNANCE_INDEX.json`: machine-readable index of governance artifacts and required checks.
+- `../docs/governance/RELEASE_READINESS_CHECKLIST.md`: go/no-go release gate checklist with test-enforced requirements.
 - `registry_changelog.sample.json`: sample changelog aligned to registry update operations and snapshots.
-- `../CERTIFICATION_DECISION_RECORD_TEMPLATE.md`: decision artifact template for deterministic approval/rejection records.
+- `../docs/governance/CERTIFICATION_DECISION_RECORD_TEMPLATE.md`: decision artifact template for deterministic approval/rejection records.
 - `certification_decision_record.sample.json`: sample decision artifact aligned to template requirements.
 - `attestation_keys.sample.json`: test-only keyring for local/CI attestation verification.
 - `generate_attestation.py`: helper to regenerate payload digest/signature for adapter profiles.
@@ -38,12 +38,13 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `registry_update_signing.py`: shared canonicalization/sign/verify helpers for registry update requests.
 - `conformance_bundle.py`: reusable conformance evaluator for profile + registry bundles.
 - `verifier_translator.py`: reference wrapper for translating provider-native payloads to neutral FAXP verification output.
+- `a2a_translator_contract.json`: bridge contract for optional A2A translator implementations.
 - `quickstart/`: onboarding templates + bundle builder script.
 
 Human-readable adapter contract:
 - `adapter/INTERFACE.md`: implementer handoff contract for request/response, security, and conformance expectations.
-- `CERTIFICATION_PLAYBOOK.md`: certification intake workflow and tier decision rules.
-- `REGISTRY_OPERATIONS_RUNBOOK.md`: operational process for update/revoke/rollback and rollback safety.
+- `docs/governance/CERTIFICATION_PLAYBOOK.md`: certification intake workflow and tier decision rules.
+- `docs/governance/REGISTRY_OPERATIONS_RUNBOOK.md`: operational process for update/revoke/rollback and rollback safety.
 
 Adapter hosting model:
 
@@ -176,6 +177,12 @@ Release readiness check:
 
 ```bash
 python3 tests/run_release_readiness.py
+```
+
+A2A compatibility profile check:
+
+```bash
+python3 tests/run_a2a_profile_check.py
 ```
 
 Registry update request generation (signed):

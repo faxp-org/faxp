@@ -18,14 +18,14 @@ Current recommendation: `GO` for RC tag based on local conformance evidence and 
 - `/Users/zglitch009/projects/logistics-ai/FAXP/faxp.v0.2.schema.json`
 
 2. Policy and governance controls:
-- `/Users/zglitch009/projects/logistics-ai/FAXP/SCOPE_GUARDRAILS.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/POLICY_PROFILES.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/REGISTRY_ADMISSION_POLICY.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/REGISTRY_CHANGELOG_POLICY.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/CERTIFICATION_DECISION_RECORD_TEMPLATE.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/DECISION_RECORDS_RUNBOOK.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/RELEASE_READINESS_CHECKLIST.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/GOVERNANCE_INDEX.json`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/SCOPE_GUARDRAILS.md`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/POLICY_PROFILES.md`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/REGISTRY_ADMISSION_POLICY.md`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/REGISTRY_CHANGELOG_POLICY.md`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/CERTIFICATION_DECISION_RECORD_TEMPLATE.md`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/DECISION_RECORDS_RUNBOOK.md`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/RELEASE_READINESS_CHECKLIST.md`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/GOVERNANCE_INDEX.json`
 
 3. Conformance and certification artifact gates:
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/run_all_checks.py`
@@ -58,7 +58,7 @@ Report summary:
 
 ## 5) Known Deferrals (Not in RC Scope)
 
-From `/Users/zglitch009/projects/logistics-ai/FAXP/FAXP_DEFERRED_ITEMS.md`:
+From `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/FAXP_DEFERRED_ITEMS.md`:
 1. Centralized `rulesync.jsonc`-style orchestration.
 2. Lockfile-driven frozen installs for all agent tooling.
 3. CI frozen dependency/config policy gates.
@@ -98,7 +98,7 @@ Commit RC package artifacts:
 
 ```bash
 cd /Users/zglitch009/projects/logistics-ai/FAXP
-git add RELEASE_CANDIDATE_v0.2.0-rc.1.md conformance/reports/faxp_conformance_suite_v0.2.0-rc.1.json
+git add docs/releases/RELEASE_CANDIDATE_v0.2.0-rc.1.md conformance/reports/faxp_conformance_suite_v0.2.0-rc.1.json
 git commit -m "Add v0.2.0-rc.1 release candidate package and conformance report"
 git push
 ```

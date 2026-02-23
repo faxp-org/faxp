@@ -11,7 +11,7 @@ import re
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-POLICY_PATH = PROJECT_ROOT / "REGISTRY_CHANGELOG_POLICY.md"
+POLICY_PATH = PROJECT_ROOT / "docs" / "governance" / "REGISTRY_CHANGELOG_POLICY.md"
 CHANGELOG_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "registry_changelog.sample.json"
 
 POLICY_BEGIN = "<!-- REGISTRY_CHANGELOG_POLICY_BEGIN -->"

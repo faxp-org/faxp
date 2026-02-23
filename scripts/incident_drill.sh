@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SECRETS_DIR="${HOME}/.faxp-secrets"
 ENV_FILE="${1:-${SECRETS_DIR}/security.env.local}"
 MC_NUMBER="${FAXP_INCIDENT_DRILL_MC_NUMBER:-498282}"
@@ -10,8 +10,8 @@ DRILL_PROVIDER="${FAXP_INCIDENT_DRILL_PROVIDER:-FMCSA}"
 REQUIRE_TRUCK_FLOW="${FAXP_INCIDENT_DRILL_REQUIRE_TRUCK_FLOW:-1}"
 
 SIM_SCRIPT="${PROJECT_ROOT}/faxp_mvp_simulation.py"
-ROTATE_SCRIPT="${PROJECT_ROOT}/rotate_faxp_keys.sh"
-SECURITY_GATE="${PROJECT_ROOT}/security_gate.sh"
+ROTATE_SCRIPT="${PROJECT_ROOT}/scripts/rotate_faxp_keys.sh"
+SECURITY_GATE="${PROJECT_ROOT}/scripts/security_gate.sh"
 
 if [[ ! -f "${ENV_FILE}" ]]; then
   echo "[IncidentDrill] Missing env file: ${ENV_FILE}" >&2

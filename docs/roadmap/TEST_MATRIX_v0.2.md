@@ -12,18 +12,18 @@ This matrix tracks conformance and regression tests for v0.2 changes:
 
 ## 2. Baseline Regression (Must Stay Green)
 
-1. `./run_secure_demo.sh sim --use-kms-command --provider MockBiometricProvider --verification-status Success`
+1. `./scripts/run_secure_demo.sh sim --use-kms-command --provider MockBiometricProvider --verification-status Success`
 Expected:
 - Load booking completes.
 - Truck booking completes.
 - Validation errors remain zero.
 
-2. `./run_secure_demo.sh check --use-kms-command`
+2. `./scripts/run_secure_demo.sh check --use-kms-command`
 Expected:
 - `SecuritySelfTest ... failed=0`
 - Load + truck flows complete.
 
-3. `./incident_drill.sh`
+3. `./scripts/incident_drill.sh`
 Expected:
 - Baseline pass.
 - Incident detection confirmed.
@@ -33,7 +33,7 @@ Expected:
 
 1. Mock biometric provider emits neutral fields
 Command:
-- `./run_secure_demo.sh sim --use-kms-command --provider MockBiometricProvider --verification-status Success`
+- `./scripts/run_secure_demo.sh sim --use-kms-command --provider MockBiometricProvider --verification-status Success`
 Assert in output:
 - `VerificationResult.provider = identity.liveness-document.mock`
 - `VerificationResult.category = Biometric`
@@ -43,7 +43,7 @@ Assert in output:
 
 2. FMCSA mock emits neutral fields
 Command:
-- `./run_secure_demo.sh sim --use-kms-command --provider FMCSA --verification-status Success --mc-number 498282`
+- `./scripts/run_secure_demo.sh sim --use-kms-command --provider FMCSA --verification-status Success --mc-number 498282`
 Assert in output:
 - `VerificationResult.provider = compliance.authority-record.mock` (authority-mock path) or `compliance.authority-record.adapter` (hosted-adapter path)
 - `VerificationResult.category = Compliance`
@@ -58,7 +58,7 @@ Expected:
 
 4. Legacy provider alias remains accepted
 Command:
-- `./run_secure_demo.sh sim --use-kms-command --provider iDenfy --verification-status Success`
+- `./scripts/run_secure_demo.sh sim --use-kms-command --provider iDenfy --verification-status Success`
 Assert in output:
 - Booking completes.
 - `VerificationResult.provider = identity.liveness-document.mock`
@@ -68,7 +68,7 @@ Assert in output:
 
 1. Default capabilities aligned (happy path)
 Command:
-- `./run_secure_demo.sh sim --use-kms-command --provider MockBiometricProvider --verification-status Success`
+- `./scripts/run_secure_demo.sh sim --use-kms-command --provider MockBiometricProvider --verification-status Success`
 Expected:
 - Verification proceeds.
 

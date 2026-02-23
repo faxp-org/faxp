@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SECRETS_DIR="${1:-${FAXP_SECRETS_DIR:-$HOME/.faxp-secrets}}"
 KEY_DIR="$SECRETS_DIR/keys"
 mkdir -p "$SECRETS_DIR"
@@ -146,6 +146,6 @@ Key files directory:
 
 Next steps:
 1) source $SECURITY_ENV_FILE
-2) $PROJECT_DIR/run_secure_demo.sh sim
-3) $PROJECT_DIR/run_secure_demo.sh streamlit
+2) $PROJECT_DIR/scripts/run_secure_demo.sh sim
+3) $PROJECT_DIR/scripts/run_secure_demo.sh streamlit
 EOF

@@ -34,7 +34,7 @@ def main() -> int:
     ).read_text(encoding="utf-8")
     _assert(
         "load_policy_test_matrix(PROJECT_ROOT)" in run_policy_decisions_source,
-        "run_policy_decisions.py must load normative cases from POLICY_PROFILES.md.",
+        "run_policy_decisions.py must load normative cases from docs/governance/POLICY_PROFILES.md.",
     )
 
     degraded_modes_covered: set[str] = set()

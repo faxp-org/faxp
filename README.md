@@ -13,26 +13,28 @@ This repository includes:
 
 ## Release Checkpoints
 
-- `v0.2.0-alpha.1`: `/Users/zglitch009/projects/logistics-ai/FAXP/RELEASE_NOTES_v0.2.0-alpha.1.md`
-- `v0.2.0-rc.1`: `/Users/zglitch009/projects/logistics-ai/FAXP/RELEASE_CANDIDATE_v0.2.0-rc.1.md`
+- `v0.2.0-alpha.1`: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/releases/RELEASE_NOTES_v0.2.0-alpha.1.md`
+- `v0.2.0-rc.1`: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/releases/RELEASE_CANDIDATE_v0.2.0-rc.1.md`
 
 ## v0.2 Planning Artifacts
 
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/RFC-v0.2-verification-neutrality.md`
-- Implementation checklist: `/Users/zglitch009/projects/logistics-ai/FAXP/V2_IMPLEMENTATION_CHECKLIST.md`
-- Test matrix: `/Users/zglitch009/projects/logistics-ai/FAXP/TEST_MATRIX_v0.2.md`
-- Policy profiles (normative): `/Users/zglitch009/projects/logistics-ai/FAXP/POLICY_PROFILES.md`
+- Docs index: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/INDEX.md`
+- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.2-verification-neutrality.md`
+- A2A compatibility profile: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/A2A_COMPATIBILITY_PROFILE.md`
+- Implementation checklist: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/V2_IMPLEMENTATION_CHECKLIST.md`
+- Test matrix: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/TEST_MATRIX_v0.2.md`
+- Policy profiles (normative): `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/POLICY_PROFILES.md`
 - Schema files:
   - v0.1.1: `/Users/zglitch009/projects/logistics-ai/FAXP/faxp.schema.json`
   - v0.2 compatibility track: `/Users/zglitch009/projects/logistics-ai/FAXP/faxp.v0.2.schema.json`
-- Governance model: `/Users/zglitch009/projects/logistics-ai/FAXP/FAXP_GOVERNANCE_MODEL.md`
-- Builder handoff checklist: `/Users/zglitch009/projects/logistics-ai/FAXP/ADAPTER_IMPLEMENTER_HANDOFF.md`
-- Certification playbook: `/Users/zglitch009/projects/logistics-ai/FAXP/CERTIFICATION_PLAYBOOK.md`
-- Decision records runbook: `/Users/zglitch009/projects/logistics-ai/FAXP/DECISION_RECORDS_RUNBOOK.md`
-- Registry operations runbook: `/Users/zglitch009/projects/logistics-ai/FAXP/REGISTRY_OPERATIONS_RUNBOOK.md`
-- Registry changelog policy: `/Users/zglitch009/projects/logistics-ai/FAXP/REGISTRY_CHANGELOG_POLICY.md`
-- Governance index: `/Users/zglitch009/projects/logistics-ai/FAXP/GOVERNANCE_INDEX.json`
-- Release readiness checklist: `/Users/zglitch009/projects/logistics-ai/FAXP/RELEASE_READINESS_CHECKLIST.md`
+- Governance model: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/FAXP_GOVERNANCE_MODEL.md`
+- Builder handoff checklist: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/adapters/ADAPTER_IMPLEMENTER_HANDOFF.md`
+- Certification playbook: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/CERTIFICATION_PLAYBOOK.md`
+- Decision records runbook: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/DECISION_RECORDS_RUNBOOK.md`
+- Registry operations runbook: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/REGISTRY_OPERATIONS_RUNBOOK.md`
+- Registry changelog policy: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/REGISTRY_CHANGELOG_POLICY.md`
+- Governance index: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/GOVERNANCE_INDEX.json`
+- Release readiness checklist: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/RELEASE_READINESS_CHECKLIST.md`
 - Verification profiles:
   - schema: `/Users/zglitch009/projects/logistics-ai/FAXP/profiles/verification/profile.schema.json`
   - strict: `/Users/zglitch009/projects/logistics-ai/FAXP/profiles/verification/US_FMCSA_STRICT_V1.json`
@@ -70,6 +72,7 @@ This repository includes:
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update_signing.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/conformance_bundle.py`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/verifier_translator.py`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/a2a_translator_contract.json`
   - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/quickstart/`
 
 ## Protocol Neutrality Boundary
@@ -112,7 +115,7 @@ python3 -m pip install -r requirements.txt
 Generate local keys and env bundle:
 
 ```bash
-./generate_faxp_keys.sh /Users/zglitch009/.faxp-secrets
+./scripts/generate_faxp_keys.sh /Users/zglitch009/.faxp-secrets
 ```
 
 Load secrets:
@@ -128,7 +131,7 @@ set +a
 Default secure simulation:
 
 ```bash
-./run_secure_demo.sh sim
+./scripts/run_secure_demo.sh sim
 ```
 
 Hosted FMCSA adapter simulation path:
@@ -178,7 +181,7 @@ python3 faxp_mvp_simulation.py \
 ### 3) Run the Streamlit Demo (Local)
 
 ```bash
-./run_secure_demo.sh streamlit
+./scripts/run_secure_demo.sh streamlit
 ```
 
 Open:
@@ -247,19 +250,19 @@ Vultr deployment artifacts:
 Run security gate:
 
 ```bash
-./security_gate.sh /Users/zglitch009/.faxp-secrets/security.env.local
+./scripts/security_gate.sh /Users/zglitch009/.faxp-secrets/security.env.local
 ```
 
 Run incident drill:
 
 ```bash
-./incident_drill.sh /Users/zglitch009/.faxp-secrets/security.env.local
+./scripts/incident_drill.sh /Users/zglitch009/.faxp-secrets/security.env.local
 ```
 
 Run self-test mode:
 
 ```bash
-./run_secure_demo.sh check
+./scripts/run_secure_demo.sh check
 ```
 
 ### 6) Regression Checks
@@ -430,7 +433,7 @@ bash conformance/quickstart/make_conformance_bundle.sh
 
 `Missing active ED25519 private key for sender`
 - Confirm `FAXP_AGENT_KEY_REGISTRY_FILE` points to your generated key registry.
-- Re-run `./generate_faxp_keys.sh /Users/zglitch009/.faxp-secrets`.
+- Re-run `./scripts/generate_faxp_keys.sh /Users/zglitch009/.faxp-secrets`.
 
 `Verifier signature key ID missing`
 - Ensure verifier signing vars exist in your loaded env.

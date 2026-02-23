@@ -11,7 +11,7 @@ import re
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-TEMPLATE_PATH = PROJECT_ROOT / "CERTIFICATION_DECISION_RECORD_TEMPLATE.md"
+TEMPLATE_PATH = PROJECT_ROOT / "docs" / "governance" / "CERTIFICATION_DECISION_RECORD_TEMPLATE.md"
 DECISION_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "certification_decision_record.sample.json"
 CONFORMANCE_REPORT_PATH = PROJECT_ROOT / "conformance" / "sample_conformance_report.json"
 REGISTRY_BEFORE_PATH = PROJECT_ROOT / "conformance" / "certification_registry.sample.json"

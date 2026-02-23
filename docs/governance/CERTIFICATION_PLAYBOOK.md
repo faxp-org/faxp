@@ -46,10 +46,10 @@ Reference paths:
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update.schema.json`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update_keys.sample.json`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/create_registry_update.py`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/REGISTRY_OPERATIONS_RUNBOOK.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/REGISTRY_CHANGELOG_POLICY.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/GOVERNANCE_INDEX.json`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/RELEASE_READINESS_CHECKLIST.md`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/REGISTRY_OPERATIONS_RUNBOOK.md`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/REGISTRY_CHANGELOG_POLICY.md`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/GOVERNANCE_INDEX.json`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/RELEASE_READINESS_CHECKLIST.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/apply_registry_update.py`
 
 ## 3) Intake Workflow
@@ -76,9 +76,9 @@ Reference paths:
 5. If all checks pass, registry entry is accepted/updated.
 6. If checks fail, submission is rejected with explicit failing check IDs.
 7. Reviewer emits a decision artifact using:
-- `/Users/zglitch009/projects/logistics-ai/FAXP/CERTIFICATION_DECISION_RECORD_TEMPLATE.md`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/CERTIFICATION_DECISION_RECORD_TEMPLATE.md`
 8. Reviewer follows decision-record operations runbook:
-- `/Users/zglitch009/projects/logistics-ai/FAXP/DECISION_RECORDS_RUNBOOK.md`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/DECISION_RECORDS_RUNBOOK.md`
 
 ## 4) Pass/Fail Gates
 
@@ -92,7 +92,7 @@ Mandatory gates:
 - supported profile alignment.
 4. Conformance report pass status for requested tier (`Conformant` or `TrustedProduction`).
 5. Policy profile conformance synchronization:
-- Normative profile matrix in `/Users/zglitch009/projects/logistics-ai/FAXP/POLICY_PROFILES.md` is valid.
+- Normative profile matrix in `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/POLICY_PROFILES.md` is valid.
 - All three degraded modes are represented by active profile artifacts:
   - `HardBlock`
   - `SoftHold`

@@ -1,0 +1,58 @@
+{
+  "contractVersion": "1.0.0",
+  "profileRef": "docs/interop/A2A_COMPATIBILITY_PROFILE.md",
+  "mode": "TranslatorOnly",
+  "coreProtocolChangesRequired": false,
+  "hostingModel": "BuilderHosted",
+  "requiredEnvelopeFields": [
+    "Protocol",
+    "ProtocolVersion",
+    "MessageType",
+    "From",
+    "To",
+    "Timestamp",
+    "MessageID",
+    "Nonce",
+    "Body"
+  ],
+  "mappings": {
+    "NewLoad": {
+      "a2aTaskType": "faxp.new_load",
+      "requiredBodyFields": ["LoadID", "Origin", "Destination", "Rate"]
+    },
+    "LoadSearch": {
+      "a2aTaskType": "faxp.load_search",
+      "requiredBodyFields": ["OriginState", "DestinationState", "EquipmentType"]
+    },
+    "NewTruck": {
+      "a2aTaskType": "faxp.new_truck",
+      "requiredBodyFields": ["TruckID", "Location", "AvailabilityDate", "RateMin"]
+    },
+    "TruckSearch": {
+      "a2aTaskType": "faxp.truck_search",
+      "requiredBodyFields": ["OriginState", "EquipmentType", "AvailableFrom"]
+    },
+    "BidRequest": {
+      "a2aTaskType": "faxp.bid_request",
+      "requiredBodyFields": ["AvailabilityDate", "Rate"]
+    },
+    "BidResponse": {
+      "a2aTaskType": "faxp.bid_response",
+      "requiredBodyFields": ["ResponseType"]
+    },
+    "ExecutionReport": {
+      "a2aTaskType": "faxp.execution_report",
+      "requiredBodyFields": ["Status", "Timestamp", "VerifiedBadge"]
+    },
+    "AmendRequest": {
+      "a2aTaskType": "faxp.amend_request",
+      "requiredBodyFields": ["LoadID", "AmendmentType"]
+    }
+  },
+  "securityControls": {
+    "preserveFaxpSignatures": true,
+    "verifyReplayAndTtlBeforeTranslation": true,
+    "rejectUnmappedTaskTypes": true,
+    "requireDeterministicRoundTrip": true
+  }
+}

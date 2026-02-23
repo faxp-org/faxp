@@ -57,5 +57,5 @@ This alpha consolidates the v0.2 neutrality/security foundation while preserving
 
 1. `python3 tests/run_schema_compatibility.py`
 2. `python3 tests/run_streamlit_state_logic.py`
-3. `./run_secure_demo.sh sim --use-kms-command --provider MockBiometricProvider --verification-status Success`
-4. `./run_secure_demo.sh sim --use-kms-command --provider FMCSA --verification-status Success`
+3. `./scripts/run_secure_demo.sh sim --use-kms-command --provider MockBiometricProvider --verification-status Success`
+4. `./scripts/run_secure_demo.sh sim --use-kms-command --provider FMCSA --verification-status Success`

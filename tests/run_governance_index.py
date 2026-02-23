@@ -11,7 +11,7 @@ import sys
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-INDEX_PATH = PROJECT_ROOT / "GOVERNANCE_INDEX.json"
+INDEX_PATH = PROJECT_ROOT / "docs" / "governance" / "GOVERNANCE_INDEX.json"
 CI_WORKFLOW_PATH = PROJECT_ROOT / ".github" / "workflows" / "ci.yml"
 CONFORMANCE_SUITE_PATH = PROJECT_ROOT / "conformance" / "run_all_checks.py"
 

@@ -26,17 +26,17 @@
     "requireConformancePass": true
   },
   "evidence": {
-    "runbookRef": "CERTIFICATION_PLAYBOOK.md",
-    "incidentResponseRef": "incident_drill.sh",
-    "securityReviewRef": "security_gate.sh",
-    "slaPolicyRef": "ADAPTER_IMPLEMENTER_HANDOFF.md",
-    "keyManagementRef": "rotate_faxp_keys.sh"
+    "runbookRef": "docs/governance/CERTIFICATION_PLAYBOOK.md",
+    "incidentResponseRef": "scripts/incident_drill.sh",
+    "securityReviewRef": "scripts/security_gate.sh",
+    "slaPolicyRef": "docs/adapters/ADAPTER_IMPLEMENTER_HANDOFF.md",
+    "keyManagementRef": "scripts/rotate_faxp_keys.sh"
   },
   "submissionSignature": {
     "alg": "HMAC_SHA256",
     "kid": "faxp-submission-kid-2026q1",
-    "payloadDigestSha256": "sha256:f7630de1df7fe650c1b609009634f2188800d224b5cfb202d600567015c4e532",
-    "sig": "5ebcbf1363a824333417e6cbebcc43147fbb365477b0a29d05c282704491ff14",
+    "payloadDigestSha256": "sha256:f8deba9295641bebe71ed956747dfc5744b6454e71bc1bb6731e6c99da733475",
+    "sig": "e4afd82023024be759e666bbb62c172add05a099c64dd4a192cb6bc76d5895e4",
     "signedAt": "2026-02-22T00:00:00Z"
   },
   "notes": "Sample submission manifest for CI and onboarding verification."

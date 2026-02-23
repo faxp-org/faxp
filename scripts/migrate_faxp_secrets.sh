@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TARGET_DIR="${1:-$HOME/.faxp-secrets}"
 SOURCE_ENV="${2:-$PROJECT_DIR/security.env.local}"
 SOURCE_REGISTRY="${3:-$PROJECT_DIR/faxp_agent_keys.local.json}"
@@ -112,6 +112,6 @@ Migration complete.
 Recommended:
 1) source $TARGET_ENV with:
    set -a; source $TARGET_ENV; set +a
-2) Use /Users/zglitch009/projects/logistics-ai/FIX-F/run_secure_demo.sh
+2) Use /Users/zglitch009/projects/logistics-ai/FIX-F/scripts/run_secure_demo.sh
 3) Remove in-repo local secret files if no longer needed.
 EOF

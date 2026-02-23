@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate certification registry artifacts against REGISTRY_ADMISSION_POLICY.md."""
+"""Validate certification registry artifacts against docs/governance/REGISTRY_ADMISSION_POLICY.md."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ import sys
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-POLICY_DOC_PATH = PROJECT_ROOT / "REGISTRY_ADMISSION_POLICY.md"
+POLICY_DOC_PATH = PROJECT_ROOT / "docs" / "governance" / "REGISTRY_ADMISSION_POLICY.md"
 REGISTRY_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "certification_registry.sample.json"
 REGISTRY_AFTER_UPDATE_PATH = (
     PROJECT_ROOT / "conformance" / "certification_registry.sample.after_update.json"
@@ -44,12 +44,12 @@ def _load_policy_config(path: Path) -> dict:
     start = document.find(MARKER_BEGIN)
     end = document.find(MARKER_END)
     if start == -1 or end == -1 or end <= start:
-        raise AssertionError("REGISTRY_ADMISSION_POLICY.md markers are missing or malformed.")
+        raise AssertionError("docs/governance/REGISTRY_ADMISSION_POLICY.md markers are missing or malformed.")
     raw = document[start + len(MARKER_BEGIN) : end].strip()
     try:
         payload = json.loads(raw)
     except json.JSONDecodeError as exc:
-        raise AssertionError("REGISTRY_ADMISSION_POLICY.md policy block is not valid JSON.") from exc
+        raise AssertionError("docs/governance/REGISTRY_ADMISSION_POLICY.md policy block is not valid JSON.") from exc
     _assert(isinstance(payload, dict), "Registry admission policy block must be an object.")
     return payload
 

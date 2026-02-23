@@ -51,26 +51,26 @@ jobs:
       - name: Make scripts executable
         run: |
           chmod +x \
-            security_gate.sh \
-            generate_faxp_keys.sh \
-            rotate_faxp_keys.sh \
-            incident_drill.sh \
-            run_secure_demo.sh \
+            scripts/security_gate.sh \
+            scripts/generate_faxp_keys.sh \
+            scripts/rotate_faxp_keys.sh \
+            scripts/incident_drill.sh \
+            scripts/run_secure_demo.sh \
             conformance/quickstart/make_conformance_bundle.sh
 
       - name: Shell syntax checks
         run: |
           bash -n \
-            security_gate.sh \
-            generate_faxp_keys.sh \
-            rotate_faxp_keys.sh \
-            incident_drill.sh \
-            run_secure_demo.sh \
+            scripts/security_gate.sh \
+            scripts/generate_faxp_keys.sh \
+            scripts/rotate_faxp_keys.sh \
+            scripts/incident_drill.sh \
+            scripts/run_secure_demo.sh \
             conformance/quickstart/make_conformance_bundle.sh
 
       - name: Python compile checks
         run: |
-          python -m py_compile faxp_mvp_simulation.py fmcsa_adapter_server.py streamlit_app.py streamlit_state_logic.py adapter/fmcsa_live.py conformance/generate_attestation.py conformance/conformance_bundle.py conformance/verifier_translator.py conformance/submission_manifest_signing.py conformance/create_submission_manifest.py conformance/registry_update_signing.py conformance/create_registry_update.py conformance/apply_registry_update.py conformance/run_all_checks.py tests/policy_profile_matrix.py tests/run_streamlit_state_logic.py tests/run_schema_compatibility.py tests/run_fmcsa_hosted_adapter.py tests/run_certification_artifacts.py tests/run_policy_decisions.py tests/run_policy_profile_sync.py tests/run_generate_attestation.py tests/run_conformance_bundle.py tests/run_verifier_translator.py tests/run_adapter_server_translation.py tests/run_adapter_test_profile.py tests/run_submission_manifest.py tests/run_create_submission_manifest.py tests/run_registry_ops_artifacts.py tests/run_registry_admission_policy.py tests/run_registry_changelog_artifacts.py tests/run_decision_record_template.py tests/run_decision_record_artifacts.py tests/run_governance_index.py tests/run_release_readiness.py tests/run_create_registry_update.py tests/run_apply_registry_update.py tests/run_key_lifecycle_policy.py tests/run_conformance_suite.py tests/run_scope_guardrails.py
+          python -m py_compile faxp_mvp_simulation.py fmcsa_adapter_server.py streamlit_app.py streamlit_state_logic.py adapter/fmcsa_live.py conformance/generate_attestation.py conformance/conformance_bundle.py conformance/verifier_translator.py conformance/submission_manifest_signing.py conformance/create_submission_manifest.py conformance/registry_update_signing.py conformance/create_registry_update.py conformance/apply_registry_update.py conformance/run_all_checks.py tests/policy_profile_matrix.py tests/run_streamlit_state_logic.py tests/run_schema_compatibility.py tests/run_fmcsa_hosted_adapter.py tests/run_certification_artifacts.py tests/run_policy_decisions.py tests/run_policy_profile_sync.py tests/run_generate_attestation.py tests/run_conformance_bundle.py tests/run_verifier_translator.py tests/run_adapter_server_translation.py tests/run_adapter_test_profile.py tests/run_submission_manifest.py tests/run_create_submission_manifest.py tests/run_registry_ops_artifacts.py tests/run_registry_admission_policy.py tests/run_registry_changelog_artifacts.py tests/run_decision_record_template.py tests/run_decision_record_artifacts.py tests/run_governance_index.py tests/run_release_readiness.py tests/run_a2a_profile_check.py tests/run_create_registry_update.py tests/run_apply_registry_update.py tests/run_key_lifecycle_policy.py tests/run_conformance_suite.py tests/run_scope_guardrails.py
 
       - name: Protocol scope guardrails lint
         run: |
@@ -165,6 +165,10 @@ jobs:
         run: |
           python tests/run_release_readiness.py
 
+      - name: A2A compatibility profile checks
+        run: |
+          python tests/run_a2a_profile_check.py
+
       - name: Registry update create helper checks
         run: |
           python tests/run_create_registry_update.py
@@ -179,11 +183,11 @@ jobs:
 
       - name: Security gate (template)
         run: |
-          ./security_gate.sh security.env.template
+          ./scripts/security_gate.sh security.env.template
 
       - name: Generate CI key material
         run: |
-          ./generate_faxp_keys.sh "$RUNNER_TEMP/faxp-secrets"
+          ./scripts/generate_faxp_keys.sh "$RUNNER_TEMP/faxp-secrets"
           cp "$RUNNER_TEMP/faxp-secrets/security.env.local" "$RUNNER_TEMP/faxp-secrets/security.env.ci"
           sed -i 's/^FAXP_APP_MODE=.*/FAXP_APP_MODE=local/' "$RUNNER_TEMP/faxp-secrets/security.env.ci"
           sed -i 's/^FAXP_REQUIRE_EXTERNAL_SECRET_MANAGER=.*/FAXP_REQUIRE_EXTERNAL_SECRET_MANAGER=0/' "$RUNNER_TEMP/faxp-secrets/security.env.ci"
@@ -419,7 +423,7 @@ jobs:
           FAXP_INCIDENT_DRILL_PROVIDER: MockBiometricProvider
           FAXP_INCIDENT_DRILL_REQUIRE_TRUCK_FLOW: "0"
         run: |
-          ./incident_drill.sh "$RUNNER_TEMP/faxp-secrets/security.env.ci" | tee "${{ steps.ci_run_id.outputs.log_dir }}/faxp-incident-drill-${{ steps.ci_run_id.outputs.run_id }}.log"
+          ./scripts/incident_drill.sh "$RUNNER_TEMP/faxp-secrets/security.env.ci" | tee "${{ steps.ci_run_id.outputs.log_dir }}/faxp-incident-drill-${{ steps.ci_run_id.outputs.run_id }}.log"
 
       - name: Upload CI logs artifact
         if: always()

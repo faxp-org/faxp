@@ -1,7 +1,7 @@
 # FAXP v0.2 Implementation Checklist (From RFC Verification Neutrality)
 
 Status: Alpha Candidate  
-Source RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/RFC-v0.2-verification-neutrality.md`  
+Source RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.2-verification-neutrality.md`  
 Updated: 2026-02-21 (alpha evidence closure)
 
 ## Phase 0: Branch + Baseline
@@ -9,9 +9,9 @@ Updated: 2026-02-21 (alpha evidence closure)
 - [ ] Create branch: `codex/v0.2-verification-neutrality`
 - [ ] Tag current state as baseline: `v0.1.1-cloud-demo`
 - [ ] Run baseline checks before changes:
-  - [ ] `./run_secure_demo.sh sim --use-kms-command`
-  - [ ] `./incident_drill.sh`
-  - [ ] `./security_gate.sh /Users/zglitch009/.faxp-secrets/security.env.local`
+  - [ ] `./scripts/run_secure_demo.sh sim --use-kms-command`
+  - [ ] `./scripts/incident_drill.sh`
+  - [ ] `./scripts/security_gate.sh /Users/zglitch009/.faxp-secrets/security.env.local`
 
 ## Phase 1: Schema Updates (Provider-Agnostic Verification)
 
@@ -91,7 +91,7 @@ Acceptance:
 Targets:
 - `/Users/zglitch009/projects/logistics-ai/FAXP/faxp_mvp_simulation.py` (self-test paths)
 - New test notes/doc file (optional):
-  - `/Users/zglitch009/projects/logistics-ai/FAXP/TEST_MATRIX_v0.2.md`
+  - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/TEST_MATRIX_v0.2.md`
 
 - [x] Add neutral-verification happy-path test vectors:
   - [x] mock provider A
@@ -113,8 +113,8 @@ Acceptance:
 
 Targets:
 - `/Users/zglitch009/projects/logistics-ai/FAXP/README.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/FAXP_DEFERRED_ITEMS.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/RFC-v0.2-verification-neutrality.md`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/FAXP_DEFERRED_ITEMS.md`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.2-verification-neutrality.md`
 
 - [x] Add protocol-neutral verification section to README.
 - [x] Document adapter pattern boundaries (core protocol vs provider adapters).

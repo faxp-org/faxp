@@ -8,7 +8,7 @@ This runbook defines how FAXP certification decision artifacts are created, revi
 - Prevent ambiguous approval/rejection outcomes.
 
 ## Source Contract
-- Template: `/Users/zglitch009/projects/logistics-ai/FAXP/CERTIFICATION_DECISION_RECORD_TEMPLATE.md`
+- Template: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/CERTIFICATION_DECISION_RECORD_TEMPLATE.md`
 - Artifact check: `/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_decision_record_artifacts.py`
 - Template check: `/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_decision_record_template.py`
 
