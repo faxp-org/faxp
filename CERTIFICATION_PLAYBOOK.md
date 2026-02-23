@@ -69,6 +69,8 @@ Reference paths:
 4. FAXP verifier reruns checks in CI.
 5. If all checks pass, registry entry is accepted/updated.
 6. If checks fail, submission is rejected with explicit failing check IDs.
+7. Reviewer emits a decision artifact using:
+- `/Users/zglitch009/projects/logistics-ai/FAXP/CERTIFICATION_DECISION_RECORD_TEMPLATE.md`
 
 ## 4) Pass/Fail Gates
 
@@ -88,6 +90,9 @@ Mandatory gates:
   - `SoftHold`
   - `GraceCache`
 - Conformance suite includes `policy_profile_sync` and passes.
+6. Decision record template checks pass:
+- `python3 tests/run_decision_record_template.py`
+- Decision artifact includes required evidence links and reason codes.
 
 Additional gates for `TrustedProduction`:
 1. Operational evidence references are present in manifest.

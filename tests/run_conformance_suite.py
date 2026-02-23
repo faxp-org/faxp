@@ -43,6 +43,10 @@ def main() -> int:
         "registry_admission_policy" in listed_checks.stdout.splitlines(),
         "conformance suite must include registry_admission_policy in default checks",
     )
+    _assert(
+        "decision_record_template" in listed_checks.stdout.splitlines(),
+        "conformance suite must include decision_record_template in default checks",
+    )
 
     with tempfile.TemporaryDirectory(prefix="faxp-conformance-suite-") as temp_dir:
         output_path = Path(temp_dir) / "suite_report.json"
