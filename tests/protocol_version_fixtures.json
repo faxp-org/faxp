@@ -1,0 +1,54 @@
+{
+  "fixtures": [
+    {
+      "id": "runtime-0.1.1-incoming-0.1.1-compatible",
+      "runtimeVersion": "0.1.1",
+      "incomingVersion": "0.1.1",
+      "expectedStatus": "Compatible",
+      "expectedReasonCode": "ProtocolVersionCompatible",
+      "expectEnvelopeValidationPass": true
+    },
+    {
+      "id": "runtime-0.1.1-incoming-0.2.0-degradable",
+      "runtimeVersion": "0.1.1",
+      "incomingVersion": "0.2.0",
+      "expectedStatus": "Degradable",
+      "expectedReasonCode": "ProtocolVersionDegradable",
+      "expectEnvelopeValidationPass": true
+    },
+    {
+      "id": "runtime-0.2.0-incoming-0.2.0-compatible",
+      "runtimeVersion": "0.2.0",
+      "incomingVersion": "0.2.0",
+      "expectedStatus": "Compatible",
+      "expectedReasonCode": "ProtocolVersionCompatible",
+      "expectEnvelopeValidationPass": true
+    },
+    {
+      "id": "runtime-0.2.0-incoming-0.1.1-degradable",
+      "runtimeVersion": "0.2.0",
+      "incomingVersion": "0.1.1",
+      "expectedStatus": "Degradable",
+      "expectedReasonCode": "ProtocolVersionDegradable",
+      "expectEnvelopeValidationPass": true
+    },
+    {
+      "id": "runtime-0.1.1-incoming-9.9.9-unsupported",
+      "runtimeVersion": "0.1.1",
+      "incomingVersion": "9.9.9",
+      "expectedStatus": "Incompatible",
+      "expectedReasonCode": "ProtocolVersionUnsupported",
+      "expectEnvelopeValidationPass": false,
+      "expectedValidationReasonCode": "ProtocolVersionUnsupported"
+    },
+    {
+      "id": "runtime-0.1.1-incoming-v0.3-invalid-format",
+      "runtimeVersion": "0.1.1",
+      "incomingVersion": "v0.3",
+      "expectedStatus": "Incompatible",
+      "expectedReasonCode": "ProtocolVersionInvalidFormat",
+      "expectEnvelopeValidationPass": false,
+      "expectedValidationReasonCode": "ProtocolVersionInvalidFormat"
+    }
+  ]
+}
