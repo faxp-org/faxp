@@ -133,6 +133,24 @@ Required assertions:
 2. Tier declared accurately (for example `SelfAttested` or `Conformant`).
 3. Signed request/response controls enabled as declared.
 4. Translator normalization preserved (no direct provider-shape leakage to FAXP clients).
+5. Policy profile behavior is declared and evidenced (HardBlock/SoftHold/GraceCache semantics).
+
+Policy-profile evidence (required for `Conformant` and above):
+1. Declared policy profile IDs used by the adapter/client integration.
+2. Outage traces showing:
+- negative compliance fail
+- verification outage/degraded path
+- exception approval flow (if used)
+3. Decision records that include:
+- `VerificationPolicyProfileID`
+- `DispatchAuthorization`
+- `DecisionReasonCode`
+- `PolicyRuleID`
+- `ExceptionApprovalRef` when applicable
+4. Local proof that policy docs and tests are synchronized:
+- `python3 tests/run_policy_decisions.py`
+- `python3 tests/run_policy_profile_sync.py`
+- `python3 conformance/run_all_checks.py --output /tmp/faxp_conformance_suite_report.json`
 
 ## 8) Production Cutover Steps
 

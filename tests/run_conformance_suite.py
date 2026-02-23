@@ -25,6 +25,21 @@ def _load_json(path: Path) -> dict:
 
 
 def main() -> int:
+    listed_checks = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT_PATH),
+            "--list-checks",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    _assert(
+        "policy_profile_sync" in listed_checks.stdout.splitlines(),
+        "conformance suite must include policy_profile_sync in default checks",
+    )
+
     with tempfile.TemporaryDirectory(prefix="faxp-conformance-suite-") as temp_dir:
         output_path = Path(temp_dir) / "suite_report.json"
         log_dir = Path(temp_dir) / "suite_logs"

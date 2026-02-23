@@ -81,6 +81,13 @@ Mandatory gates:
 - hosting model alignment,
 - supported profile alignment.
 4. Conformance report pass status for requested tier (`Conformant` or `TrustedProduction`).
+5. Policy profile conformance synchronization:
+- Normative profile matrix in `/Users/zglitch009/projects/logistics-ai/FAXP/POLICY_PROFILES.md` is valid.
+- All three degraded modes are represented by active profile artifacts:
+  - `HardBlock`
+  - `SoftHold`
+  - `GraceCache`
+- Conformance suite includes `policy_profile_sync` and passes.
 
 Additional gates for `TrustedProduction`:
 1. Operational evidence references are present in manifest.
@@ -113,3 +120,26 @@ Reject when:
 Revocation action:
 - Mark registry entry `Revoked` or `Suspended`.
 - Record rationale and timestamp in registry notes/audit logs.
+
+## 8) Policy Profile Conformance (Required)
+
+Implementers must declare and prove how outage handling maps to FAXP policy profiles.
+
+Required evidence:
+1. Claimed policy profile IDs (`VerificationPolicyProfileID`) used in production.
+2. Outage behavior traces for at least:
+- negative verification fail (`VerificationNegativeResult`)
+- degraded verification path with provider outage/error
+- human exception path where applicable
+3. Proof that decision outcomes match profile semantics:
+- `HardBlock` -> fail-closed (`DispatchAuthorization=Blocked`)
+- `SoftHold` -> provisional hold (`DispatchAuthorization=Hold`)
+- `GraceCache` -> tier-based continuity (`Allowed`/`Hold`/`Blocked` per policy)
+4. Auditability evidence for exception approvals:
+- exception approval reference present when approved
+- decision reason code aligns with policy rule
+
+Required local checks before submission:
+1. `python3 tests/run_policy_decisions.py`
+2. `python3 tests/run_policy_profile_sync.py`
+3. `python3 conformance/run_all_checks.py --output /tmp/faxp_conformance_suite_report.json`
