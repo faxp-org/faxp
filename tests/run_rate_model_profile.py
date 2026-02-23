@@ -18,9 +18,11 @@ from faxp_mvp_simulation import (  # noqa: E402
     RATE_MODEL_REQUIREMENTS,
     VALID_RATE_MODELS,
 )
+from conformance.rate_model_profile_signing import verify_profile_signature  # noqa: E402
 
 
 PROFILE_PATH = PROJECT_ROOT / "conformance" / "rate_model_profile.v1.json"
+KEYRING_PATH = PROJECT_ROOT / "conformance" / "rate_model_profile_keys.sample.json"
 
 
 def _assert(condition: bool, message: str) -> None:
@@ -60,8 +62,11 @@ def _normalize_requirements(payload: dict) -> dict:
 
 def main() -> int:
     profile = _load_json(PROFILE_PATH)
+    keyring = _load_json(KEYRING_PATH)
     _assert(profile.get("protocol") == "FAXP", "rate model profile protocol must be FAXP")
     _assert(str(profile.get("profileVersion") or "").strip(), "profileVersion must be non-empty")
+    _assert("profileSignature" in profile, "rate model profile must include profileSignature.")
+    verify_profile_signature(profile, keyring=keyring, require_signature=True)
 
     active_models = [str(item) for item in profile.get("activeRateModels") or []]
     planned_models = [str(item) for item in profile.get("plannedRateModels") or []]

@@ -46,6 +46,7 @@ def _suite_commands() -> list[tuple[str, list[str]]]:
         ("mcp_profile", [python, str(TESTS_DIR / "run_mcp_profile_check.py")]),
         ("mcp_watch_artifacts", [python, str(TESTS_DIR / "run_mcp_watch_artifacts.py")]),
         ("rate_model_profile", [python, str(TESTS_DIR / "run_rate_model_profile.py")]),
+        ("rate_model_profile_signature", [python, str(TESTS_DIR / "run_rate_model_profile_signature.py")]),
         ("rate_model_extensibility", [python, str(TESTS_DIR / "run_rate_model_extensibility.py")]),
         ("rate_model_requirements", [python, str(TESTS_DIR / "run_rate_model_requirements.py")]),
         ("rate_search_requirements", [python, str(TESTS_DIR / "run_rate_search_requirements.py")]),
