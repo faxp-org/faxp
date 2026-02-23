@@ -79,6 +79,10 @@ def main() -> int:
         "mcp_watch_artifacts" in listed_checks.stdout.splitlines(),
         "conformance suite must include mcp_watch_artifacts in default checks",
     )
+    _assert(
+        "protocol_version_negotiation" in listed_checks.stdout.splitlines(),
+        "conformance suite must include protocol_version_negotiation in default checks",
+    )
 
     with tempfile.TemporaryDirectory(prefix="faxp-conformance-suite-") as temp_dir:
         output_path = Path(temp_dir) / "suite_report.json"
