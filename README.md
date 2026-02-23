@@ -14,6 +14,7 @@ This repository includes:
 ## Release Checkpoints
 
 - `v0.2.0-alpha.1`: `/Users/zglitch009/projects/logistics-ai/FAXP/RELEASE_NOTES_v0.2.0-alpha.1.md`
+- `v0.2.0-rc.1`: `/Users/zglitch009/projects/logistics-ai/FAXP/RELEASE_CANDIDATE_v0.2.0-rc.1.md`
 
 ## v0.2 Planning Artifacts
 
