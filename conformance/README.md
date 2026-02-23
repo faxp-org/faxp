@@ -206,6 +206,12 @@ MCP compatibility profile check:
 python3 tests/run_mcp_profile_check.py
 ```
 
+MCP watch artifact check:
+
+```bash
+python3 tests/run_mcp_watch_artifacts.py
+```
+
 MCP conformance one-command wrapper:
 
 ```bash

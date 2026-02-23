@@ -25,6 +25,8 @@ This repository includes:
 - A2A change management: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/A2A_CHANGE_MANAGEMENT.md`
 - A2A upstream tracking config: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/A2A_UPSTREAM_TRACKING.json`
 - MCP compatibility profile: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/MCP_COMPATIBILITY_PROFILE.md`
+- MCP change management: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/MCP_CHANGE_MANAGEMENT.md`
+- MCP upstream tracking config: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/MCP_UPSTREAM_TRACKING.json`
 - Implementation checklist: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/V2_IMPLEMENTATION_CHECKLIST.md`
 - Test matrix: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/TEST_MATRIX_v0.2.md`
 - Policy profiles (normative): `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/POLICY_PROFILES.md`
@@ -115,6 +117,14 @@ A2A bridge quick check:
 MCP interop quick check:
 ```bash
 ./scripts/run_mcp_conformance.sh
+```
+
+MCP upstream watch check:
+```bash
+python3 scripts/check_mcp_upstream.py \
+  --tracking docs/interop/MCP_UPSTREAM_TRACKING.json \
+  --output /tmp/mcp_watch_report.json \
+  --issue-body /tmp/mcp_watch_issue.md
 ```
 
 ## Runbook

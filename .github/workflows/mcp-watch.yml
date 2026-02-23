@@ -1,0 +1,97 @@
+name: MCP Upstream Watch
+
+on:
+  schedule:
+    - cron: "0 15 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run MCP upstream watch
+        id: watch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +e
+          python scripts/check_mcp_upstream.py \
+            --tracking docs/interop/MCP_UPSTREAM_TRACKING.json \
+            --output /tmp/mcp_watch_report.json \
+            --issue-body /tmp/mcp_watch_issue.md
+          code=$?
+
+          if [ -f /tmp/mcp_watch_report.json ]; then
+            has_drift="$(python -c "import json; print('true' if bool(json.load(open('/tmp/mcp_watch_report.json', 'r', encoding='utf-8')).get('hasDrift')) else 'false')")"
+            issue_title="$(python -c "import json; print(str(json.load(open('/tmp/mcp_watch_report.json', 'r', encoding='utf-8')).get('issueTitle') or '[MCP Watch] Upstream drift detected').replace('\\n', ' '))")"
+            echo "has_drift=${has_drift}" >> "$GITHUB_OUTPUT"
+            printf 'issue_title=%s\n' "$issue_title" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_drift=false" >> "$GITHUB_OUTPUT"
+            echo "issue_title=[MCP Watch] Upstream watch check failed" >> "$GITHUB_OUTPUT"
+          fi
+
+          if [ $code -ne 0 ]; then
+            echo "watch_failed=true" >> "$GITHUB_OUTPUT"
+            printf '%s\n' \
+              '## MCP Upstream Watch Failure' \
+              '' \
+              'The scheduled MCP upstream watch workflow failed before drift evaluation completed.' \
+              '' \
+              '### Required Actions' \
+              '1. Inspect workflow logs for failure details.' \
+              '2. Run local command:' \
+              '   `python3 scripts/check_mcp_upstream.py --tracking docs/interop/MCP_UPSTREAM_TRACKING.json --output /tmp/mcp_watch_report.json --issue-body /tmp/mcp_watch_issue.md`' \
+              '3. Fix the failure path and re-run workflow.' \
+              > /tmp/mcp_watch_issue.md
+          else
+            echo "watch_failed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          exit 0
+
+      - name: Open tracking issue when drift/failure is detected
+        if: steps.watch.outputs.has_drift == 'true' || steps.watch.outputs.watch_failed == 'true'
+        uses: actions/github-script@v7
+        env:
+          ISSUE_TITLE: ${{ steps.watch.outputs.issue_title }}
+          ISSUE_BODY_PATH: /tmp/mcp_watch_issue.md
+        with:
+          script: |
+            const fs = require('fs');
+            const title = process.env.ISSUE_TITLE || '[MCP Watch] Upstream drift detected';
+            const bodyPath = process.env.ISSUE_BODY_PATH || '/tmp/mcp_watch_issue.md';
+            const body = fs.existsSync(bodyPath)
+              ? fs.readFileSync(bodyPath, 'utf8')
+              : 'MCP watch detected an actionable change. See workflow logs.';
+
+            const { owner, repo } = context.repo;
+            const openIssues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: 'open',
+              per_page: 100,
+            });
+
+            const exists = openIssues.some((issue) => issue.title === title);
+            if (exists) {
+              core.info(`Issue already open: ${title}`);
+              return;
+            }
+
+            await github.rest.issues.create({ owner, repo, title, body });
+            core.info(`Created issue: ${title}`);

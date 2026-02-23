@@ -19,4 +19,7 @@ echo "[MCPConformance] Using Python: $PYTHON_BIN"
 echo "[MCPConformance] Running MCP profile contract checks..."
 "$PYTHON_BIN" "$PROJECT_DIR/tests/run_mcp_profile_check.py"
 
+echo "[MCPConformance] Running MCP watch artifact checks..."
+"$PYTHON_BIN" "$PROJECT_DIR/tests/run_mcp_watch_artifacts.py"
+
 echo "[MCPConformance] MCP conformance checks passed."
