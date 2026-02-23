@@ -36,19 +36,10 @@ jobs:
           code=$?
 
           if [ -f /tmp/a2a_watch_report.json ]; then
-            python - <<'PY'
-import json
-import os
-from pathlib import Path
-
-report = json.loads(Path('/tmp/a2a_watch_report.json').read_text(encoding='utf-8'))
-has_drift = bool(report.get('hasDrift'))
-issue_title = str(report.get('issueTitle') or '[A2A Watch] Upstream drift detected')
-
-with Path(os.environ['GITHUB_OUTPUT']).open('a', encoding='utf-8') as handle:
-    handle.write(f"has_drift={'true' if has_drift else 'false'}\n")
-    handle.write(f"issue_title={issue_title}\n")
-PY
+            has_drift="$(python -c "import json; print('true' if bool(json.load(open('/tmp/a2a_watch_report.json', 'r', encoding='utf-8')).get('hasDrift')) else 'false')")"
+            issue_title="$(python -c "import json; print(str(json.load(open('/tmp/a2a_watch_report.json', 'r', encoding='utf-8')).get('issueTitle') or '[A2A Watch] Upstream drift detected').replace('\\n', ' '))")"
+            echo "has_drift=${has_drift}" >> "$GITHUB_OUTPUT"
+            printf 'issue_title=%s\n' "$issue_title" >> "$GITHUB_OUTPUT"
           else
             echo "has_drift=false" >> "$GITHUB_OUTPUT"
             echo "issue_title=[A2A Watch] Upstream watch check failed" >> "$GITHUB_OUTPUT"
@@ -56,17 +47,17 @@ PY
 
           if [ $code -ne 0 ]; then
             echo "watch_failed=true" >> "$GITHUB_OUTPUT"
-            cat > /tmp/a2a_watch_issue.md <<'MD'
-## A2A Upstream Watch Failure
-
-The scheduled A2A upstream watch workflow failed before drift evaluation completed.
-
-### Required Actions
-1. Inspect workflow logs for failure details.
-2. Run local command:
-   `python3 scripts/check_a2a_upstream.py --tracking docs/interop/A2A_UPSTREAM_TRACKING.json --output /tmp/a2a_watch_report.json --issue-body /tmp/a2a_watch_issue.md`
-3. Fix the failure path and re-run workflow.
-MD
+            printf '%s\n' \
+              '## A2A Upstream Watch Failure' \
+              '' \
+              'The scheduled A2A upstream watch workflow failed before drift evaluation completed.' \
+              '' \
+              '### Required Actions' \
+              '1. Inspect workflow logs for failure details.' \
+              '2. Run local command:' \
+              '   `python3 scripts/check_a2a_upstream.py --tracking docs/interop/A2A_UPSTREAM_TRACKING.json --output /tmp/a2a_watch_report.json --issue-body /tmp/a2a_watch_issue.md`' \
+              '3. Fix the failure path and re-run workflow.' \
+              > /tmp/a2a_watch_issue.md
           else
             echo "watch_failed=false" >> "$GITHUB_OUTPUT"
           fi
