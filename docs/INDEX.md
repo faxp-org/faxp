@@ -25,6 +25,7 @@ This index keeps governance, roadmap, and release artifacts discoverable while k
 - `docs/rfc/RFC-v0.3-schema-version-negotiation.md`
 - `docs/rfc/RFC-v0.3-adapter-certification-profile-v2.md`
 - `docs/rfc/RFC-v0.3-provisional-booking-policy-contract.md`
+- `docs/rfc/RFC-v0.3-a2a-mcp-interop-maturity.md`
 
 ## Interop
 - `docs/interop/A2A_COMPATIBILITY_PROFILE.md`
