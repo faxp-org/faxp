@@ -193,6 +193,12 @@ A2A round-trip translator check:
 python3 tests/run_a2a_roundtrip_translation.py
 ```
 
+A2A conformance one-command wrapper:
+
+```bash
+./scripts/run_a2a_conformance.sh
+```
+
 Registry update request generation (signed):
 
 ```bash

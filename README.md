@@ -104,6 +104,11 @@ Planned lifecycle:
 Operational rule:
 - New integrations should write neutral fields first (`category`, `method`, `provider`, `assuranceLevel`, `evidenceRef`, `attestation`) and treat legacy fields as optional metadata.
 
+A2A bridge quick check:
+```bash
+./scripts/run_a2a_conformance.sh
+```
+
 ## Runbook
 
 ### 1) Local Setup (Recommended)

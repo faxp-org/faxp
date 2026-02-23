@@ -55,6 +55,7 @@ jobs:
             scripts/generate_faxp_keys.sh \
             scripts/rotate_faxp_keys.sh \
             scripts/incident_drill.sh \
+            scripts/run_a2a_conformance.sh \
             scripts/run_secure_demo.sh \
             conformance/quickstart/make_conformance_bundle.sh
 
@@ -65,6 +66,7 @@ jobs:
             scripts/generate_faxp_keys.sh \
             scripts/rotate_faxp_keys.sh \
             scripts/incident_drill.sh \
+            scripts/run_a2a_conformance.sh \
             scripts/run_secure_demo.sh \
             conformance/quickstart/make_conformance_bundle.sh
 

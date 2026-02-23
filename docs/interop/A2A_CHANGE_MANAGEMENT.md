@@ -33,13 +33,18 @@ This runbook defines how FAXP tracks upstream A2A changes while keeping FAXP cor
 1. Pull the profile + contract + fixture artifacts into your adapter project.
 2. Implement translator behavior equivalent to:
    - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/a2a_bridge_translator.py`
-3. Run local checks:
+3. Run one-command local checks:
+```bash
+cd /Users/zglitch009/projects/logistics-ai/FAXP
+./scripts/run_a2a_conformance.sh
+```
+4. Or run checks individually:
 ```bash
 cd /Users/zglitch009/projects/logistics-ai/FAXP
 python3 tests/run_a2a_profile_check.py
 python3 tests/run_a2a_roundtrip_translation.py
 ```
-4. Submit conformance artifacts with your certification bundle.
+5. Submit conformance artifacts with your certification bundle.
 
 ## Manual Command
 ```bash
