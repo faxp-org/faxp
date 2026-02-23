@@ -11,42 +11,58 @@ Scope policy: Booking-plane and certification governance only.
 3. Require security and conformance impact section.
 4. Require migration/backward-compatibility note for schema/runtime changes.
 5. Only after governance acceptance: move item into implementation checklist.
+6. Map each RFC item to at least one scenario in:
+   - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/V0_3_0_SCENARIO_CATALOG.md`
+7. Track open commercial requirements in:
+   - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/V0_3_0_COMMERCIAL_MODEL_BACKLOG.md`
 
 ## Priority Backlog
 
 1. `RFC-v0.3-rate-model-extensibility`
 - Goal: Extend booking-plane rate model taxonomy beyond `PerMile` and `Flat` while preserving backward compatibility.
 - Scope class: `In-Scope`
+- Status: `Draft` (Must-Have for v0.3.0)
+- Target: `v0.3.0`
 - Notes: Keep accessorial lifecycle consistent with current post-booking policy semantics.
 - Draft file: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-rate-model-extensibility.md`
 
 2. `RFC-v0.3-shipper-orchestration-minimal`
 - Goal: Wire existing ShipperAgent stub into an optional shipper -> broker -> carrier booking path.
 - Scope class: `In-Scope`
+- Status: `Draft` (Deferred to v0.3.x)
+- Target: `v0.3.x`
 - Notes: Preserve current broker-carrier happy path unchanged.
 - Draft file: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-shipper-orchestration-minimal.md`
 
 3. `RFC-v0.3-schema-version-negotiation`
 - Goal: Formalize version negotiation and compatibility behavior for mixed v0.2/v0.3 agents.
 - Scope class: `In-Scope`
+- Status: `Draft` (Must-Have for v0.3.0)
+- Target: `v0.3.0`
 - Notes: No transport lock-in; conformance tests required.
 - Draft file: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-schema-version-negotiation.md`
 
 4. `RFC-v0.3-adapter-certification-profile-v2`
 - Goal: Advance certification profile and registry policy requirements for builder-hosted adapters.
 - Scope class: `In-Scope`
+- Status: `Draft` (Deferred to v0.3.x)
+- Target: `v0.3.x`
 - Notes: Keep provider neutrality and no core vendor coupling.
 - Draft file: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-adapter-certification-profile-v2.md`
 
 5. `RFC-v0.3-provisional-booking-policy-contract`
 - Goal: Standardize policy semantics for `HardBlock`, `SoftHold`, and `GraceCache` outcomes.
 - Scope class: `In-Scope`
+- Status: `Draft` (Must-Have for v0.3.0)
+- Target: `v0.3.0`
 - Notes: Keep as policy/decision contract, not dispatch-state expansion.
 - Draft file: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-provisional-booking-policy-contract.md`
 
 6. `RFC-v0.3-a2a-mcp-interop-maturity`
 - Goal: Define maturity criteria for translator/tool evidence interoperability across A2A and MCP tracks.
 - Scope class: `In-Scope`
+- Status: `Draft` (Deferred to v0.3.x)
+- Target: `v0.3.x`
 - Notes: No mandatory A2A/MCP runtime dependency in FAXP core.
 - Draft file: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-a2a-mcp-interop-maturity.md`
 

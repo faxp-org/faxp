@@ -41,6 +41,9 @@ This index keeps governance, roadmap, and release artifacts discoverable while k
 - `docs/roadmap/FAXP_DEFERRED_ITEMS.md`
 - `docs/roadmap/V0_2_1_PATCH_PLAN.md`
 - `docs/roadmap/V0_3_0_RFC_BACKLOG.md`
+- `docs/roadmap/V0_3_0_GOVERNANCE_CHECKPOINT.md`
+- `docs/roadmap/V0_3_0_COMMERCIAL_MODEL_BACKLOG.md`
+- `docs/roadmap/V0_3_0_SCENARIO_CATALOG.md`
 
 ## Releases
 - `docs/releases/RELEASE_NOTES_v0.2.0-alpha.1.md`
