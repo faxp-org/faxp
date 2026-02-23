@@ -84,6 +84,10 @@ def main() -> int:
         "conformance suite must include rate_model_extensibility in default checks",
     )
     _assert(
+        "rate_model_requirements" in listed_checks.stdout.splitlines(),
+        "conformance suite must include rate_model_requirements in default checks",
+    )
+    _assert(
         "protocol_compatibility_profile" in listed_checks.stdout.splitlines(),
         "conformance suite must include protocol_compatibility_profile in default checks",
     )
