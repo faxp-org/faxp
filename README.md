@@ -26,6 +26,7 @@ This repository includes:
 - Active RFC draft: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-rate-model-extensibility.md`
 - Active RFC draft: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-shipper-orchestration-minimal.md`
 - Active RFC draft: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-schema-version-negotiation.md`
+- Active RFC draft: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-adapter-certification-profile-v2.md`
 
 ## v0.2 Planning Artifacts
 
