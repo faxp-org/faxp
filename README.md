@@ -15,6 +15,7 @@ This repository includes:
 
 - `v0.2.0-alpha.1`: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/releases/RELEASE_NOTES_v0.2.0-alpha.1.md`
 - `v0.2.0-rc.1`: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/releases/RELEASE_CANDIDATE_v0.2.0-rc.1.md`
+- `v0.2.0-rc.2`: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/releases/RELEASE_CANDIDATE_v0.2.0-rc.2.md`
 
 ## v0.2 Planning Artifacts
 
