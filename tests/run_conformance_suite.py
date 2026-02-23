@@ -51,6 +51,10 @@ def main() -> int:
         "decision_record_artifacts" in listed_checks.stdout.splitlines(),
         "conformance suite must include decision_record_artifacts in default checks",
     )
+    _assert(
+        "registry_changelog_artifacts" in listed_checks.stdout.splitlines(),
+        "conformance suite must include registry_changelog_artifacts in default checks",
+    )
 
     with tempfile.TemporaryDirectory(prefix="faxp-conformance-suite-") as temp_dir:
         output_path = Path(temp_dir) / "suite_report.json"

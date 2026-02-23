@@ -22,6 +22,8 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `registry_update_keys.sample.json`: test-only keyring for signing registry update requests.
 - `certification_registry.sample.after_update.json`: expected sample registry after applying `registry_update.sample.json`.
 - `../REGISTRY_ADMISSION_POLICY.md`: policy contract for admission/renewal/suspension criteria (normative block).
+- `../REGISTRY_CHANGELOG_POLICY.md`: policy contract for changelog integrity and cross-link requirements.
+- `registry_changelog.sample.json`: sample changelog aligned to registry update operations and snapshots.
 - `../CERTIFICATION_DECISION_RECORD_TEMPLATE.md`: decision artifact template for deterministic approval/rejection records.
 - `certification_decision_record.sample.json`: sample decision artifact aligned to template requirements.
 - `attestation_keys.sample.json`: test-only keyring for local/CI attestation verification.
@@ -142,6 +144,12 @@ Registry admission policy check:
 
 ```bash
 python3 tests/run_registry_admission_policy.py
+```
+
+Registry changelog artifact check:
+
+```bash
+python3 tests/run_registry_changelog_artifacts.py
 ```
 
 Certification decision record template check:

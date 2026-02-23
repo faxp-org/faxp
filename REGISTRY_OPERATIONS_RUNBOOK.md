@@ -32,9 +32,11 @@ Required artifacts:
 1. Base registry JSON (`conformance/certification_registry.sample.json` pattern).
 2. Registry update request JSON (`conformance/registry_update.sample.json` pattern).
 3. Registry update signing keyring (`conformance/registry_update_keys.sample.json` pattern for CI/local harness).
-4. Evidence references for security-impacting actions.
+4. Registry changelog JSON (`conformance/registry_changelog.sample.json` pattern).
+5. Evidence references for security-impacting actions.
 5. CI validation output from:
 - `python3 tests/run_registry_ops_artifacts.py`
+- `python3 tests/run_registry_changelog_artifacts.py`
 - `python3 tests/run_certification_artifacts.py`
 
 ## 3) Processing Workflow
@@ -63,6 +65,7 @@ Required artifacts:
 5. Post-merge audit:
 - Record `changeSetId` and resulting state in audit notes.
 - Confirm downstream consumers can ingest updated registry payload.
+- Update changelog artifact entry set and verify cross-links.
 
 ## 4) Transition Policy
 

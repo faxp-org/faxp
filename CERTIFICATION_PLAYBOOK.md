@@ -47,6 +47,7 @@ Reference paths:
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update_keys.sample.json`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/create_registry_update.py`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/REGISTRY_OPERATIONS_RUNBOOK.md`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/REGISTRY_CHANGELOG_POLICY.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/apply_registry_update.py`
 
 ## 3) Intake Workflow
@@ -60,6 +61,7 @@ Reference paths:
 - `python3 tests/run_create_submission_manifest.py`
 - `python3 tests/run_key_lifecycle_policy.py`
 - `python3 tests/run_registry_ops_artifacts.py`
+- `python3 tests/run_registry_changelog_artifacts.py`
 - `python3 tests/run_apply_registry_update.py`
 - `python3 tests/run_create_registry_update.py`
 - `python3 tests/run_conformance_suite.py`
@@ -98,6 +100,9 @@ Mandatory gates:
 7. Decision record artifact checks pass:
 - `python3 tests/run_decision_record_artifacts.py`
 - Sample/active decision record cross-links are coherent with conformance + registry artifacts.
+8. Registry changelog artifact checks pass:
+- `python3 tests/run_registry_changelog_artifacts.py`
+- Changelog entries match update operations and snapshot end state.
 
 Additional gates for `TrustedProduction`:
 1. Operational evidence references are present in manifest.

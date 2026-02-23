@@ -1,0 +1,56 @@
+{
+  "changelogVersion": "1.0.0",
+  "generatedAt": "2026-02-22T02:30:00Z",
+  "changeSetId": "faxp-regops-20260222-0001",
+  "requestRef": "conformance/registry_update.sample.json",
+  "auditTrailRef": "conformance/registry_update.sample.audit.log",
+  "decisionRecordRef": "conformance/certification_decision_record.sample.json",
+  "registrySnapshotBeforeRef": "conformance/certification_registry.sample.json",
+  "registrySnapshotAfterRef": "conformance/certification_registry.sample.after_update.json",
+  "entries": [
+    {
+      "changeId": "chg-001",
+      "opId": "op-001",
+      "action": "UPSERT",
+      "adapterId": "sample-fmcsa-adapter-us-prod",
+      "reasonCode": "EXPIRY_RENEWAL",
+      "effectiveAt": "2026-02-22T00:05:00Z",
+      "statusBefore": "Active",
+      "statusAfter": "Active",
+      "tierBefore": "Conformant",
+      "tierAfter": "TrustedProduction",
+      "status": "Applied",
+      "notes": "Renewal/promotion operation applied."
+    },
+    {
+      "changeId": "chg-002",
+      "opId": "op-002",
+      "action": "REVOKE",
+      "adapterId": "sample-fmcsa-adapter-us-prod",
+      "reasonCode": "KEY_COMPROMISE",
+      "effectiveAt": "2026-02-22T01:10:00Z",
+      "statusBefore": "Active",
+      "statusAfter": "Revoked",
+      "tierBefore": "TrustedProduction",
+      "tierAfter": "TrustedProduction",
+      "status": "Applied",
+      "notes": "Emergency revoke operation applied."
+    },
+    {
+      "changeId": "chg-003",
+      "opId": "op-003",
+      "action": "ROLLBACK",
+      "adapterId": "sample-fmcsa-adapter-us-prod",
+      "reasonCode": "ERRONEOUS_ACTION",
+      "effectiveAt": "2026-02-22T02:30:00Z",
+      "rollbackTargetOpId": "op-002",
+      "statusBefore": "Revoked",
+      "statusAfter": "Active",
+      "tierBefore": "TrustedProduction",
+      "tierAfter": "TrustedProduction",
+      "status": "Applied",
+      "notes": "Rollback operation restored active status."
+    }
+  ],
+  "notes": "Sample changelog matching registry update sample and resulting snapshot."
+}
