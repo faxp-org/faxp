@@ -6,6 +6,7 @@ This index keeps governance, roadmap, and release artifacts discoverable while k
 - `docs/governance/FAXP_GOVERNANCE_MODEL.md`
 - `docs/governance/SCOPE_GUARDRAILS.md`
 - `docs/governance/DECISION_RECORD_a2a-bridge-translator-only_2026-02-23.md`
+- `docs/governance/DECISION_RECORD_a2a-mcp-interop-boundary_2026-02-23.md`
 - `docs/governance/POLICY_PROFILES.md`
 - `docs/governance/REGISTRY_ADMISSION_POLICY.md`
 - `docs/governance/REGISTRY_CHANGELOG_POLICY.md`
@@ -36,6 +37,8 @@ This index keeps governance, roadmap, and release artifacts discoverable while k
 ## Releases
 - `docs/releases/RELEASE_NOTES_v0.2.0-alpha.1.md`
 - `docs/releases/RELEASE_CANDIDATE_v0.2.0-rc.1.md`
+- `docs/releases/RELEASE_CANDIDATE_v0.2.0-rc.2.md`
+- `docs/releases/RELEASE_CANDIDATE_v0.2.0-rc.3.md`
 
 ## Adapter Guidance
 - `docs/adapters/ADAPTER_IMPLEMENTER_HANDOFF.md`
