@@ -25,6 +25,7 @@ This repository includes:
 - `v0.3.0` RFC backlog (planning-only): `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/V0_3_0_RFC_BACKLOG.md`
 - Active RFC draft: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-rate-model-extensibility.md`
 - Active RFC draft: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-shipper-orchestration-minimal.md`
+- Active RFC draft: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-schema-version-negotiation.md`
 
 ## v0.2 Planning Artifacts
 
