@@ -1394,16 +1394,19 @@ def counter_amount(rate_model, floor_amount):
     return round(floor_amount + 0.16, 2)
 
 
+def default_unit_basis(rate_model):
+    return str((RATE_MODEL_CATALOG.get(rate_model) or {}).get("unitBasis") or "")
+
+
 def build_rate(rate_model, amount, **metadata):
     rate = {
         "RateModel": rate_model,
         "Amount": round(float(amount), 2),
         "Currency": "USD",
     }
-    catalog = RATE_MODEL_CATALOG.get(rate_model) or {}
-    default_unit_basis = catalog.get("unitBasis")
-    if default_unit_basis and "UnitBasis" not in metadata:
-        rate["UnitBasis"] = default_unit_basis
+    fallback_unit_basis = default_unit_basis(rate_model)
+    if fallback_unit_basis and "UnitBasis" not in metadata:
+        rate["UnitBasis"] = fallback_unit_basis
     for key, value in metadata.items():
         if value is not None:
             rate[key] = value
@@ -1586,6 +1589,17 @@ def _validate_rate_model_requirements(rate, context):
             raise ValueError(
                 f"{context}.UnitBasis must be one of {allowed_unit_basis} for RateModel '{model}'."
             )
+
+
+def _validate_rate_search_requirements(search_body, context):
+    model = search_body["RateModel"]
+    rate_stub = {"RateModel": model}
+    if "UnitBasis" in search_body:
+        rate_stub["UnitBasis"] = search_body["UnitBasis"]
+    _validate_rate_model_requirements(
+        rate_stub,
+        context,
+    )
 
 
 def _validate_rate_object(rate, context):
@@ -2021,6 +2035,7 @@ def validate_message_body(message_type, body):
         _validate_iso_date(body["PickupDate"], "LoadSearch.PickupDate")
         if not isinstance(body["MaxRate"], (int, float)) or body["MaxRate"] < 0:
             raise ValueError("LoadSearch.MaxRate must be a non-negative number.")
+        _validate_rate_search_requirements(body, "LoadSearch")
         return
 
     if message_type == "NewTruck":
@@ -2073,6 +2088,7 @@ def validate_message_body(message_type, body):
         for field in ["LocationRadiusMiles", "MinRate", "MaxRate"]:
             if not isinstance(body[field], (int, float)) or body[field] < 0:
                 raise ValueError(f"TruckSearch.{field} must be a non-negative number.")
+        _validate_rate_search_requirements(body, "TruckSearch")
         return
 
     if message_type == "BidRequest":
@@ -3007,6 +3023,7 @@ class BrokerAgent:
             "AvailableFrom": target_date,
             "AvailableTo": (date.today() + timedelta(days=3)).isoformat(),
             "RateModel": rate_model,
+            "UnitBasis": default_unit_basis(rate_model),
             "MinRate": default_floor_amount(rate_model),
             "MaxRate": default_search_max(rate_model),
         }
@@ -3073,6 +3090,7 @@ class CarrierAgent:
             "EquipmentType": "Reefer",
             "PickupDate": target_pickup,
             "RateModel": rate_model,
+            "UnitBasis": default_unit_basis(rate_model),
             "MaxRate": default_search_max(rate_model),
             "RequireTracking": True,
         }
