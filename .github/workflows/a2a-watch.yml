@@ -1,0 +1,106 @@
+name: A2A Upstream Watch
+
+on:
+  schedule:
+    - cron: "0 14 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run A2A upstream watch
+        id: watch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +e
+          python scripts/check_a2a_upstream.py \
+            --tracking docs/interop/A2A_UPSTREAM_TRACKING.json \
+            --output /tmp/a2a_watch_report.json \
+            --issue-body /tmp/a2a_watch_issue.md
+          code=$?
+
+          if [ -f /tmp/a2a_watch_report.json ]; then
+            python - <<'PY'
+import json
+import os
+from pathlib import Path
+
+report = json.loads(Path('/tmp/a2a_watch_report.json').read_text(encoding='utf-8'))
+has_drift = bool(report.get('hasDrift'))
+issue_title = str(report.get('issueTitle') or '[A2A Watch] Upstream drift detected')
+
+with Path(os.environ['GITHUB_OUTPUT']).open('a', encoding='utf-8') as handle:
+    handle.write(f"has_drift={'true' if has_drift else 'false'}\n")
+    handle.write(f"issue_title={issue_title}\n")
+PY
+          else
+            echo "has_drift=false" >> "$GITHUB_OUTPUT"
+            echo "issue_title=[A2A Watch] Upstream watch check failed" >> "$GITHUB_OUTPUT"
+          fi
+
+          if [ $code -ne 0 ]; then
+            echo "watch_failed=true" >> "$GITHUB_OUTPUT"
+            cat > /tmp/a2a_watch_issue.md <<'MD'
+## A2A Upstream Watch Failure
+
+The scheduled A2A upstream watch workflow failed before drift evaluation completed.
+
+### Required Actions
+1. Inspect workflow logs for failure details.
+2. Run local command:
+   `python3 scripts/check_a2a_upstream.py --tracking docs/interop/A2A_UPSTREAM_TRACKING.json --output /tmp/a2a_watch_report.json --issue-body /tmp/a2a_watch_issue.md`
+3. Fix the failure path and re-run workflow.
+MD
+          else
+            echo "watch_failed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          exit 0
+
+      - name: Open tracking issue when drift/failure is detected
+        if: steps.watch.outputs.has_drift == 'true' || steps.watch.outputs.watch_failed == 'true'
+        uses: actions/github-script@v7
+        env:
+          ISSUE_TITLE: ${{ steps.watch.outputs.issue_title }}
+          ISSUE_BODY_PATH: /tmp/a2a_watch_issue.md
+        with:
+          script: |
+            const fs = require('fs');
+            const title = process.env.ISSUE_TITLE || '[A2A Watch] Upstream drift detected';
+            const bodyPath = process.env.ISSUE_BODY_PATH || '/tmp/a2a_watch_issue.md';
+            const body = fs.existsSync(bodyPath)
+              ? fs.readFileSync(bodyPath, 'utf8')
+              : 'A2A watch detected an actionable change. See workflow logs.';
+
+            const { owner, repo } = context.repo;
+            const openIssues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: 'open',
+              per_page: 100,
+            });
+
+            const exists = openIssues.some((issue) => issue.title === title);
+            if (exists) {
+              core.info(`Issue already open: ${title}`);
+              return;
+            }
+
+            await github.rest.issues.create({ owner, repo, title, body });
+            core.info(`Created issue: ${title}`);

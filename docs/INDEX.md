@@ -5,6 +5,7 @@ This index keeps governance, roadmap, and release artifacts discoverable while k
 ## Governance
 - `docs/governance/FAXP_GOVERNANCE_MODEL.md`
 - `docs/governance/SCOPE_GUARDRAILS.md`
+- `docs/governance/DECISION_RECORD_a2a-bridge-translator-only_2026-02-23.md`
 - `docs/governance/POLICY_PROFILES.md`
 - `docs/governance/REGISTRY_ADMISSION_POLICY.md`
 - `docs/governance/REGISTRY_CHANGELOG_POLICY.md`
@@ -21,6 +22,8 @@ This index keeps governance, roadmap, and release artifacts discoverable while k
 
 ## Interop
 - `docs/interop/A2A_COMPATIBILITY_PROFILE.md`
+- `docs/interop/A2A_CHANGE_MANAGEMENT.md`
+- `docs/interop/A2A_UPSTREAM_TRACKING.json`
 
 ## Roadmap
 - `docs/roadmap/V2_IMPLEMENTATION_CHECKLIST.md`

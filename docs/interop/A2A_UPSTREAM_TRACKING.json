@@ -1,0 +1,10 @@
+{
+  "trackingVersion": "1.0.0",
+  "upstreamRepo": "a2aproject/A2A",
+  "trackedRef": "v0.3.0",
+  "trackedRefType": "tag",
+  "reviewCadence": "Weekly",
+  "lastReviewedAt": "2026-02-23T00:00:00Z",
+  "owner": "FAXP Governance Working Group",
+  "notes": "Baseline reference for automated A2A upstream drift monitoring."
+}

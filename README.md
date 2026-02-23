@@ -21,6 +21,8 @@ This repository includes:
 - Docs index: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/INDEX.md`
 - RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.2-verification-neutrality.md`
 - A2A compatibility profile: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/A2A_COMPATIBILITY_PROFILE.md`
+- A2A change management: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/A2A_CHANGE_MANAGEMENT.md`
+- A2A upstream tracking config: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/A2A_UPSTREAM_TRACKING.json`
 - Implementation checklist: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/V2_IMPLEMENTATION_CHECKLIST.md`
 - Test matrix: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/TEST_MATRIX_v0.2.md`
 - Policy profiles (normative): `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/POLICY_PROFILES.md`
