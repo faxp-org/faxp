@@ -22,6 +22,7 @@ This index keeps governance, roadmap, and release artifacts discoverable while k
 - `docs/rfc/RFC-v0.2-verification-neutrality.md`
 - `docs/rfc/RFC-v0.3-rate-model-extensibility.md`
 - `docs/rfc/RFC-v0.3-shipper-orchestration-minimal.md`
+- `docs/rfc/RFC-v0.3-schema-version-negotiation.md`
 
 ## Interop
 - `docs/interop/A2A_COMPATIBILITY_PROFILE.md`
