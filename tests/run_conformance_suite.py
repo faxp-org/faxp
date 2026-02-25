@@ -123,6 +123,10 @@ def main() -> int:
         "vendor_direct_profile" in listed_checks.stdout.splitlines(),
         "conformance suite must include vendor_direct_profile in default checks",
     )
+    _assert(
+        "trust_profile" in listed_checks.stdout.splitlines(),
+        "conformance suite must include trust_profile in default checks",
+    )
 
     with tempfile.TemporaryDirectory(prefix="faxp-conformance-suite-") as temp_dir:
         output_path = Path(temp_dir) / "suite_report.json"

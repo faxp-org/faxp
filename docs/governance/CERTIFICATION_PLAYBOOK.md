@@ -51,12 +51,14 @@ Reference paths:
 - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/REGISTRY_OPERATIONS_RUNBOOK.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/REGISTRY_CHANGELOG_POLICY.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/TRUSTED_VERIFIER_ADMISSION_REQUIREMENTS.md`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/TRUST_MODEL.md`
 - `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/GOVERNANCE_INDEX.json`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/RELEASE_READINESS_CHECKLIST.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/apply_registry_update.py`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/trusted_verifier_registry.sample.json`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/vendor_direct_verifier_profile.v1.json`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/trust_profile.v1.json`
 
 ## 3) Intake Workflow
 
@@ -72,6 +74,7 @@ Reference paths:
 - `python3 tests/run_registry_changelog_artifacts.py`
 - `python3 tests/run_trusted_verifier_registry.py`
 - `python3 tests/run_vendor_direct_profile.py`
+- `python3 tests/run_trust_profile.py`
 - `python3 tests/run_governance_index.py`
 - `python3 tests/run_release_readiness.py`
 - `python3 tests/run_apply_registry_update.py`
@@ -127,6 +130,9 @@ Mandatory gates:
 12. Vendor-direct profile checks pass:
 - `python3 tests/run_vendor_direct_profile.py`
 - vendor-direct profile artifact and trusted-registry alignment are valid for non-local certification policy.
+13. Trust profile checks pass:
+- `python3 tests/run_trust_profile.py`
+- trust profile artifact remains aligned with registry policy, source class semantics, and non-local trust requirements.
 
 Additional gates for `TrustedProduction`:
 1. Operational evidence references are present in manifest.
