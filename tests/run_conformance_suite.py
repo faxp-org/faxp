@@ -100,6 +100,10 @@ def main() -> int:
         "conformance suite must include rate_search_requirements in default checks",
     )
     _assert(
+        "accessorial_terms" in listed_checks.stdout.splitlines(),
+        "conformance suite must include accessorial_terms in default checks",
+    )
+    _assert(
         "protocol_compatibility_profile" in listed_checks.stdout.splitlines(),
         "conformance suite must include protocol_compatibility_profile in default checks",
     )

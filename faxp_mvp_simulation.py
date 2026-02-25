@@ -1578,6 +1578,15 @@ VALID_VERIFIED_BADGES = {"None", "Basic", "Premium"}
 VALID_VERIFICATION_STATUSES = {"Success", "Fail", "Pending"}
 VALID_VERIFICATION_MODES = {"Live", "Cached", "Fallback"}
 VALID_DISPATCH_AUTHORIZATIONS = {"Allowed", "Hold", "Blocked"}
+VALID_ACCESSORIAL_PRICING_MODES = {
+    "IncludedInBaseRate",
+    "Reimbursable",
+    "PassThrough",
+    "TBD",
+}
+VALID_ACCESSORIAL_PARTIES = {"Broker", "Carrier", "Shipper", "Vendor", "Unknown"}
+VALID_ACCESSORIAL_EVIDENCE_TYPES = {"Receipt", "Permit", "EscortInvoice", "Other"}
+VALID_ACCESSORIAL_STATUSES = {"Pending", "Approved", "Rejected", "TBD"}
 FORBIDDEN_BIOMETRIC_FIELDS = {
     "faceimage",
     "selfieimage",
@@ -1714,6 +1723,147 @@ def _validate_rate_object(rate, context):
         raise ValueError(f"{context}.Currency must be USD for v0.1.1.")
     _validate_rate_extensions(rate, context)
     _validate_rate_model_requirements(rate, context)
+
+
+def _validate_accessorial_term(term, context):
+    if not isinstance(term, dict):
+        raise ValueError(f"{context} must be an object.")
+    _require_fields(term, ["Type", "PricingMode"], context)
+    _bounded_string(term["Type"], f"{context}.Type")
+    _bounded_string(term["PricingMode"], f"{context}.PricingMode")
+    if term["PricingMode"] not in VALID_ACCESSORIAL_PRICING_MODES:
+        raise ValueError(
+            f"{context}.PricingMode must be one of {sorted(VALID_ACCESSORIAL_PRICING_MODES)}."
+        )
+
+    for field in ["PayerParty", "PayeeParty"]:
+        if field in term:
+            _bounded_string(term[field], f"{context}.{field}")
+            if term[field] not in VALID_ACCESSORIAL_PARTIES:
+                raise ValueError(
+                    f"{context}.{field} must be one of {sorted(VALID_ACCESSORIAL_PARTIES)}."
+                )
+
+    if term["PricingMode"] in {"Reimbursable", "PassThrough", "TBD"}:
+        _require_fields(term, ["PayerParty", "PayeeParty"], context)
+
+    for field in ["ApprovalRequired", "EvidenceRequired"]:
+        if field in term and not isinstance(term[field], bool):
+            raise ValueError(f"{context}.{field} must be boolean.")
+
+    if "EvidenceType" in term:
+        _bounded_string(term["EvidenceType"], f"{context}.EvidenceType")
+        if term["EvidenceType"] not in VALID_ACCESSORIAL_EVIDENCE_TYPES:
+            raise ValueError(
+                f"{context}.EvidenceType must be one of {sorted(VALID_ACCESSORIAL_EVIDENCE_TYPES)}."
+            )
+
+    if term.get("EvidenceRequired") is True and "EvidenceType" not in term:
+        raise ValueError(f"{context}.EvidenceType is required when EvidenceRequired is true.")
+
+    if "CapAmount" in term:
+        value = term["CapAmount"]
+        if not isinstance(value, (int, float)) or value < 0:
+            raise ValueError(f"{context}.CapAmount must be a non-negative number.")
+    if "Currency" in term:
+        _bounded_string(term["Currency"], f"{context}.Currency")
+        if term["Currency"] != "USD":
+            raise ValueError(f"{context}.Currency must be USD for v0.1.1.")
+    if "SettlementReference" in term:
+        _bounded_string(term["SettlementReference"], f"{context}.SettlementReference")
+    if "Notes" in term:
+        _bounded_string(term["Notes"], f"{context}.Notes")
+
+
+def _validate_accessorial_policy(policy, context):
+    if not isinstance(policy, dict):
+        raise ValueError(f"{context} must be an object.")
+    _require_fields(policy, ["AllowedTypes", "RequiresApproval", "Currency"], context)
+    if not isinstance(policy["AllowedTypes"], list) or not policy["AllowedTypes"]:
+        raise ValueError(f"{context}.AllowedTypes must be a non-empty array.")
+    allowed_types = []
+    for idx, item in enumerate(policy["AllowedTypes"]):
+        _bounded_string(item, f"{context}.AllowedTypes[{idx}]")
+        allowed_types.append(item)
+    if len(allowed_types) != len(set(allowed_types)):
+        raise ValueError(f"{context}.AllowedTypes must not contain duplicates.")
+    if not isinstance(policy["RequiresApproval"], bool):
+        raise ValueError(f"{context}.RequiresApproval must be boolean.")
+    _bounded_string(policy["Currency"], f"{context}.Currency")
+    if policy["Currency"] != "USD":
+        raise ValueError(f"{context}.Currency must be USD for v0.1.1.")
+
+    if "MaxTotal" in policy:
+        value = policy["MaxTotal"]
+        if not isinstance(value, (int, float)) or value < 0:
+            raise ValueError(f"{context}.MaxTotal must be a non-negative number.")
+
+    terms = policy.get("Terms")
+    if terms is None:
+        return
+    if not isinstance(terms, list):
+        raise ValueError(f"{context}.Terms must be an array.")
+    for idx, term in enumerate(terms):
+        item_context = f"{context}.Terms[{idx}]"
+        _validate_accessorial_term(term, item_context)
+        if term["Type"] not in allowed_types:
+            raise ValueError(f"{item_context}.Type must be present in {context}.AllowedTypes.")
+
+
+def _validate_accessorial_policy_acceptance(acceptance, context):
+    if not isinstance(acceptance, dict):
+        raise ValueError(f"{context} must be an object.")
+    _require_fields(acceptance, ["Accepted"], context)
+    if not isinstance(acceptance["Accepted"], bool):
+        raise ValueError(f"{context}.Accepted must be boolean.")
+
+    if "AllowedTypes" in acceptance:
+        if not isinstance(acceptance["AllowedTypes"], list):
+            raise ValueError(f"{context}.AllowedTypes must be an array.")
+        for idx, item in enumerate(acceptance["AllowedTypes"]):
+            _bounded_string(item, f"{context}.AllowedTypes[{idx}]")
+
+    if "AcceptedTerms" in acceptance:
+        if not isinstance(acceptance["AcceptedTerms"], list):
+            raise ValueError(f"{context}.AcceptedTerms must be an array.")
+        for idx, term in enumerate(acceptance["AcceptedTerms"]):
+            _validate_accessorial_term(term, f"{context}.AcceptedTerms[{idx}]")
+
+
+def _validate_accessorial_entries(accessorials, context, allowed_types=None):
+    if not isinstance(accessorials, list):
+        raise ValueError(f"{context} must be an array.")
+    allowed = set(allowed_types or [])
+    for idx, item in enumerate(accessorials):
+        item_context = f"{context}[{idx}]"
+        if not isinstance(item, dict):
+            raise ValueError(f"{item_context} must be an object.")
+        _require_fields(item, ["Type"], item_context)
+        _bounded_string(item["Type"], f"{item_context}.Type")
+        if allowed and item["Type"] not in allowed:
+            raise ValueError(f"{item_context}.Type must be present in AccessorialPolicy.AllowedTypes.")
+        if "Amount" in item:
+            value = item["Amount"]
+            if not isinstance(value, (int, float)) or value < 0:
+                raise ValueError(f"{item_context}.Amount must be a non-negative number.")
+        if "Currency" in item:
+            _bounded_string(item["Currency"], f"{item_context}.Currency")
+            if item["Currency"] != "USD":
+                raise ValueError(f"{item_context}.Currency must be USD for v0.1.1.")
+        if "Status" in item:
+            _bounded_string(item["Status"], f"{item_context}.Status")
+            if item["Status"] not in VALID_ACCESSORIAL_STATUSES:
+                raise ValueError(
+                    f"{item_context}.Status must be one of {sorted(VALID_ACCESSORIAL_STATUSES)}."
+                )
+        if "ApprovedAt" in item:
+            _validate_iso_datetime(item["ApprovedAt"], f"{item_context}.ApprovedAt")
+        if "EvidenceRef" in item:
+            _bounded_string(item["EvidenceRef"], f"{item_context}.EvidenceRef")
+        if "SettlementReference" in item:
+            _bounded_string(item["SettlementReference"], f"{item_context}.SettlementReference")
+        if "Note" in item:
+            _bounded_string(item["Note"], f"{item_context}.Note")
 
 
 def _contains_forbidden_biometric_field(value):
@@ -2205,6 +2355,14 @@ def validate_message_body(message_type, body):
             raise ValueError("NewLoad.Weight must be a positive number.")
         if not isinstance(body["RequireTracking"], bool):
             raise ValueError("NewLoad.RequireTracking must be boolean.")
+        if "AccessorialPolicy" in body:
+            _validate_accessorial_policy(body["AccessorialPolicy"], "NewLoad.AccessorialPolicy")
+        if "Accessorials" in body:
+            allowed_types = []
+            policy = body.get("AccessorialPolicy")
+            if isinstance(policy, dict):
+                allowed_types = policy.get("AllowedTypes") or []
+            _validate_accessorial_entries(body["Accessorials"], "NewLoad.Accessorials", allowed_types)
         return
 
     if message_type == "LoadSearch":
@@ -2287,6 +2445,11 @@ def validate_message_body(message_type, body):
             _bounded_string(body["LoadID"], "BidRequest.LoadID")
         if has_truck_id:
             _bounded_string(body["TruckID"], "BidRequest.TruckID")
+        if "AccessorialPolicyAcceptance" in body:
+            _validate_accessorial_policy_acceptance(
+                body["AccessorialPolicyAcceptance"],
+                "BidRequest.AccessorialPolicyAcceptance",
+            )
         return
 
     if message_type == "BidResponse":
@@ -2332,6 +2495,18 @@ def validate_message_body(message_type, body):
             )
         if "AgreedRate" in body:
             _validate_rate_object(body["AgreedRate"], "ExecutionReport.AgreedRate")
+        if "AccessorialPolicy" in body:
+            _validate_accessorial_policy(body["AccessorialPolicy"], "ExecutionReport.AccessorialPolicy")
+        if "Accessorials" in body:
+            allowed_types = []
+            policy = body.get("AccessorialPolicy")
+            if isinstance(policy, dict):
+                allowed_types = policy.get("AllowedTypes") or []
+            _validate_accessorial_entries(
+                body["Accessorials"],
+                "ExecutionReport.Accessorials",
+                allowed_types,
+            )
         _bounded_string(body["ContractID"], "ExecutionReport.ContractID")
         _validate_iso_datetime(body["Timestamp"], "ExecutionReport.Timestamp")
         _validate_verification_result(body["VerificationResult"], "ExecutionReport.VerificationResult")
@@ -3130,10 +3305,43 @@ class BrokerAgent:
             "Commodity": "Frozen Poultry",
             "Rate": build_rate(rate_model, floor_amount),
             "AccessorialPolicy": {
-                "AllowedTypes": ["UnloadingFee"],
+                "AllowedTypes": ["UnloadingFee", "OverweightPermit", "EscortVehicle"],
                 "RequiresApproval": True,
                 "MaxTotal": 300.0,
                 "Currency": "USD",
+                "Terms": [
+                    {
+                        "Type": "UnloadingFee",
+                        "PricingMode": "Reimbursable",
+                        "PayerParty": "Broker",
+                        "PayeeParty": "Carrier",
+                        "ApprovalRequired": True,
+                        "EvidenceRequired": True,
+                        "EvidenceType": "Receipt",
+                        "CapAmount": 300.0,
+                        "Currency": "USD",
+                    },
+                    {
+                        "Type": "OverweightPermit",
+                        "PricingMode": "PassThrough",
+                        "PayerParty": "Broker",
+                        "PayeeParty": "Carrier",
+                        "ApprovalRequired": True,
+                        "EvidenceRequired": True,
+                        "EvidenceType": "Permit",
+                        "Currency": "USD",
+                    },
+                    {
+                        "Type": "EscortVehicle",
+                        "PricingMode": "TBD",
+                        "PayerParty": "Broker",
+                        "PayeeParty": "Vendor",
+                        "ApprovalRequired": True,
+                        "EvidenceRequired": True,
+                        "EvidenceType": "EscortInvoice",
+                        "Currency": "USD",
+                    },
+                ],
             },
             # Charges are intentionally empty at booking time; they can be approved later.
             "Accessorials": [],
@@ -3335,7 +3543,7 @@ class CarrierAgent:
             "AvailabilityDate": (date.today() + timedelta(days=2)).isoformat(),
             "AccessorialPolicyAcceptance": {
                 "Accepted": True,
-                "AllowedTypes": ["UnloadingFee"],
+                "AllowedTypes": ["UnloadingFee", "OverweightPermit", "EscortVehicle"],
             },
         }
 
@@ -3455,10 +3663,43 @@ class ShipperAgent:
             "Commodity": "Packaged Foods",
             "Rate": build_rate("PerMile", 2.15),
             "AccessorialPolicy": {
-                "AllowedTypes": ["UnloadingFee"],
+                "AllowedTypes": ["UnloadingFee", "OverweightPermit", "EscortVehicle"],
                 "RequiresApproval": True,
                 "MaxTotal": 300.0,
                 "Currency": "USD",
+                "Terms": [
+                    {
+                        "Type": "UnloadingFee",
+                        "PricingMode": "Reimbursable",
+                        "PayerParty": "Broker",
+                        "PayeeParty": "Carrier",
+                        "ApprovalRequired": True,
+                        "EvidenceRequired": True,
+                        "EvidenceType": "Receipt",
+                        "CapAmount": 300.0,
+                        "Currency": "USD",
+                    },
+                    {
+                        "Type": "OverweightPermit",
+                        "PricingMode": "PassThrough",
+                        "PayerParty": "Broker",
+                        "PayeeParty": "Carrier",
+                        "ApprovalRequired": True,
+                        "EvidenceRequired": True,
+                        "EvidenceType": "Permit",
+                        "Currency": "USD",
+                    },
+                    {
+                        "Type": "EscortVehicle",
+                        "PricingMode": "TBD",
+                        "PayerParty": "Broker",
+                        "PayeeParty": "Vendor",
+                        "ApprovalRequired": True,
+                        "EvidenceRequired": True,
+                        "EvidenceType": "EscortInvoice",
+                        "Currency": "USD",
+                    },
+                ],
             },
             "Accessorials": [],
             "RequireTracking": True,

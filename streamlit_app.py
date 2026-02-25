@@ -289,6 +289,12 @@ def approve_accessorial(accessorial_type, amount, note):
         st.session_state.status_line = f"Accessorial exceeds policy max (${max_total:.2f})."
         return
 
+    term_metadata = {}
+    for term in policy.get("Terms", []):
+        if isinstance(term, dict) and term.get("Type") == accessorial_type:
+            term_metadata = term
+            break
+
     report["Accessorials"].append(
         {
             "Type": accessorial_type,
@@ -296,6 +302,11 @@ def approve_accessorial(accessorial_type, amount, note):
             "Currency": policy.get("Currency", "USD"),
             "Status": "Approved",
             "ApprovedAt": now_utc(),
+            "PricingMode": term_metadata.get("PricingMode", "Reimbursable"),
+            "PayerParty": term_metadata.get("PayerParty", "Broker"),
+            "PayeeParty": term_metadata.get("PayeeParty", "Carrier"),
+            "EvidenceRequired": bool(term_metadata.get("EvidenceRequired", False)),
+            "EvidenceType": term_metadata.get("EvidenceType", "Other"),
             "Note": note.strip(),
         }
     )
