@@ -10,6 +10,7 @@ This policy defines minimum admission criteria for verifier providers whose atte
 ## Scope
 - Applies to trusted verifier registry artifacts:
   - `conformance/trusted_verifier_registry.sample.json`
+  - `conformance/vendor_direct_verifier_profile.v1.json`
 - Applies to non-local runtime enforcement paths in protocol and Streamlit demo.
 - Applies to certification review for builder-hosted compliance and identity adapters.
 - Does not require FAXP foundation to host verifier infrastructure.
@@ -48,6 +49,7 @@ This policy defines minimum admission criteria for verifier providers whose atte
 ## Required Test Evidence
 
 - `tests/run_trusted_verifier_registry.py`
+- `tests/run_vendor_direct_profile.py`
 - `conformance/run_all_checks.py` includes `trusted_verifier_registry`
 - CI workflow runs trusted verifier registry checks
 

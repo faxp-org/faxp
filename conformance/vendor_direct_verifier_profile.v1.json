@@ -1,0 +1,56 @@
+{
+  "profileVersion": "1.0.0",
+  "protocol": "FAXP",
+  "profileId": "vendor-direct-verifier.v1",
+  "sourceClass": "vendor-direct",
+  "description": "Canonical contract for vendor-direct verifier attestations in non-local FAXP runs.",
+  "allowedProviderTypes": [
+    "Compliance",
+    "Identity"
+  ],
+  "minimumAssuranceLevel": "AAL1",
+  "requiredVerificationResultFields": [
+    "status",
+    "provider",
+    "source",
+    "provenance",
+    "assuranceLevel",
+    "score",
+    "token",
+    "evidenceRef",
+    "verifiedAt",
+    "attestation"
+  ],
+  "attestationRequirements": {
+    "requireSignedAttestation": true,
+    "requiredFields": [
+      "alg",
+      "kid",
+      "sig"
+    ],
+    "allowedAlgorithms": [
+      "HMAC_SHA256",
+      "ED25519"
+    ]
+  },
+  "nonLocalPolicy": {
+    "requireTrustedRegistry": true,
+    "failClosedOnVerifierError": true
+  },
+  "registryAdmissionRequirements": {
+    "requiredEntryFields": [
+      "providerId",
+      "providerType",
+      "status",
+      "allowedSources",
+      "allowedAssuranceLevels"
+    ],
+    "requiredAllowedSources": [
+      "vendor-direct"
+    ],
+    "requiredActiveStatuses": [
+      "Active",
+      "Approved"
+    ]
+  }
+}
