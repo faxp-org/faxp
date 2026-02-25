@@ -16,6 +16,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `sample_conformance_report.json`: sample conformance report referenced by submission manifest.
 - `key_lifecycle_policy.schema.json`: schema for key age/rotation overlap governance.
 - `key_lifecycle_policy.sample.json`: sample policy binding active KIDs to signed artifacts.
+- `vendor_direct_verifier_profile.v1.json`: canonical non-local vendor-direct verifier certification profile.
 - `registry_update.schema.json`: schema for registry operations request payloads.
 - `registry_update.sample.json`: sample registry operations request with upsert/revoke/rollback.
 - `registry_update.sample.audit.log`: sample audit log for registry operations.
@@ -156,6 +157,12 @@ Registry changelog artifact check:
 
 ```bash
 python3 tests/run_registry_changelog_artifacts.py
+```
+
+Vendor-direct profile check:
+
+```bash
+python3 tests/run_vendor_direct_profile.py
 ```
 
 Certification decision record template check:

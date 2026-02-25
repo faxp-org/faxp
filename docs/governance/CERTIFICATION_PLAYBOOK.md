@@ -53,6 +53,7 @@ Reference paths:
 - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/RELEASE_READINESS_CHECKLIST.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/apply_registry_update.py`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/trusted_verifier_registry.sample.json`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/vendor_direct_verifier_profile.v1.json`
 
 ## 3) Intake Workflow
 
@@ -67,6 +68,7 @@ Reference paths:
 - `python3 tests/run_registry_ops_artifacts.py`
 - `python3 tests/run_registry_changelog_artifacts.py`
 - `python3 tests/run_trusted_verifier_registry.py`
+- `python3 tests/run_vendor_direct_profile.py`
 - `python3 tests/run_governance_index.py`
 - `python3 tests/run_release_readiness.py`
 - `python3 tests/run_apply_registry_update.py`
@@ -119,6 +121,9 @@ Mandatory gates:
 11. Trusted verifier admission checks pass:
 - `python3 tests/run_trusted_verifier_registry.py`
 - trusted verifier registry artifact is present and runtime trust checks reject non-admitted providers in non-local mode.
+12. Vendor-direct profile checks pass:
+- `python3 tests/run_vendor_direct_profile.py`
+- vendor-direct profile artifact and trusted-registry alignment are valid for non-local certification policy.
 
 Additional gates for `TrustedProduction`:
 1. Operational evidence references are present in manifest.
