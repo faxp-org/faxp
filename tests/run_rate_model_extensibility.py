@@ -36,20 +36,20 @@ def _expect_validation_error(message_type: str, body: dict, text: str) -> None:
 
 def main() -> int:
     _assert(
-        VALID_RATE_MODELS == {"PerMile", "Flat"},
-        "active executable rate models must remain PerMile and Flat.",
+        VALID_RATE_MODELS == {"PerMile", "Flat", "PerPallet", "CWT"},
+        "active executable rate models must include PerMile, Flat, PerPallet, and CWT.",
     )
     _assert(
-        {"PerPallet", "CWT"}.issubset(PLANNED_RATE_MODELS),
-        "planned future rate models should include PerPallet and CWT.",
+        {"Hourly", "LaneMinimum"}.issubset(PLANNED_RATE_MODELS),
+        "planned future rate models should include Hourly and LaneMinimum.",
     )
     _assert(
-        RATE_MODEL_CATALOG.get("PerPallet", {}).get("status") == "planned",
-        "PerPallet should be marked as planned.",
+        RATE_MODEL_CATALOG.get("PerPallet", {}).get("status") == "active",
+        "PerPallet should be marked as active.",
     )
     _assert(
-        RATE_MODEL_CATALOG.get("CWT", {}).get("status") == "planned",
-        "CWT should be marked as planned.",
+        RATE_MODEL_CATALOG.get("CWT", {}).get("status") == "active",
+        "CWT should be marked as active.",
     )
 
     # Backward-compatible active model with optional extension fields.
@@ -77,6 +77,24 @@ def main() -> int:
     )
     validate_message_body("BidRequest", {"LoadID": "load-flat-123", "Rate": flat_rate})
 
+    per_pallet_rate = build_rate(
+        "PerPallet",
+        81.5,
+        UnitBasis="pallet",
+        Quantity=26,
+        Notes="Grocery palletized outbound.",
+    )
+    validate_message_body("BidRequest", {"LoadID": "load-pallet-123", "Rate": per_pallet_rate})
+
+    cwt_rate = build_rate(
+        "CWT",
+        5.2,
+        UnitBasis="cwt",
+        Quantity=420,
+        Notes="Weight-based tariff lane.",
+    )
+    validate_message_body("BidRequest", {"LoadID": "load-cwt-123", "Rate": cwt_rate})
+
     invalid_distance = dict(per_mile_rate)
     invalid_distance["DistanceMiles"] = -1
     _expect_validation_error("BidRequest", {"LoadID": "load-123", "Rate": invalid_distance}, "DistanceMiles")
@@ -89,6 +107,16 @@ def main() -> int:
         "FuelSurchargePercent",
     )
 
+    invalid_fuel_component_mix = dict(per_mile_rate)
+    invalid_fuel_component_mix["LineHaulAmount"] = 1000.0
+    invalid_fuel_component_mix["FuelSurchargeAmount"] = 400.0
+    invalid_fuel_component_mix["FuelSurchargePercent"] = 9.0
+    _expect_validation_error(
+        "BidRequest",
+        {"LoadID": "load-123", "Rate": invalid_fuel_component_mix},
+        "FuelSurchargePercent must match FuelSurchargeAmount/LineHaulAmount",
+    )
+
     invalid_extensions = dict(per_mile_rate)
     invalid_extensions["Extensions"] = ["not", "an", "object"]
     _expect_validation_error(
@@ -98,10 +126,10 @@ def main() -> int:
     )
 
     planned_model_rate = build_rate(
-        "PerPallet",
-        1200.0,
-        UnitBasis="pallet",
-        Quantity=26,
+        "Hourly",
+        180.0,
+        UnitBasis="hour",
+        Quantity=6,
     )
     _expect_validation_error(
         "BidRequest",
@@ -115,7 +143,7 @@ def main() -> int:
             "DestinationState": "GA",
             "EquipmentType": "Reefer",
             "PickupDate": "2026-03-01",
-            "RateModel": "PerPallet",
+            "RateModel": "Hourly",
             "MaxRate": 2500.0,
         },
         "RateModel",

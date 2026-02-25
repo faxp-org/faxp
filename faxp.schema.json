@@ -47,13 +47,17 @@
       "properties": {
         "RateModel": {
           "type": "string",
-          "enum": ["PerMile", "Flat"],
-          "description": "Executable models in v0.1.1/v0.2. Planned models like PerPallet/CWT are tracked in protocol conformance artifacts."
+          "enum": ["PerMile", "Flat", "PerPallet", "CWT"],
+          "description": "Executable models in v0.3 booking plane. Deferred models are tracked in conformance artifacts."
         },
         "Amount": { "type": "number", "minimum": 0 },
         "Currency": { "type": "string", "const": "USD" },
         "UnitBasis": { "type": "string" },
         "Quantity": { "type": "number", "minimum": 0 },
+        "AgreedMiles": { "type": "number", "minimum": 0 },
+        "MilesSource": { "type": "string" },
+        "MilesSourceVersion": { "type": "string" },
+        "MilesCalculatedAt": { "type": "string" },
         "DistanceMiles": { "type": "number", "minimum": 0 },
         "LineHaulAmount": { "type": "number", "minimum": 0 },
         "FuelSurchargeAmount": { "type": "number", "minimum": 0 },
@@ -111,7 +115,7 @@
         "DestinationState": { "type": "string" },
         "EquipmentType": { "type": "string" },
         "PickupDate": { "type": "string" },
-        "RateModel": { "type": "string", "enum": ["PerMile", "Flat"] },
+        "RateModel": { "type": "string", "enum": ["PerMile", "Flat", "PerPallet", "CWT"] },
         "UnitBasis": { "type": "string" },
         "MaxRate": { "type": "number", "minimum": 0 }
       },
@@ -159,7 +163,7 @@
         "EquipmentType": { "type": "string" },
         "AvailableFrom": { "type": "string" },
         "AvailableTo": { "type": "string" },
-        "RateModel": { "type": "string", "enum": ["PerMile", "Flat"] },
+        "RateModel": { "type": "string", "enum": ["PerMile", "Flat", "PerPallet", "CWT"] },
         "UnitBasis": { "type": "string" },
         "MinRate": { "type": "number", "minimum": 0 },
         "MaxRate": { "type": "number", "minimum": 0 }
@@ -195,6 +199,7 @@
           "enum": ["Accept", "Counter", "Reject"]
         },
         "ProposedRate": { "$ref": "#/$defs/Rate" },
+        "ReasonCode": { "type": "string" },
         "VerifiedBadge": {
           "type": "string",
           "enum": ["None", "Basic", "Premium"]

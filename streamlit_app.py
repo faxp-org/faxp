@@ -19,6 +19,7 @@ from faxp_mvp_simulation import (
     FaxpProtocol,
     VERIFICATION_POLICY_PROFILE_ID,
     build_envelope,
+    configure_mileage_dispute_policy,
     default_bid_amount,
     evaluate_verification_policy_decision,
     format_rate,
@@ -75,6 +76,11 @@ POLICY_PROFILE_LABELS = {
     "US_FMCSA_BALANCED_V1": "US Compliance Balanced v1 (GraceCache)",
     "US_FMCSA_SOFTHOLD_V1": "US Compliance SoftHold v1",
     "US_FMCSA_STRICT_V1": "US Compliance Strict v1 (HardBlock)",
+}
+MILEAGE_POLICY_OPTIONS = ["balanced", "strict"]
+MILEAGE_POLICY_LABELS = {
+    "balanced": "Balanced (tolerance-based)",
+    "strict": "Strict (counter any mismatch)",
 }
 DEFAULT_POLICY_PROFILE = (
     VERIFICATION_POLICY_PROFILE_ID
@@ -330,11 +336,19 @@ def run_flow(
     fmcsa_source,
     policy_profile_id,
     risk_tier,
+    mileage_dispute_policy,
+    mileage_abs_tolerance_miles,
+    mileage_rel_tolerance_ratio,
     exception_approved,
     exception_approval_ref,
 ):
     reset_state()
     run_id = set_protocol_run_id()
+    effective_mileage_policy = configure_mileage_dispute_policy(
+        policy=mileage_dispute_policy,
+        abs_tolerance_miles=mileage_abs_tolerance_miles,
+        rel_tolerance_ratio=mileage_rel_tolerance_ratio,
+    )
     broker = st.session_state.broker
     carrier = st.session_state.carrier
     st.session_state.last_verifier_diagnostics = {
@@ -344,6 +358,9 @@ def run_flow(
         "mc_number": (mc_number or "").strip() if provider == "FMCSA" else "",
         "policy_profile_id": policy_profile_id,
         "risk_tier": int(risk_tier),
+        "mileage_dispute_policy": effective_mileage_policy.get("policy", "balanced"),
+        "mileage_abs_tolerance_miles": effective_mileage_policy.get("absToleranceMiles", 0.0),
+        "mileage_rel_tolerance_ratio": effective_mileage_policy.get("relToleranceRatio", 0.0),
         "exception_approved": bool(exception_approved),
         "exception_approval_ref": str(exception_approval_ref or "").strip(),
         "hosted_fmcsa_configured": HOSTED_FMCSA_CONFIGURED,
@@ -483,6 +500,8 @@ if "broker" not in st.session_state:
 ensure_sidebar_defaults()
 if st.session_state.get("policy_profile_select") not in POLICY_PROFILE_OPTIONS:
     st.session_state.policy_profile_select = DEFAULT_POLICY_PROFILE
+if st.session_state.get("mileage_policy_select") not in MILEAGE_POLICY_OPTIONS:
+    st.session_state.mileage_policy_select = "balanced"
 try:
     parsed_risk_tier = int(st.session_state.get("risk_tier_select", DEFAULT_RISK_TIER))
 except (TypeError, ValueError):
@@ -520,13 +539,17 @@ with st.sidebar:
         apply_quick_preset(preset_name)
     if ACCESS_KEY:
         st.text_input("Access Key", type="password", key="access_key_input")
-    rate_model = st.selectbox("Rate Model", ["PerMile", "Flat"], key="rate_model_select")
+    rate_model = st.selectbox(
+        "Rate Model",
+        ["PerMile", "Flat", "PerPallet", "CWT"],
+        key="rate_model_select",
+    )
     bid_amount = st.number_input(
         "Bid Amount",
         min_value=0.0,
         step=0.01,
         format="%.2f",
-        help="PerMile uses $/mile. Flat uses total trip amount.",
+        help="PerMile uses $/mile. Flat uses total trip amount. PerPallet uses $/pallet. CWT uses $/cwt.",
         key="bid_amount_input",
     )
     response_type = st.selectbox(
@@ -548,6 +571,29 @@ with st.sidebar:
             3: "3 - Critical",
         }[value],
         key="risk_tier_select",
+    )
+    mileage_dispute_policy = st.selectbox(
+        "Mileage Dispute Policy",
+        MILEAGE_POLICY_OPTIONS,
+        key="mileage_policy_select",
+        format_func=lambda value: MILEAGE_POLICY_LABELS.get(value, value),
+        help="Controls whether PerMile agreed-miles variances auto-counter or allow tolerance.",
+    )
+    mileage_abs_tolerance_miles = st.number_input(
+        "Mileage Abs Tolerance (miles)",
+        min_value=0.0,
+        step=1.0,
+        format="%.1f",
+        key="mileage_abs_tolerance_input",
+        help="Balanced mode absolute miles tolerance before countering a PerMile variance.",
+    )
+    mileage_rel_tolerance_ratio = st.number_input(
+        "Mileage Relative Tolerance",
+        min_value=0.0,
+        step=0.005,
+        format="%.3f",
+        key="mileage_rel_tolerance_input",
+        help="Balanced mode relative tolerance ratio (0.02 = 2%).",
     )
     exception_approved = st.checkbox(
         "Exception Approved",
@@ -691,6 +737,9 @@ if run_clicked:
             fmcsa_source=fmcsa_source,
             policy_profile_id=policy_profile_id,
             risk_tier=int(risk_tier),
+            mileage_dispute_policy=mileage_dispute_policy,
+            mileage_abs_tolerance_miles=float(mileage_abs_tolerance_miles),
+            mileage_rel_tolerance_ratio=float(mileage_rel_tolerance_ratio),
             exception_approved=bool(exception_approved),
             exception_approval_ref=exception_approval_ref,
         )
@@ -747,6 +796,9 @@ else:
             "resultError": diag.get("result_error", ""),
             "policyProfile": diag.get("policy_profile_id", "n/a"),
             "riskTier": diag.get("risk_tier", "n/a"),
+            "mileageDisputePolicy": diag.get("mileage_dispute_policy", "n/a"),
+            "mileageAbsToleranceMiles": diag.get("mileage_abs_tolerance_miles", "n/a"),
+            "mileageRelToleranceRatio": diag.get("mileage_rel_tolerance_ratio", "n/a"),
             "policyDispatchAuthorization": diag.get("policy_dispatch_authorization", "n/a"),
             "policyDecisionReasonCode": diag.get("policy_decision_reason_code", "n/a"),
             "policyRuleID": diag.get("policy_rule_id", "n/a"),
@@ -768,6 +820,7 @@ else:
         "Policy: "
         f"{diag.get('policy_profile_id', 'n/a')} | "
         f"RiskTier={diag.get('risk_tier', 'n/a')} | "
+        f"Mileage={diag.get('mileage_dispute_policy', 'n/a')} | "
         f"Dispatch={diag.get('policy_dispatch_authorization', 'n/a')}"
     )
     run_id_value = str(diag.get("run_id", "n/a"))

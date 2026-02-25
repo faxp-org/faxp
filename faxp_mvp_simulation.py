@@ -28,6 +28,25 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+
+def _env_non_negative_float(name, default):
+    raw_value = os.getenv(name, str(default)).strip()
+    try:
+        parsed = float(raw_value)
+    except ValueError:
+        return float(default)
+    if parsed < 0:
+        return float(default)
+    return parsed
+
+
+def _normalize_mileage_dispute_policy(value):
+    normalized = str(value or "").strip().lower()
+    if normalized in {"strict", "balanced"}:
+        return normalized
+    return "balanced"
+
+
 DEBUG_MODE = os.getenv("FAXP_DEBUG", "0") == "1"
 SENSITIVE_KEYS = {"token", "stderr", "Signature"}
 APP_MODE = os.getenv("FAXP_APP_MODE", "local").strip().lower()
@@ -36,6 +55,17 @@ VERIFICATION_POLICY_PROFILE_ID = os.getenv(
     "FAXP_VERIFICATION_POLICY_PROFILE_ID",
     "US_FMCSA_BALANCED_V1",
 ).strip()
+MILEAGE_DISPUTE_POLICY = _normalize_mileage_dispute_policy(
+    os.getenv("FAXP_MILEAGE_DISPUTE_POLICY", "balanced")
+)
+MILEAGE_DISPUTE_ABS_TOLERANCE_MILES = _env_non_negative_float(
+    "FAXP_MILEAGE_DISPUTE_ABS_TOLERANCE_MILES",
+    25.0,
+)
+MILEAGE_DISPUTE_REL_TOLERANCE_RATIO = _env_non_negative_float(
+    "FAXP_MILEAGE_DISPUTE_REL_TOLERANCE_RATIO",
+    0.02,
+)
 DEFAULT_RISK_TIER_RAW = os.getenv("FAXP_DEFAULT_RISK_TIER", "1").strip()
 try:
     DEFAULT_RISK_TIER = int(DEFAULT_RISK_TIER_RAW)
@@ -169,6 +199,11 @@ REPLAY_DB_LOCK = threading.Lock()
 STATE_LOCK = threading.Lock()
 FLOW_STATE = {"load": "START", "truck": "START"}
 CURRENT_RUN_ID = ""
+RUNTIME_MILEAGE_POLICY = {
+    "policy": MILEAGE_DISPUTE_POLICY,
+    "absToleranceMiles": float(MILEAGE_DISPUTE_ABS_TOLERANCE_MILES),
+    "relToleranceRatio": float(MILEAGE_DISPUTE_REL_TOLERANCE_RATIO),
+}
 
 
 def _normalize_external_secret_bundle(raw_bundle):
@@ -1136,6 +1171,35 @@ def get_protocol_run_id():
     return set_protocol_run_id()
 
 
+def configure_mileage_dispute_policy(
+    *,
+    policy=None,
+    abs_tolerance_miles=None,
+    rel_tolerance_ratio=None,
+):
+    with STATE_LOCK:
+        if policy is not None:
+            RUNTIME_MILEAGE_POLICY["policy"] = _normalize_mileage_dispute_policy(policy)
+        if abs_tolerance_miles is not None:
+            try:
+                parsed_abs = float(abs_tolerance_miles)
+            except (TypeError, ValueError):
+                parsed_abs = float(MILEAGE_DISPUTE_ABS_TOLERANCE_MILES)
+            RUNTIME_MILEAGE_POLICY["absToleranceMiles"] = max(0.0, parsed_abs)
+        if rel_tolerance_ratio is not None:
+            try:
+                parsed_rel = float(rel_tolerance_ratio)
+            except (TypeError, ValueError):
+                parsed_rel = float(MILEAGE_DISPUTE_REL_TOLERANCE_RATIO)
+            RUNTIME_MILEAGE_POLICY["relToleranceRatio"] = max(0.0, parsed_rel)
+    return dict(RUNTIME_MILEAGE_POLICY)
+
+
+def get_mileage_dispute_policy():
+    with STATE_LOCK:
+        return dict(RUNTIME_MILEAGE_POLICY)
+
+
 def _bounded_string(value, context):
     if not isinstance(value, str):
         raise ValueError(f"{context} must be a string.")
@@ -1278,7 +1342,7 @@ def parse_args():
     )
     parser.add_argument(
         "--rate-model",
-        choices=["PerMile", "Flat"],
+        choices=["PerMile", "Flat", "PerPallet", "CWT"],
         default="PerMile",
         help="Base pricing method for this simulation run.",
     )
@@ -1325,6 +1389,27 @@ def parse_args():
         "--exception-approval-ref",
         default="",
         help="Reference ID for the approving human exception (used for auditability).",
+    )
+    parser.add_argument(
+        "--mileage-dispute-policy",
+        choices=["strict", "balanced"],
+        default=MILEAGE_DISPUTE_POLICY,
+        help=(
+            "PerMile disagreement behavior. "
+            "'strict' counters on any mismatch; 'balanced' uses tolerance before countering."
+        ),
+    )
+    parser.add_argument(
+        "--mileage-abs-tolerance-miles",
+        type=float,
+        default=MILEAGE_DISPUTE_ABS_TOLERANCE_MILES,
+        help="Absolute miles tolerance for balanced mileage dispute handling.",
+    )
+    parser.add_argument(
+        "--mileage-rel-tolerance-ratio",
+        type=float,
+        default=MILEAGE_DISPUTE_REL_TOLERANCE_RATIO,
+        help="Relative miles tolerance ratio (for example 0.02 = 2%%) for balanced handling.",
     )
     return parser.parse_args()
 
@@ -1474,25 +1559,70 @@ def now_utc():
 def default_floor_amount(rate_model):
     if rate_model == "Flat":
         return 1850.0
+    if rate_model == "PerPallet":
+        return 74.0
+    if rate_model == "CWT":
+        return 4.75
     return 2.35
 
 
 def default_bid_amount(rate_model):
     if rate_model == "Flat":
         return 1950.0
+    if rate_model == "PerPallet":
+        return 79.0
+    if rate_model == "CWT":
+        return 5.10
     return 2.62
 
 
 def default_search_max(rate_model):
     if rate_model == "Flat":
         return 2200.0
+    if rate_model == "PerPallet":
+        return 90.0
+    if rate_model == "CWT":
+        return 6.0
     return 2.80
 
 
 def counter_amount(rate_model, floor_amount):
     if rate_model == "Flat":
         return round(floor_amount + 150.0, 2)
+    if rate_model == "PerPallet":
+        return round(floor_amount + 4.0, 2)
+    if rate_model == "CWT":
+        return round(floor_amount + 0.35, 2)
     return round(floor_amount + 0.16, 2)
+
+
+def default_rate_quantity(rate_model):
+    if rate_model == "PerPallet":
+        return 26
+    if rate_model == "CWT":
+        return 420
+    return 1
+
+
+def default_agreed_miles():
+    return 925.5
+
+
+def _normalize_rate_components(rate):
+    if "LineHaulAmount" not in rate:
+        return
+
+    linehaul = float(rate["LineHaulAmount"])
+    has_fuel_amount = "FuelSurchargeAmount" in rate
+    has_fuel_percent = "FuelSurchargePercent" in rate
+
+    if has_fuel_percent and not has_fuel_amount:
+        rate["FuelSurchargeAmount"] = round(linehaul * float(rate["FuelSurchargePercent"]) / 100.0, 2)
+    elif has_fuel_amount and not has_fuel_percent:
+        if linehaul > 0:
+            rate["FuelSurchargePercent"] = round(float(rate["FuelSurchargeAmount"]) / linehaul * 100.0, 2)
+        else:
+            rate["FuelSurchargePercent"] = 0.0
 
 
 def default_unit_basis(rate_model):
@@ -1508,15 +1638,27 @@ def build_rate(rate_model, amount, **metadata):
     fallback_unit_basis = default_unit_basis(rate_model)
     if fallback_unit_basis and "UnitBasis" not in metadata:
         rate["UnitBasis"] = fallback_unit_basis
+    if rate_model == "PerMile":
+        if "AgreedMiles" not in metadata:
+            rate["AgreedMiles"] = default_agreed_miles()
+        if "MilesSource" not in metadata:
+            rate["MilesSource"] = "BrokerRouteGuide"
+    if rate_model in {"PerPallet", "CWT"} and "Quantity" not in metadata:
+        rate["Quantity"] = default_rate_quantity(rate_model)
     for key, value in metadata.items():
         if value is not None:
             rate[key] = value
+    _normalize_rate_components(rate)
     return rate
 
 
 def format_rate(rate):
     if rate["RateModel"] == "Flat":
         return f"${rate['Amount']:.2f} flat"
+    if rate["RateModel"] == "PerPallet":
+        return f"${rate['Amount']:.2f}/pallet"
+    if rate["RateModel"] == "CWT":
+        return f"${rate['Amount']:.2f}/cwt"
     return f"${rate['Amount']:.2f}/mile"
 
 
@@ -1538,9 +1680,11 @@ RATE_MODEL_CATALOG = {
     # Active models supported by executable v0.3 negotiation flows.
     "PerMile": {"status": "active", "unitBasis": "mile"},
     "Flat": {"status": "active", "unitBasis": "load"},
-    # Planned models for v0.3+ profile expansion.
-    "PerPallet": {"status": "planned", "unitBasis": "pallet"},
-    "CWT": {"status": "planned", "unitBasis": "cwt"},
+    "PerPallet": {"status": "active", "unitBasis": "pallet"},
+    "CWT": {"status": "active", "unitBasis": "cwt"},
+    # Planned models for post-v0.3 profile expansion.
+    "Hourly": {"status": "planned", "unitBasis": "hour"},
+    "LaneMinimum": {"status": "planned", "unitBasis": "lane"},
 }
 VALID_RATE_MODELS = {
     name for name, details in RATE_MODEL_CATALOG.items() if details.get("status") == "active"
@@ -1551,7 +1695,7 @@ PLANNED_RATE_MODELS = {
 RATE_MODEL_REQUIREMENTS = {
     # Active models are enforced in runtime validation.
     "PerMile": {
-        "requiredFields": ["UnitBasis"],
+        "requiredFields": ["UnitBasis", "AgreedMiles", "MilesSource"],
         "allowedUnitBasis": ["mile"],
         "status": "active",
     },
@@ -1564,11 +1708,21 @@ RATE_MODEL_REQUIREMENTS = {
     "PerPallet": {
         "requiredFields": ["UnitBasis", "Quantity"],
         "allowedUnitBasis": ["pallet"],
-        "status": "planned",
+        "status": "active",
     },
     "CWT": {
         "requiredFields": ["UnitBasis", "Quantity"],
         "allowedUnitBasis": ["cwt"],
+        "status": "active",
+    },
+    "Hourly": {
+        "requiredFields": ["UnitBasis", "Quantity"],
+        "allowedUnitBasis": ["hour"],
+        "status": "planned",
+    },
+    "LaneMinimum": {
+        "requiredFields": ["UnitBasis"],
+        "allowedUnitBasis": ["lane"],
         "status": "planned",
     },
 }
@@ -1668,8 +1822,14 @@ def _validate_rate_model(rate_model, context):
 
 
 def _validate_rate_extensions(rate, context):
-    string_fields = ["UnitBasis", "ReferenceID", "Notes"]
-    numeric_fields = ["DistanceMiles", "Quantity", "LineHaulAmount", "FuelSurchargeAmount"]
+    string_fields = ["UnitBasis", "ReferenceID", "Notes", "MilesSource", "MilesSourceVersion"]
+    numeric_fields = [
+        "DistanceMiles",
+        "Quantity",
+        "LineHaulAmount",
+        "FuelSurchargeAmount",
+        "AgreedMiles",
+    ]
     percent_fields = ["FuelSurchargePercent"]
 
     for field in string_fields:
@@ -1688,6 +1848,9 @@ def _validate_rate_extensions(rate, context):
             if not isinstance(value, (int, float)) or not (0 <= value <= 100):
                 raise ValueError(f"{context}.{field} must be between 0 and 100.")
 
+    if "MilesCalculatedAt" in rate:
+        _validate_iso_datetime(rate["MilesCalculatedAt"], f"{context}.MilesCalculatedAt")
+
     if "Extensions" in rate:
         extensions = rate["Extensions"]
         if not isinstance(extensions, dict):
@@ -1696,6 +1859,34 @@ def _validate_rate_extensions(rate, context):
             _bounded_string(str(key), f"{context}.Extensions key")
             if isinstance(value, str):
                 _bounded_string(value, f"{context}.Extensions.{key}")
+
+
+def _validate_rate_component_normalization(rate, context):
+    has_linehaul = "LineHaulAmount" in rate
+    has_fuel_amount = "FuelSurchargeAmount" in rate
+    has_fuel_percent = "FuelSurchargePercent" in rate
+
+    if (has_fuel_amount or has_fuel_percent) and not has_linehaul:
+        raise ValueError(
+            f"{context}.LineHaulAmount is required when FuelSurchargeAmount/FuelSurchargePercent is provided."
+        )
+
+    if not has_linehaul:
+        return
+
+    linehaul = float(rate["LineHaulAmount"])
+    fuel_amount = float(rate.get("FuelSurchargeAmount", 0.0))
+    fuel_percent = float(rate.get("FuelSurchargePercent", 0.0))
+
+    if linehaul == 0 and fuel_amount > 0:
+        raise ValueError(f"{context}.FuelSurchargeAmount must be zero when LineHaulAmount is zero.")
+
+    if linehaul > 0 and has_fuel_amount and has_fuel_percent:
+        expected_percent = round(fuel_amount / linehaul * 100.0, 2)
+        if abs(expected_percent - fuel_percent) > 0.05:
+            raise ValueError(
+                f"{context}.FuelSurchargePercent must match FuelSurchargeAmount/LineHaulAmount."
+            )
 
 
 def _validate_rate_model_requirements(rate, context):
@@ -1716,12 +1907,31 @@ def _validate_rate_model_requirements(rate, context):
                 f"{context}.UnitBasis must be one of {allowed_unit_basis} for RateModel '{model}'."
             )
 
+    if model == "PerMile":
+        agreed_miles = rate.get("AgreedMiles")
+        if not isinstance(agreed_miles, (int, float)) or agreed_miles <= 0:
+            raise ValueError(f"{context}.AgreedMiles must be a positive number for RateModel '{model}'.")
+        if "DistanceMiles" in rate:
+            distance = float(rate["DistanceMiles"])
+            if abs(distance - float(agreed_miles)) > 0.01:
+                raise ValueError(f"{context}.DistanceMiles must equal AgreedMiles for RateModel '{model}'.")
+    elif model in {"PerPallet", "CWT"}:
+        quantity = rate.get("Quantity")
+        if not isinstance(quantity, (int, float)) or quantity <= 0:
+            raise ValueError(f"{context}.Quantity must be a positive number for RateModel '{model}'.")
+
 
 def _validate_rate_search_requirements(search_body, context):
     model = search_body["RateModel"]
     rate_stub = {"RateModel": model}
     if "UnitBasis" in search_body:
         rate_stub["UnitBasis"] = search_body["UnitBasis"]
+    # Search filters should enforce model/basis semantics without requiring full bid/load rate fields.
+    if model == "PerMile":
+        rate_stub.setdefault("AgreedMiles", default_agreed_miles())
+        rate_stub.setdefault("MilesSource", "SearchRouteBasis")
+    if model in {"PerPallet", "CWT", "Hourly"}:
+        rate_stub.setdefault("Quantity", 1)
     _validate_rate_model_requirements(
         rate_stub,
         context,
@@ -1738,7 +1948,82 @@ def _validate_rate_object(rate, context):
     if rate["Currency"] != "USD":
         raise ValueError(f"{context}.Currency must be USD for v0.1.1.")
     _validate_rate_extensions(rate, context)
+    _validate_rate_component_normalization(rate, context)
     _validate_rate_model_requirements(rate, context)
+
+
+def _per_mile_mileage_decision(reference_rate, candidate_rate):
+    default_result = {
+        "hasMismatch": False,
+        "requiresCounter": False,
+        "reasonCode": "Accepted",
+        "deltaMiles": 0.0,
+        "toleranceMiles": 0.0,
+        "policy": get_mileage_dispute_policy().get("policy", "balanced"),
+    }
+    if (reference_rate or {}).get("RateModel") != "PerMile":
+        return default_result
+    if (candidate_rate or {}).get("RateModel") != "PerMile":
+        result = dict(default_result)
+        result.update(
+            {
+                "hasMismatch": True,
+                "requiresCounter": True,
+                "reasonCode": "MileageBasisMissing",
+            }
+        )
+        return result
+
+    policy = get_mileage_dispute_policy()
+    policy_mode = str(policy.get("policy", "balanced"))
+    abs_tolerance_miles = float(policy.get("absToleranceMiles", MILEAGE_DISPUTE_ABS_TOLERANCE_MILES))
+    rel_tolerance_ratio = float(policy.get("relToleranceRatio", MILEAGE_DISPUTE_REL_TOLERANCE_RATIO))
+
+    try:
+        reference_miles = float(reference_rate.get("AgreedMiles"))
+        candidate_miles = float(candidate_rate.get("AgreedMiles"))
+    except (TypeError, ValueError):
+        result = dict(default_result)
+        result.update(
+            {
+                "hasMismatch": True,
+                "requiresCounter": True,
+                "reasonCode": "MileageBasisMissing",
+                "policy": policy_mode,
+            }
+        )
+        return result
+
+    delta_miles = abs(reference_miles - candidate_miles)
+    has_mismatch = delta_miles > 0.01
+    tolerance_miles = 0.01
+    requires_counter = has_mismatch
+    reason_code = "Accepted"
+
+    if has_mismatch:
+        if policy_mode == "balanced":
+            tolerance_miles = max(abs_tolerance_miles, reference_miles * rel_tolerance_ratio)
+            requires_counter = delta_miles > tolerance_miles
+            reason_code = (
+                "MileageDispute" if requires_counter else "AcceptedWithinMileageTolerance"
+            )
+        else:
+            tolerance_miles = 0.01
+            requires_counter = True
+            reason_code = "MileageDispute"
+
+    return {
+        "hasMismatch": has_mismatch,
+        "requiresCounter": requires_counter,
+        "reasonCode": reason_code,
+        "deltaMiles": round(delta_miles, 2),
+        "toleranceMiles": round(tolerance_miles, 2),
+        "policy": policy_mode,
+    }
+
+
+def _per_mile_miles_mismatch(reference_rate, candidate_rate):
+    return _per_mile_mileage_decision(reference_rate, candidate_rate)["hasMismatch"]
 
 
 def _validate_accessorial_term(term, context):
@@ -2495,6 +2780,8 @@ def validate_message_body(message_type, body):
             raise ValueError(
                 f"BidResponse.VerifiedBadge must be one of {sorted(VALID_VERIFIED_BADGES)}."
             )
+        if "ReasonCode" in body:
+            _bounded_string(body["ReasonCode"], "BidResponse.ReasonCode")
         return
 
     if message_type == "ExecutionReport":
@@ -3408,12 +3695,25 @@ class BrokerAgent:
 
         rate_floor = load_rate["Amount"]
         rate_model = load_rate["RateModel"]
+        mileage_decision = _per_mile_mileage_decision(load_rate, bid_rate)
 
         if forced_response == "Counter":
+            counter_metadata = {}
+            if rate_model == "PerMile":
+                for field in ["AgreedMiles", "MilesSource", "MilesSourceVersion", "MilesCalculatedAt"]:
+                    if field in load_rate:
+                        counter_metadata[field] = load_rate[field]
             return {
                 "LoadID": load_id,
                 "ResponseType": "Counter",
-                "ProposedRate": build_rate(rate_model, counter_amount(rate_model, rate_floor)),
+                "ProposedRate": build_rate(
+                    rate_model,
+                    counter_amount(rate_model, rate_floor),
+                    **counter_metadata,
+                ),
+                "ReasonCode": (
+                    "MileageDispute" if mileage_decision["requiresCounter"] else "MarketCounter"
+                ),
                 "VerifiedBadge": "None",
             }
 
@@ -3431,9 +3731,27 @@ class BrokerAgent:
                 "VerifiedBadge": "None",
             }
 
+        if mileage_decision["requiresCounter"]:
+            counter_metadata = {}
+            for field in ["AgreedMiles", "MilesSource", "MilesSourceVersion", "MilesCalculatedAt"]:
+                if field in load_rate:
+                    counter_metadata[field] = load_rate[field]
+            return {
+                "LoadID": load_id,
+                "ResponseType": "Counter",
+                "ProposedRate": build_rate(
+                    rate_model,
+                    counter_amount(rate_model, rate_floor),
+                    **counter_metadata,
+                ),
+                "ReasonCode": mileage_decision["reasonCode"],
+                "VerifiedBadge": "None",
+            }
+
         return {
             "LoadID": load_id,
             "ResponseType": "Accept",
+            "ReasonCode": mileage_decision["reasonCode"],
             "VerifiedBadge": "None",
         }
 
@@ -3492,9 +3810,16 @@ class BrokerAgent:
     def create_truck_bid_request(self, truck, bid_amount=None):
         rate_model = truck["RateMin"]["RateModel"]
         amount = default_bid_amount(rate_model) if bid_amount is None else bid_amount
+        metadata = {}
+        if rate_model == "PerMile":
+            for field in ["AgreedMiles", "MilesSource", "MilesSourceVersion", "MilesCalculatedAt"]:
+                if field in truck["RateMin"]:
+                    metadata[field] = truck["RateMin"][field]
+        if rate_model in {"PerPallet", "CWT"} and "Quantity" in truck["RateMin"]:
+            metadata["Quantity"] = truck["RateMin"]["Quantity"]
         return {
             "TruckID": truck["TruckID"],
-            "Rate": build_rate(rate_model, amount),
+            "Rate": build_rate(rate_model, amount, **metadata),
             "AvailabilityDate": truck["AvailabilityDate"],
             "MatchType": "TruckCapacity",
         }
@@ -3559,9 +3884,16 @@ class CarrierAgent:
     def create_bid_request(self, load, bid_amount=None):
         rate_model = load["Rate"]["RateModel"]
         amount = default_bid_amount(rate_model) if bid_amount is None else bid_amount
+        metadata = {}
+        if rate_model == "PerMile":
+            for field in ["AgreedMiles", "MilesSource", "MilesSourceVersion", "MilesCalculatedAt"]:
+                if field in load["Rate"]:
+                    metadata[field] = load["Rate"][field]
+        if rate_model in {"PerPallet", "CWT"} and "Quantity" in load["Rate"]:
+            metadata["Quantity"] = load["Rate"]["Quantity"]
         return {
             "LoadID": load["LoadID"],
-            "Rate": build_rate(rate_model, amount),
+            "Rate": build_rate(rate_model, amount, **metadata),
             "AvailabilityDate": (date.today() + timedelta(days=2)).isoformat(),
             "AccessorialPolicyAcceptance": {
                 "Accepted": True,
@@ -3628,14 +3960,24 @@ class CarrierAgent:
                 "VerifiedBadge": "None",
                 "ReasonCode": "RateModelMismatch",
             }
+        mileage_decision = _per_mile_mileage_decision(min_rate, bid_rate)
 
         if forced_response == "Counter":
+            counter_metadata = {}
+            if min_rate["RateModel"] == "PerMile":
+                for field in ["AgreedMiles", "MilesSource", "MilesSourceVersion", "MilesCalculatedAt"]:
+                    if field in min_rate:
+                        counter_metadata[field] = min_rate[field]
             return {
                 "TruckID": truck_id,
                 "ResponseType": "Counter",
                 "ProposedRate": build_rate(
                     min_rate["RateModel"],
                     counter_amount(min_rate["RateModel"], min_rate["Amount"]),
+                    **counter_metadata,
+                ),
+                "ReasonCode": (
+                    "MileageDispute" if mileage_decision["requiresCounter"] else "MarketCounter"
                 ),
                 "VerifiedBadge": "None",
             }
@@ -3654,9 +3996,27 @@ class CarrierAgent:
                 "VerifiedBadge": "None",
             }
 
+        if mileage_decision["requiresCounter"]:
+            counter_metadata = {}
+            for field in ["AgreedMiles", "MilesSource", "MilesSourceVersion", "MilesCalculatedAt"]:
+                if field in min_rate:
+                    counter_metadata[field] = min_rate[field]
+            return {
+                "TruckID": truck_id,
+                "ResponseType": "Counter",
+                "ProposedRate": build_rate(
+                    min_rate["RateModel"],
+                    counter_amount(min_rate["RateModel"], min_rate["Amount"]),
+                    **counter_metadata,
+                ),
+                "ReasonCode": mileage_decision["reasonCode"],
+                "VerifiedBadge": "None",
+            }
+
         return {
             "TruckID": truck_id,
             "ResponseType": "Accept",
+            "ReasonCode": mileage_decision["reasonCode"],
             "VerifiedBadge": "None",
         }
 
@@ -4050,6 +4410,11 @@ def main():
     enforce_security_baseline()
     reset_protocol_runtime_state()
     run_id = set_protocol_run_id()
+    mileage_policy = configure_mileage_dispute_policy(
+        policy=args.mileage_dispute_policy,
+        abs_tolerance_miles=args.mileage_abs_tolerance_miles,
+        rel_tolerance_ratio=args.mileage_rel_tolerance_ratio,
+    )
 
     if args.security_self_test:
         if not run_security_self_tests(args.self_test_iterations):
@@ -4081,7 +4446,10 @@ def main():
         f"profile={args.policy_profile_id}, "
         f"riskTier={args.risk_tier}, "
         f"exceptionApproved={args.exception_approved}, "
-        f"exceptionApprovalRef={args.exception_approval_ref or '[none]'}"
+        f"exceptionApprovalRef={args.exception_approval_ref or '[none]'}, "
+        f"mileagePolicy={mileage_policy['policy']}, "
+        f"mileageAbsToleranceMiles={mileage_policy['absToleranceMiles']}, "
+        f"mileageRelToleranceRatio={mileage_policy['relToleranceRatio']}"
     )
 
     # Show AmendRequest exists in protocol but do not execute it in these happy paths.

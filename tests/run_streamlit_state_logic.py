@@ -44,6 +44,15 @@ def main() -> int:
     )
     _assert(state["policy_profile_select"] == "US_FMCSA_BALANCED_V1", "default policy profile mismatch")
     _assert(state["risk_tier_select"] == 1, "default risk tier mismatch")
+    _assert(state["mileage_policy_select"] == "balanced", "default mileage policy mismatch")
+    _assert(
+        float(state["mileage_abs_tolerance_input"]) == 25.0,
+        "default mileage abs tolerance mismatch",
+    )
+    _assert(
+        abs(float(state["mileage_rel_tolerance_input"]) - 0.02) < 1e-9,
+        "default mileage relative tolerance mismatch",
+    )
 
     # Regression: applying preset must not mutate the selectbox widget key directly.
     prior_preset_selection = state["quick_preset_select"]
@@ -87,6 +96,7 @@ def main() -> int:
     _assert(state["provider_local_select"] == "MockBiometricProvider", "local provider mismatch")
     _assert(state["verification_status_select"] == "Fail", "forced fail status mismatch")
     _assert(state["risk_tier_select"] == 2, "forced fail risk tier mismatch")
+    _assert(state["mileage_policy_select"] == "balanced", "forced fail mileage policy mismatch")
 
     apply_preset_to_state(
         state,
