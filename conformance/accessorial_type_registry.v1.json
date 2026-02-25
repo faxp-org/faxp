@@ -1,0 +1,29 @@
+{
+  "profileVersion": "1.0.0",
+  "profileId": "accessorial-type-registry.v1",
+  "protocol": "FAXP",
+  "description": "Canonical registry of accessorial type IDs for booking-plane commercial terms.",
+  "activeTypes": [
+    "UnloadingFee",
+    "OverweightPermit",
+    "EscortVehicle"
+  ],
+  "plannedTypes": [
+    "Detention",
+    "Layover",
+    "LumperFee"
+  ],
+  "changePolicy": {
+    "requireProfileUpdateBeforeRuntimeUse": true,
+    "allowUnknownTypesInRuntime": false,
+    "scopeNote": "Accessorial type expansion in protocol core requires profile + conformance updates and follows booking-plane scope guardrails."
+  },
+  "conformanceRequirements": {
+    "requiredTests": [
+      "tests/run_accessorial_type_registry.py"
+    ],
+    "requiredSuiteChecks": [
+      "accessorial_type_registry"
+    ]
+  }
+}
