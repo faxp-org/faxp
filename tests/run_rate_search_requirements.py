@@ -43,6 +43,12 @@ def main() -> int:
     valid_truck_search = broker.create_truck_search(rate_model="Flat")
     validate_message_body("TruckSearch", valid_truck_search)
 
+    valid_pallet_search = carrier.create_load_search(force_no_match=False, rate_model="PerPallet")
+    validate_message_body("LoadSearch", valid_pallet_search)
+
+    valid_cwt_truck_search = broker.create_truck_search(rate_model="CWT")
+    validate_message_body("TruckSearch", valid_cwt_truck_search)
+
     missing_basis_load = {
         "OriginState": "TX",
         "DestinationState": "GA",
@@ -87,6 +93,37 @@ def main() -> int:
         "TruckSearch",
         invalid_basis_truck,
         "TruckSearch.UnitBasis must be one of ['load']",
+    )
+
+    missing_basis_pallet_load = {
+        "OriginState": "TX",
+        "DestinationState": "GA",
+        "EquipmentType": "Reefer",
+        "PickupDate": "2026-03-01",
+        "RateModel": "PerPallet",
+        "MaxRate": default_search_max("PerPallet"),
+    }
+    _expect_validation_error(
+        "LoadSearch",
+        missing_basis_pallet_load,
+        "LoadSearch.UnitBasis is required for RateModel 'PerPallet'",
+    )
+
+    invalid_basis_cwt_truck = {
+        "LocationRadiusMiles": 120,
+        "OriginState": "TX",
+        "EquipmentType": "Reefer",
+        "AvailableFrom": "2026-03-01",
+        "AvailableTo": "2026-03-02",
+        "RateModel": "CWT",
+        "UnitBasis": "mile",
+        "MinRate": 4.8,
+        "MaxRate": 6.0,
+    }
+    _expect_validation_error(
+        "TruckSearch",
+        invalid_basis_cwt_truck,
+        "TruckSearch.UnitBasis must be one of ['cwt']",
     )
 
     print("Rate search requirement checks passed.")

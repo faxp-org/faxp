@@ -3,11 +3,13 @@
   "protocol": "FAXP",
   "activeRateModels": [
     "PerMile",
-    "Flat"
-  ],
-  "plannedRateModels": [
+    "Flat",
     "PerPallet",
     "CWT"
+  ],
+  "plannedRateModels": [
+    "Hourly",
+    "LaneMinimum"
   ],
   "rateModelCatalog": {
     "PerMile": {
@@ -19,18 +21,28 @@
       "unitBasis": "load"
     },
     "PerPallet": {
-      "status": "planned",
+      "status": "active",
       "unitBasis": "pallet"
     },
     "CWT": {
-      "status": "planned",
+      "status": "active",
       "unitBasis": "cwt"
+    },
+    "Hourly": {
+      "status": "planned",
+      "unitBasis": "hour"
+    },
+    "LaneMinimum": {
+      "status": "planned",
+      "unitBasis": "lane"
     }
   },
   "rateModelRequirements": {
     "PerMile": {
       "requiredFields": [
-        "UnitBasis"
+        "UnitBasis",
+        "AgreedMiles",
+        "MilesSource"
       ],
       "allowedUnitBasis": [
         "mile"
@@ -54,7 +66,7 @@
       "allowedUnitBasis": [
         "pallet"
       ],
-      "status": "planned"
+      "status": "active"
     },
     "CWT": {
       "requiredFields": [
@@ -63,6 +75,25 @@
       ],
       "allowedUnitBasis": [
         "cwt"
+      ],
+      "status": "active"
+    },
+    "Hourly": {
+      "requiredFields": [
+        "UnitBasis",
+        "Quantity"
+      ],
+      "allowedUnitBasis": [
+        "hour"
+      ],
+      "status": "planned"
+    },
+    "LaneMinimum": {
+      "requiredFields": [
+        "UnitBasis"
+      ],
+      "allowedUnitBasis": [
+        "lane"
       ],
       "status": "planned"
     }
@@ -78,8 +109,8 @@
   "profileSignature": {
     "alg": "HMAC_SHA256",
     "kid": "faxp-governance-rate-profile-2026q1",
-    "payloadDigestSha256": "sha256:1671d049a9bff0905a0c2415b69792caceaf42fdcd33f0f5cb542c4400a58da4",
-    "sig": "72da0612773615697f91f56a7641df7f889b17f945def148bfb82bbcf1b597a8",
-    "signedAt": "2026-02-23T21:36:38Z"
+    "payloadDigestSha256": "sha256:3f01a40fd40c233f5bea2d0cf6f79cb0128cec87f5b4dd8fca209f2ddf153326",
+    "sig": "722013907f10464e0c7b2d48625100ca7a86317d5df7fedd749771bd52382d25",
+    "signedAt": "2026-02-25T22:40:14Z"
   }
 }

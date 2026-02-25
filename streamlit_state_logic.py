@@ -11,6 +11,9 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
             "provider": "FMCSA",
             "policy_profile_id": "US_FMCSA_BALANCED_V1",
             "risk_tier": 1,
+            "mileage_dispute_policy": "balanced",
+            "mileage_abs_tolerance_miles": 25.0,
+            "mileage_rel_tolerance_ratio": 0.02,
             "exception_approved": False,
             "exception_approval_ref": "",
             "rate_model": "PerMile",
@@ -31,6 +34,9 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
             "provider": "FMCSA",
             "policy_profile_id": "US_FMCSA_BALANCED_V1",
             "risk_tier": 1,
+            "mileage_dispute_policy": "balanced",
+            "mileage_abs_tolerance_miles": 25.0,
+            "mileage_rel_tolerance_ratio": 0.02,
             "exception_approved": False,
             "exception_approval_ref": "",
             "rate_model": "PerMile",
@@ -62,6 +68,9 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
             "provider": "MockBiometricProvider",
             "policy_profile_id": "US_FMCSA_BALANCED_V1",
             "risk_tier": 1,
+            "mileage_dispute_policy": "balanced",
+            "mileage_abs_tolerance_miles": 25.0,
+            "mileage_rel_tolerance_ratio": 0.02,
             "exception_approved": False,
             "exception_approval_ref": "",
             "rate_model": "PerMile",
@@ -75,6 +84,9 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
             "provider": "MockBiometricProvider",
             "policy_profile_id": "US_FMCSA_BALANCED_V1",
             "risk_tier": 2,
+            "mileage_dispute_policy": "balanced",
+            "mileage_abs_tolerance_miles": 25.0,
+            "mileage_rel_tolerance_ratio": 0.02,
             "exception_approved": False,
             "exception_approval_ref": "",
             "rate_model": "PerMile",
@@ -88,6 +100,9 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
             "provider": "FMCSA",
             "policy_profile_id": "US_FMCSA_BALANCED_V1",
             "risk_tier": 2,
+            "mileage_dispute_policy": "balanced",
+            "mileage_abs_tolerance_miles": 25.0,
+            "mileage_rel_tolerance_ratio": 0.02,
             "exception_approved": True,
             "exception_approval_ref": "APPROVAL-DEMO-001",
             "rate_model": "PerMile",
@@ -107,6 +122,9 @@ def default_sidebar_state(default_per_mile_bid: float) -> dict[str, Any]:
         "quick_preset_select": "MockBiometric success",
         "policy_profile_select": "US_FMCSA_BALANCED_V1",
         "risk_tier_select": 1,
+        "mileage_policy_select": "balanced",
+        "mileage_abs_tolerance_input": 25.0,
+        "mileage_rel_tolerance_input": 0.02,
         "exception_approved_checkbox": False,
         "exception_approval_ref_input": "",
         "rate_model_select": "PerMile",
@@ -151,6 +169,15 @@ def apply_preset_to_state(
         preset.get("policy_profile_id", state.get("policy_profile_select", "US_FMCSA_BALANCED_V1"))
     )
     state["risk_tier_select"] = int(preset.get("risk_tier", state.get("risk_tier_select", 1)))
+    state["mileage_policy_select"] = str(
+        preset.get("mileage_dispute_policy", state.get("mileage_policy_select", "balanced"))
+    )
+    state["mileage_abs_tolerance_input"] = float(
+        preset.get("mileage_abs_tolerance_miles", state.get("mileage_abs_tolerance_input", 25.0))
+    )
+    state["mileage_rel_tolerance_input"] = float(
+        preset.get("mileage_rel_tolerance_ratio", state.get("mileage_rel_tolerance_input", 0.02))
+    )
     state["exception_approved_checkbox"] = bool(
         preset.get("exception_approved", state.get("exception_approved_checkbox", False))
     )
