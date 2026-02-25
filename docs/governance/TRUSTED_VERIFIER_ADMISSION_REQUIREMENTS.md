@@ -24,6 +24,12 @@ This policy defines minimum admission criteria for verifier providers whose atte
    - `status`
    - `allowedSources`
    - `allowedAssuranceLevels`
+   - Canonical `allowedSources` values should use:
+     - `vendor-direct`
+     - `implementer-adapter`
+     - `authority-only`
+     - `self-attested`
+   - Legacy source labels may be retained for backward compatibility (for example, `hosted-adapter`).
 4. Verification result provider IDs must match a trusted registry entry.
 5. Verification result source must be in entry `allowedSources`.
 6. Verification result assurance level must be in entry `allowedAssuranceLevels`.

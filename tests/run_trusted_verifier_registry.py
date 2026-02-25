@@ -65,7 +65,7 @@ def main() -> int:
                 "providerId": "compliance.authority-record.adapter",
                 "providerType": "Compliance",
                 "status": "Active",
-                "allowedSources": ["hosted-adapter"],
+                "allowedSources": ["implementer-adapter", "vendor-direct"],
                 "allowedAssuranceLevels": ["AAL1"],
                 "allowedAttestationKids": [],
             },
@@ -93,6 +93,10 @@ def main() -> int:
         }
         sim._validate_verification_result(valid_result, "VerificationResult")  # noqa: SLF001
 
+        vendor_direct_result = dict(valid_result)
+        vendor_direct_result["source"] = "vendor-direct"
+        sim._validate_verification_result(vendor_direct_result, "VerificationResult")  # noqa: SLF001
+
         unknown_provider = dict(valid_result)
         unknown_provider["provider"] = "unknown.provider"
         _expect_failure(unknown_provider, "not in trusted verifier registry")
@@ -114,7 +118,7 @@ def main() -> int:
         _assert(fm_fail_result["status"] == "Fail", "non-local FMCSA authority-mock should fail")
         _assert(fm_fail_badge == "None", "non-local FMCSA authority-mock should not grant badge")
         _assert(
-            "requires hosted-adapter" in str(fm_fail_result.get("error", "")),
+            "requires implementer-adapter or vendor-direct" in str(fm_fail_result.get("error", "")),
             "non-local FMCSA failure reason mismatch",
         )
 

@@ -31,6 +31,14 @@ This document defines booking-time degraded-mode semantics for verification poli
 - `US_FMCSA_SOFTHOLD_V1` -> `SoftHold`
 - `US_FMCSA_BALANCED_V1` -> `GraceCache`
 
+## Verification Source Labels
+- Canonical verifier source classes are:
+  - `vendor-direct`
+  - `implementer-adapter`
+  - `authority-only`
+  - `self-attested`
+- Legacy label `hosted-adapter` remains valid as a backward-compatible alias for `implementer-adapter`.
+
 ## Normative Test Matrix
 The following matrix is normative and consumed by conformance tests.
 

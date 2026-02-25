@@ -76,6 +76,13 @@ DEFAULT_POLICY_PROFILE = (
     if VERIFICATION_POLICY_PROFILE_ID in POLICY_PROFILE_OPTIONS
     else "US_FMCSA_BALANCED_V1"
 )
+FMCSA_SOURCE_LABELS = {
+    "authority-mock": "authority-mock",
+    "implementer-adapter": "implementer-adapter",
+    "vendor-direct": "vendor-direct",
+    # Backward-compatible alias.
+    "hosted-adapter": "implementer-adapter (legacy alias: hosted-adapter)",
+}
 
 
 def now_utc():
@@ -470,8 +477,8 @@ st.session_state.risk_tier_select = max(0, min(parsed_risk_tier, 3))
 if NON_LOCAL_MODE:
     st.session_state.provider_cloud_select = "ComplianceVerifier (Trusted Adapter)"
     st.session_state.provider_local_select = "FMCSA"
-    st.session_state.fmcsa_source_select_cloud = "hosted-adapter"
-    st.session_state.fmcsa_source_select_local = "hosted-adapter"
+    st.session_state.fmcsa_source_select_cloud = "implementer-adapter"
+    st.session_state.fmcsa_source_select_local = "implementer-adapter"
 elif CLOUD_SAFE_MODE and st.session_state.get("provider_cloud_select") not in {
     "ComplianceVerifier (Authority Mock)",
     "IdentityVerifier (Mock)",
@@ -572,50 +579,62 @@ with st.sidebar:
 
     if provider == "FMCSA":
         if NON_LOCAL_MODE:
-            fmcsa_source = "hosted-adapter"
+            fmcsa_source = "implementer-adapter"
             mc_number = st.text_input("MC Number", key="mc_number_input")
             if HOSTED_FMCSA_CONFIGURED:
-                st.caption("Trusted hosted compliance adapter mode is active.")
+                st.caption("Trusted external compliance endpoint mode is active.")
             else:
                 st.caption("Missing FAXP_FMCSA_ADAPTER_BASE_URL; verification fails closed in non-local mode.")
         elif CLOUD_SAFE_MODE:
             options = []
             if HOSTED_FMCSA_CONFIGURED:
-                options.append("hosted-adapter")
+                options.extend(["implementer-adapter", "vendor-direct"])
             options.append("authority-mock")
+            if st.session_state.get("fmcsa_source_select_cloud") == "hosted-adapter":
+                st.session_state.fmcsa_source_select_cloud = "implementer-adapter"
             if st.session_state.get("fmcsa_source_select_cloud") not in options:
                 st.session_state.fmcsa_source_select_cloud = options[0]
             cloud_fmcsa_mode = st.selectbox(
                 "FMCSA Source",
                 options,
                 key="fmcsa_source_select_cloud",
-                help="authority-mock uses local mock compliance scoring only.",
+                format_func=lambda key: FMCSA_SOURCE_LABELS.get(key, key),
+                help=(
+                    "authority-mock uses local mock compliance scoring only. "
+                    "implementer-adapter and vendor-direct require a configured trusted endpoint."
+                ),
             )
-            if cloud_fmcsa_mode == "hosted-adapter":
-                fmcsa_source = "hosted-adapter"
+            if cloud_fmcsa_mode in {"implementer-adapter", "vendor-direct"}:
+                fmcsa_source = cloud_fmcsa_mode
                 mc_number = st.text_input("MC Number", key="mc_number_input")
-                st.caption("Hosted FMCSA adapter mode enabled via FAXP_FMCSA_ADAPTER_BASE_URL.")
+                st.caption("Trusted compliance endpoint mode enabled via FAXP_FMCSA_ADAPTER_BASE_URL.")
             else:
                 fmcsa_source = "authority-mock"
                 mc_number = ""
                 st.caption("FMCSA authority-mock mode (no external API call).")
         else:
-            local_fmcsa_options = ["authority-mock", "hosted-adapter"]
+            local_fmcsa_options = ["authority-mock", "implementer-adapter", "vendor-direct"]
+            if st.session_state.get("fmcsa_source_select_local") == "hosted-adapter":
+                st.session_state.fmcsa_source_select_local = "implementer-adapter"
             if st.session_state.get("fmcsa_source_select_local") not in local_fmcsa_options:
                 st.session_state.fmcsa_source_select_local = local_fmcsa_options[0]
             fmcsa_source = st.selectbox(
                 "FMCSA Source",
                 local_fmcsa_options,
                 key="fmcsa_source_select_local",
-                help="authority-mock uses local mock compliance scoring only; hosted-adapter calls your hosted FMCSA wrapper.",
+                format_func=lambda key: FMCSA_SOURCE_LABELS.get(key, key),
+                help=(
+                    "authority-mock uses local mock compliance scoring only; "
+                    "implementer-adapter and vendor-direct call your trusted compliance endpoint."
+                ),
             )
             mc_number = st.text_input("MC Number", key="mc_number_input")
-            if fmcsa_source == "hosted-adapter":
+            if fmcsa_source in {"implementer-adapter", "vendor-direct"}:
                 if HOSTED_FMCSA_CONFIGURED:
-                    st.caption("Hosted FMCSA adapter mode enabled via FAXP_FMCSA_ADAPTER_BASE_URL.")
+                    st.caption("Trusted compliance endpoint mode enabled via FAXP_FMCSA_ADAPTER_BASE_URL.")
                 else:
                     st.caption(
-                        "Missing FAXP_FMCSA_ADAPTER_BASE_URL; hosted adapter calls will fail closed."
+                        "Missing FAXP_FMCSA_ADAPTER_BASE_URL; external compliance calls will fail closed."
                     )
             else:
                 st.caption("FMCSA authority-mock mode (no external API call).")
@@ -640,7 +659,7 @@ if run_clicked:
             st.session_state.status_line = "Unauthorized."
     elif NON_LOCAL_MODE and not HOSTED_FMCSA_CONFIGURED:
         st.session_state.status_line = (
-            "Hosted compliance adapter is required in non-local mode "
+            "Trusted compliance endpoint is required in non-local mode "
             "(set FAXP_FMCSA_ADAPTER_BASE_URL)."
         )
     else:
