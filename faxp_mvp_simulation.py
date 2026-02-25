@@ -1584,6 +1584,22 @@ VALID_ACCESSORIAL_PRICING_MODES = {
     "PassThrough",
     "TBD",
 }
+ACCESSORIAL_TYPE_CATALOG = {
+    # Active booking-plane accessorial types in v0.1.1/v0.3 baseline.
+    "UnloadingFee": {"status": "active"},
+    "OverweightPermit": {"status": "active"},
+    "EscortVehicle": {"status": "active"},
+    # Planned types are declared for roadmap visibility and future RFC-governed expansion.
+    "Detention": {"status": "planned"},
+    "Layover": {"status": "planned"},
+    "LumperFee": {"status": "planned"},
+}
+ACTIVE_ACCESSORIAL_TYPES = tuple(
+    name for name, details in ACCESSORIAL_TYPE_CATALOG.items() if details.get("status") == "active"
+)
+PLANNED_ACCESSORIAL_TYPES = tuple(
+    name for name, details in ACCESSORIAL_TYPE_CATALOG.items() if details.get("status") == "planned"
+)
 VALID_ACCESSORIAL_PARTIES = {"Broker", "Carrier", "Shipper", "Vendor", "Unknown"}
 VALID_ACCESSORIAL_EVIDENCE_TYPES = {"Receipt", "Permit", "EscortInvoice", "Other"}
 VALID_ACCESSORIAL_STATUSES = {"Pending", "Approved", "Rejected", "TBD"}
@@ -1787,6 +1803,12 @@ def _validate_accessorial_policy(policy, context):
         allowed_types.append(item)
     if len(allowed_types) != len(set(allowed_types)):
         raise ValueError(f"{context}.AllowedTypes must not contain duplicates.")
+    unknown_types = [item for item in allowed_types if item not in ACCESSORIAL_TYPE_CATALOG]
+    if unknown_types:
+        raise ValueError(
+            f"{context}.AllowedTypes includes unknown type(s): {unknown_types}. "
+            "Update accessorial type registry/profile before use."
+        )
     if not isinstance(policy["RequiresApproval"], bool):
         raise ValueError(f"{context}.RequiresApproval must be boolean.")
     _bounded_string(policy["Currency"], f"{context}.Currency")
@@ -3305,7 +3327,7 @@ class BrokerAgent:
             "Commodity": "Frozen Poultry",
             "Rate": build_rate(rate_model, floor_amount),
             "AccessorialPolicy": {
-                "AllowedTypes": ["UnloadingFee", "OverweightPermit", "EscortVehicle"],
+                "AllowedTypes": list(ACTIVE_ACCESSORIAL_TYPES),
                 "RequiresApproval": True,
                 "MaxTotal": 300.0,
                 "Currency": "USD",
@@ -3543,7 +3565,7 @@ class CarrierAgent:
             "AvailabilityDate": (date.today() + timedelta(days=2)).isoformat(),
             "AccessorialPolicyAcceptance": {
                 "Accepted": True,
-                "AllowedTypes": ["UnloadingFee", "OverweightPermit", "EscortVehicle"],
+                "AllowedTypes": list(ACTIVE_ACCESSORIAL_TYPES),
             },
         }
 
@@ -3663,7 +3685,7 @@ class ShipperAgent:
             "Commodity": "Packaged Foods",
             "Rate": build_rate("PerMile", 2.15),
             "AccessorialPolicy": {
-                "AllowedTypes": ["UnloadingFee", "OverweightPermit", "EscortVehicle"],
+                "AllowedTypes": list(ACTIVE_ACCESSORIAL_TYPES),
                 "RequiresApproval": True,
                 "MaxTotal": 300.0,
                 "Currency": "USD",

@@ -19,6 +19,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `vendor_direct_verifier_profile.v1.json`: canonical non-local vendor-direct verifier certification profile.
 - `trust_profile.v1.json`: canonical protocol trust baseline for signed envelopes, attestation, and source classes.
 - `accessorial_terms_profile.v1.json`: canonical booking-plane accessorial commercial-term profile.
+- `accessorial_type_registry.v1.json`: canonical registry of active/planned booking-plane accessorial type IDs.
 - `registry_update.schema.json`: schema for registry operations request payloads.
 - `registry_update.sample.json`: sample registry operations request with upsert/revoke/rollback.
 - `registry_update.sample.audit.log`: sample audit log for registry operations.
@@ -183,6 +184,12 @@ Accessorial commercial-term profile check:
 
 ```bash
 python3 tests/run_accessorial_terms_profile.py
+```
+
+Accessorial type registry check:
+
+```bash
+python3 tests/run_accessorial_type_registry.py
 ```
 
 Booking-plane commercial terms governance check:
