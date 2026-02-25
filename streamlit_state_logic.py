@@ -23,9 +23,26 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
             "fmcsa_source_cloud": "implementer-adapter",
     }
     return {
-        "FMCSA implementer-adapter (MC 498282)": dict(implementer_adapter_preset),
+        "Compliance implementer-adapter (MC 498282)": dict(implementer_adapter_preset),
         # Backward-compatible preset alias for previous releases.
         "FMCSA hosted adapter (MC 498282)": dict(implementer_adapter_preset),
+        "FMCSA implementer-adapter (MC 498282)": dict(implementer_adapter_preset),
+        "Compliance authority-mock": {
+            "provider": "FMCSA",
+            "policy_profile_id": "US_FMCSA_BALANCED_V1",
+            "risk_tier": 1,
+            "exception_approved": False,
+            "exception_approval_ref": "",
+            "rate_model": "PerMile",
+            "bid_amount": float(default_per_mile_bid),
+            "response_type": "Accept",
+            "verification_status": "Success",
+            "no_match": False,
+            "mc_number": "498282",
+            "fmcsa_source_local": "authority-mock",
+            "fmcsa_source_cloud": "authority-mock",
+        },
+        # Backward-compatible preset alias for previous releases.
         "FMCSA authority-mock": {
             "provider": "FMCSA",
             "policy_profile_id": "US_FMCSA_BALANCED_V1",

@@ -50,7 +50,7 @@ The following matrix is normative and consumed by conformance tests.
     "riskTier": 1,
     "verification": {
       "status": "Success",
-      "source": "hosted-adapter",
+      "source": "implementer-adapter",
       "provider": "compliance.authority-record.live"
     },
     "expected": {
@@ -65,7 +65,7 @@ The following matrix is normative and consumed by conformance tests.
     "riskTier": 0,
     "verification": {
       "status": "Fail",
-      "source": "hosted-adapter",
+      "source": "implementer-adapter",
       "provider": "compliance.authority-record.live"
     },
     "expected": {
@@ -80,8 +80,8 @@ The following matrix is normative and consumed by conformance tests.
     "riskTier": 0,
     "verification": {
       "status": "Fail",
-      "source": "hosted-adapter",
-      "error": "Hosted adapter network error."
+      "source": "implementer-adapter",
+      "error": "Implementer adapter network error."
     },
     "expected": {
       "DispatchAuthorization": "Allowed",
@@ -95,8 +95,8 @@ The following matrix is normative and consumed by conformance tests.
     "riskTier": 2,
     "verification": {
       "status": "Fail",
-      "source": "hosted-adapter",
-      "error": "Hosted adapter network error."
+      "source": "implementer-adapter",
+      "error": "Implementer adapter network error."
     },
     "expected": {
       "DispatchAuthorization": "Hold",
@@ -112,8 +112,8 @@ The following matrix is normative and consumed by conformance tests.
     "exceptionApprovalRef": "APPROVAL-123",
     "verification": {
       "status": "Fail",
-      "source": "hosted-adapter",
-      "error": "Hosted adapter network error."
+      "source": "implementer-adapter",
+      "error": "Implementer adapter network error."
     },
     "expected": {
       "DispatchAuthorization": "Allowed",
@@ -128,8 +128,8 @@ The following matrix is normative and consumed by conformance tests.
     "riskTier": 1,
     "verification": {
       "status": "Fail",
-      "source": "hosted-adapter",
-      "error": "Hosted adapter network error."
+      "source": "implementer-adapter",
+      "error": "Implementer adapter network error."
     },
     "expected": {
       "DispatchAuthorization": "Blocked",
@@ -143,8 +143,8 @@ The following matrix is normative and consumed by conformance tests.
     "riskTier": 1,
     "verification": {
       "status": "Fail",
-      "source": "hosted-adapter",
-      "error": "Hosted adapter network error."
+      "source": "implementer-adapter",
+      "error": "Implementer adapter network error."
     },
     "expected": {
       "DispatchAuthorization": "Hold",
@@ -160,8 +160,8 @@ The following matrix is normative and consumed by conformance tests.
     "exceptionApprovalRef": "APPROVAL-CRITICAL-1",
     "verification": {
       "status": "Fail",
-      "source": "hosted-adapter",
-      "error": "Hosted adapter network error."
+      "source": "implementer-adapter",
+      "error": "Implementer adapter network error."
     },
     "expected": {
       "DispatchAuthorization": "Blocked",

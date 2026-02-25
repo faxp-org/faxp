@@ -71,12 +71,17 @@ POLICY_PROFILE_OPTIONS = [
     "US_FMCSA_SOFTHOLD_V1",
     "US_FMCSA_STRICT_V1",
 ]
+POLICY_PROFILE_LABELS = {
+    "US_FMCSA_BALANCED_V1": "US Compliance Balanced v1 (GraceCache)",
+    "US_FMCSA_SOFTHOLD_V1": "US Compliance SoftHold v1",
+    "US_FMCSA_STRICT_V1": "US Compliance Strict v1 (HardBlock)",
+}
 DEFAULT_POLICY_PROFILE = (
     VERIFICATION_POLICY_PROFILE_ID
     if VERIFICATION_POLICY_PROFILE_ID in POLICY_PROFILE_OPTIONS
     else "US_FMCSA_BALANCED_V1"
 )
-FMCSA_SOURCE_LABELS = {
+COMPLIANCE_SOURCE_LABELS = {
     "authority-mock": "authority-mock",
     "implementer-adapter": "implementer-adapter",
     "vendor-direct": "vendor-direct",
@@ -531,6 +536,7 @@ with st.sidebar:
         "Verification Policy Profile",
         POLICY_PROFILE_OPTIONS,
         key="policy_profile_select",
+        format_func=lambda value: POLICY_PROFILE_LABELS.get(value, value),
     )
     risk_tier = st.selectbox(
         "Risk Tier",
@@ -606,10 +612,10 @@ with st.sidebar:
             if st.session_state.get("fmcsa_source_select_cloud") not in options:
                 st.session_state.fmcsa_source_select_cloud = options[0]
             cloud_fmcsa_mode = st.selectbox(
-                "FMCSA Source",
+                "Compliance Source",
                 options,
                 key="fmcsa_source_select_cloud",
-                format_func=lambda key: FMCSA_SOURCE_LABELS.get(key, key),
+                format_func=lambda key: COMPLIANCE_SOURCE_LABELS.get(key, key),
                 help=(
                     "authority-mock uses local mock compliance scoring only. "
                     "implementer-adapter and vendor-direct require a configured trusted endpoint."
@@ -622,7 +628,7 @@ with st.sidebar:
             else:
                 fmcsa_source = "authority-mock"
                 mc_number = ""
-                st.caption("FMCSA authority-mock mode (no external API call).")
+                st.caption("Compliance authority-mock mode (no external API call).")
         else:
             local_fmcsa_options = ["authority-mock", "implementer-adapter", "vendor-direct"]
             if st.session_state.get("fmcsa_source_select_local") == "hosted-adapter":
@@ -630,10 +636,10 @@ with st.sidebar:
             if st.session_state.get("fmcsa_source_select_local") not in local_fmcsa_options:
                 st.session_state.fmcsa_source_select_local = local_fmcsa_options[0]
             fmcsa_source = st.selectbox(
-                "FMCSA Source",
+                "Compliance Source",
                 local_fmcsa_options,
                 key="fmcsa_source_select_local",
-                format_func=lambda key: FMCSA_SOURCE_LABELS.get(key, key),
+                format_func=lambda key: COMPLIANCE_SOURCE_LABELS.get(key, key),
                 help=(
                     "authority-mock uses local mock compliance scoring only; "
                     "implementer-adapter and vendor-direct call your trusted compliance endpoint."
@@ -648,7 +654,7 @@ with st.sidebar:
                         "Missing FAXP_FMCSA_ADAPTER_BASE_URL; external compliance calls will fail closed."
                     )
             else:
-                st.caption("FMCSA authority-mock mode (no external API call).")
+                st.caption("Compliance authority-mock mode (no external API call).")
     else:
         fmcsa_source = "authority-mock"
         mc_number = ""
@@ -731,6 +737,7 @@ else:
         {
             "runId": diag.get("run_id", "n/a"),
             "provider": diag.get("provider", "n/a"),
+            "complianceSource": diag.get("fmcsa_source", "n/a"),
             "fmcsaSource": diag.get("fmcsa_source", "n/a"),
             "hostedFmcsaConfigured": diag.get("hosted_fmcsa_configured"),
             "cloudSafeMode": diag.get("cloud_safe_mode"),
@@ -751,7 +758,7 @@ else:
     )
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Configured Provider", diag.get("provider", "n/a"))
-    c2.metric("FMCSA Source", diag.get("fmcsa_source", "n/a"))
+    c2.metric("Compliance Source", diag.get("fmcsa_source", "n/a"))
     c3.metric(
         "FMCSA Adapter",
         "Configured" if diag.get("hosted_fmcsa_configured") else "Missing",
