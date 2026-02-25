@@ -39,6 +39,8 @@ def _suite_commands() -> list[tuple[str, list[str]]]:
         ("registry_changelog_artifacts", [python, str(TESTS_DIR / "run_registry_changelog_artifacts.py")]),
         ("decision_record_template", [python, str(TESTS_DIR / "run_decision_record_template.py")]),
         ("decision_record_artifacts", [python, str(TESTS_DIR / "run_decision_record_artifacts.py")]),
+        ("verification_policy_profile", [python, str(TESTS_DIR / "run_verification_policy_profile.py")]),
+        ("policy_decisions", [python, str(TESTS_DIR / "run_policy_decisions.py")]),
         ("governance_index", [python, str(TESTS_DIR / "run_governance_index.py")]),
         ("release_readiness", [python, str(TESTS_DIR / "run_release_readiness.py")]),
         (

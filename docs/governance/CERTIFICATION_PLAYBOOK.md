@@ -195,6 +195,7 @@ Required evidence:
 - decision reason code aligns with policy rule
 
 Required local checks before submission:
-1. `python3 tests/run_policy_decisions.py`
-2. `python3 tests/run_policy_profile_sync.py`
-3. `python3 conformance/run_all_checks.py --output /tmp/faxp_conformance_suite_report.json`
+1. `python3 tests/run_verification_policy_profile.py`
+2. `python3 tests/run_policy_decisions.py`
+3. `python3 tests/run_policy_profile_sync.py`
+4. `python3 conformance/run_all_checks.py --output /tmp/faxp_conformance_suite_report.json`

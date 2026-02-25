@@ -1,6 +1,6 @@
 {
   "indexVersion": "1.0.0",
-  "generatedAt": "2026-02-25T23:15:00Z",
+  "generatedAt": "2026-02-26T00:10:00Z",
   "policyArtifacts": [
     "docs/governance/SCOPE_GUARDRAILS.md",
     "docs/rfc/RFC_TEMPLATE.md",
@@ -18,6 +18,8 @@
   ],
   "requiredTests": [
     "tests/run_scope_guardrails.py",
+    "tests/run_verification_policy_profile.py",
+    "tests/run_policy_decisions.py",
     "tests/run_policy_profile_sync.py",
     "tests/run_registry_admission_policy.py",
     "tests/run_registry_changelog_artifacts.py",
@@ -39,6 +41,8 @@
   ],
   "requiredSuiteChecks": [
     "policy_profile_sync",
+    "verification_policy_profile",
+    "policy_decisions",
     "registry_admission_policy",
     "registry_changelog_artifacts",
     "trusted_verifier_registry",
@@ -59,6 +63,8 @@
   ],
   "suiteCheckToTest": {
     "policy_profile_sync": "tests/run_policy_profile_sync.py",
+    "verification_policy_profile": "tests/run_verification_policy_profile.py",
+    "policy_decisions": "tests/run_policy_decisions.py",
     "registry_admission_policy": "tests/run_registry_admission_policy.py",
     "registry_changelog_artifacts": "tests/run_registry_changelog_artifacts.py",
     "trusted_verifier_registry": "tests/run_trusted_verifier_registry.py",

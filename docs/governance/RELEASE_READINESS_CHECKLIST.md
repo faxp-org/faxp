@@ -44,6 +44,7 @@ Use this checklist as the final go/no-go gate before a tagged release.
     "conformance/protocol_compatibility_keys.sample.json",
     "conformance/vendor_direct_verifier_profile.v1.json",
     "conformance/trust_profile.v1.json",
+    "conformance/verification_policy_profile.v1.json",
     "conformance/accessorial_terms_profile.v1.json",
     "conformance/accessorial_type_registry.v1.json",
     "conformance/certification_registry.sample.json",
@@ -56,6 +57,8 @@ Use this checklist as the final go/no-go gate before a tagged release.
   ],
   "requiredTests": [
     "tests/run_scope_guardrails.py",
+    "tests/run_verification_policy_profile.py",
+    "tests/run_policy_decisions.py",
     "tests/run_policy_profile_sync.py",
     "tests/run_registry_admission_policy.py",
     "tests/run_registry_changelog_artifacts.py",
@@ -77,6 +80,8 @@ Use this checklist as the final go/no-go gate before a tagged release.
   ],
   "requiredSuiteChecks": [
     "policy_profile_sync",
+    "verification_policy_profile",
+    "policy_decisions",
     "registry_admission_policy",
     "registry_changelog_artifacts",
     "trusted_verifier_registry",
