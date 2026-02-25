@@ -172,6 +172,12 @@ Trust profile check:
 python3 tests/run_trust_profile.py
 ```
 
+Accessorial commercial-term check:
+
+```bash
+python3 tests/run_accessorial_terms.py
+```
+
 Certification decision record template check:
 
 ```bash
