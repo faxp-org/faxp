@@ -1,0 +1,52 @@
+{
+  "profileVersion": "1.0.0",
+  "profileId": "verification-policy-profile.v1",
+  "protocol": "FAXP",
+  "description": "Canonical lock for verification policy profiles and normative risk-tier decision matrix coverage.",
+  "canonicalProfiles": [
+    {
+      "profileId": "US_FMCSA_STRICT_V1",
+      "path": "profiles/verification/US_FMCSA_STRICT_V1.json",
+      "expectedDegradedMode": "HardBlock"
+    },
+    {
+      "profileId": "US_FMCSA_SOFTHOLD_V1",
+      "path": "profiles/verification/US_FMCSA_SOFTHOLD_V1.json",
+      "expectedDegradedMode": "SoftHold"
+    },
+    {
+      "profileId": "US_FMCSA_BALANCED_V1",
+      "path": "profiles/verification/US_FMCSA_BALANCED_V1.json",
+      "expectedDegradedMode": "GraceCache"
+    }
+  ],
+  "matrixLock": {
+    "requiredCaseIds": [
+      "balanced_success_t1",
+      "balanced_negative_fail_t0",
+      "balanced_gracecache_outage_t0",
+      "balanced_gracecache_outage_t2_pending",
+      "balanced_gracecache_outage_t2_approved",
+      "strict_hardblock_outage_t1",
+      "softhold_outage_t1",
+      "balanced_gracecache_outage_t3_approved_denied"
+    ],
+    "requiredDegradedModesCovered": [
+      "HardBlock",
+      "SoftHold",
+      "GraceCache"
+    ]
+  },
+  "conformanceRequirements": {
+    "requiredTests": [
+      "tests/run_verification_policy_profile.py",
+      "tests/run_policy_decisions.py",
+      "tests/run_policy_profile_sync.py"
+    ],
+    "requiredSuiteChecks": [
+      "verification_policy_profile",
+      "policy_decisions",
+      "policy_profile_sync"
+    ]
+  }
+}

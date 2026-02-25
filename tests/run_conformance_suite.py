@@ -52,6 +52,14 @@ def main() -> int:
         "conformance suite must include decision_record_artifacts in default checks",
     )
     _assert(
+        "verification_policy_profile" in listed_checks.stdout.splitlines(),
+        "conformance suite must include verification_policy_profile in default checks",
+    )
+    _assert(
+        "policy_decisions" in listed_checks.stdout.splitlines(),
+        "conformance suite must include policy_decisions in default checks",
+    )
+    _assert(
         "registry_changelog_artifacts" in listed_checks.stdout.splitlines(),
         "conformance suite must include registry_changelog_artifacts in default checks",
     )
