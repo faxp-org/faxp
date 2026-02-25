@@ -1,0 +1,76 @@
+{
+  "profileVersion": "1.0.0",
+  "profileId": "faxp-trust-model.v1",
+  "protocol": "FAXP",
+  "description": "Canonical trust profile for FAXP message authenticity, verifier attestation controls, and non-local fail-closed behavior.",
+  "transportSecurity": {
+    "requiredInNonLocal": true,
+    "minimumTlsVersion": "1.2",
+    "recommendMutualTls": true
+  },
+  "messageAuthenticity": {
+    "requireSignedEnvelope": true,
+    "allowedSignatureAlgorithms": [
+      "HMAC_SHA256",
+      "ED25519"
+    ],
+    "requireReplayProtection": true,
+    "requireTtlValidation": true
+  },
+  "verifierAttestation": {
+    "requireSignedAttestation": true,
+    "allowedAlgorithms": [
+      "HMAC_SHA256",
+      "ED25519"
+    ],
+    "requiredFields": [
+      "alg",
+      "kid",
+      "sig"
+    ],
+    "trustedRegistryRequiredInNonLocal": true,
+    "failClosedOnVerifierError": true
+  },
+  "sourceClasses": {
+    "canonical": [
+      "vendor-direct",
+      "implementer-adapter",
+      "authority-only",
+      "self-attested"
+    ],
+    "aliases": {
+      "hosted-adapter": "implementer-adapter",
+      "builder-hosted-adapter": "implementer-adapter",
+      "vendor-attestation": "vendor-direct",
+      "authority-mock": "authority-only",
+      "live-fmcsa": "authority-only",
+      "fmcsa-api": "authority-only",
+      "self-attest": "self-attested"
+    },
+    "nonLocalAllowed": [
+      "vendor-direct",
+      "implementer-adapter"
+    ],
+    "policyRestricted": [
+      "authority-only",
+      "self-attested"
+    ]
+  },
+  "operationalBoundary": {
+    "faxpHostsVerifierInfrastructure": false,
+    "faxpStoresVerifierCredentials": false,
+    "faxpMaintainsGlobalParticipantRegistry": false
+  },
+  "conformanceRequirements": {
+    "requiredTests": [
+      "tests/run_trusted_verifier_registry.py",
+      "tests/run_vendor_direct_profile.py",
+      "tests/run_trust_profile.py"
+    ],
+    "requiredSuiteChecks": [
+      "trusted_verifier_registry",
+      "vendor_direct_profile",
+      "trust_profile"
+    ]
+  }
+}

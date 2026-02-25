@@ -17,6 +17,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `key_lifecycle_policy.schema.json`: schema for key age/rotation overlap governance.
 - `key_lifecycle_policy.sample.json`: sample policy binding active KIDs to signed artifacts.
 - `vendor_direct_verifier_profile.v1.json`: canonical non-local vendor-direct verifier certification profile.
+- `trust_profile.v1.json`: canonical protocol trust baseline for signed envelopes, attestation, and source classes.
 - `registry_update.schema.json`: schema for registry operations request payloads.
 - `registry_update.sample.json`: sample registry operations request with upsert/revoke/rollback.
 - `registry_update.sample.audit.log`: sample audit log for registry operations.
@@ -163,6 +164,12 @@ Vendor-direct profile check:
 
 ```bash
 python3 tests/run_vendor_direct_profile.py
+```
+
+Trust profile check:
+
+```bash
+python3 tests/run_trust_profile.py
 ```
 
 Certification decision record template check:
