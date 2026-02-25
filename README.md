@@ -271,11 +271,14 @@ FAXP_FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER="1"
 FAXP_FMCSA_ADAPTER_SIGN_REQUESTS="1"
 FAXP_FMCSA_ADAPTER_REQUEST_SIGNING_KEYS="adapter-req-2026-02:your_adapter_request_hmac"
 FAXP_FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID="adapter-req-2026-02"
+FAXP_ENFORCE_TRUSTED_VERIFIER_REGISTRY="1"
+# Optional override (runtime falls back to conformance/trusted_verifier_registry.sample.json)
+# FAXP_TRUSTED_VERIFIER_REGISTRY='{"registryVersion":"1.0.0","entries":[...]}'
 ```
 
 Notes:
-- Cloud FMCSA source selection order is: `hosted-adapter` (if configured), otherwise `authority-mock`.
-- Without hosted adapter credentials, cloud FMCSA mode automatically falls back to `authority-mock`.
+- Non-local mode requires `hosted-adapter` compliance verification and fails closed if the adapter URL is missing.
+- Non-local mode enforces trusted verifier registry validation on verification results.
 - Access key is enforced when `FAXP_APP_MODE` is non-local.
 
 ### 4.1) Hosted FMCSA Adapter Deployment (Vultr)

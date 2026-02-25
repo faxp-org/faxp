@@ -467,6 +467,16 @@ except (TypeError, ValueError):
 if parsed_risk_tier not in {0, 1, 2, 3}:
     parsed_risk_tier = DEFAULT_RISK_TIER
 st.session_state.risk_tier_select = max(0, min(parsed_risk_tier, 3))
+if NON_LOCAL_MODE:
+    st.session_state.provider_cloud_select = "ComplianceVerifier (Trusted Adapter)"
+    st.session_state.provider_local_select = "FMCSA"
+    st.session_state.fmcsa_source_select_cloud = "hosted-adapter"
+    st.session_state.fmcsa_source_select_local = "hosted-adapter"
+elif CLOUD_SAFE_MODE and st.session_state.get("provider_cloud_select") not in {
+    "ComplianceVerifier (Authority Mock)",
+    "IdentityVerifier (Mock)",
+}:
+    st.session_state.provider_cloud_select = "ComplianceVerifier (Authority Mock)"
 
 if NON_LOCAL_MODE and not ACCESS_KEY:
     st.error("Secure mode requires FAXP_STREAMLIT_ACCESS_KEY.")
@@ -491,7 +501,6 @@ with st.sidebar:
     bid_amount = st.number_input(
         "Bid Amount",
         min_value=0.0,
-        value=float(st.session_state.bid_amount_input),
         step=0.01,
         format="%.2f",
         help="PerMile uses $/mile. Flat uses total trip amount.",
@@ -526,26 +535,50 @@ with st.sidebar:
         key="exception_approval_ref_input",
         placeholder="Example: APPROVAL-2026-0001",
     )
-    if CLOUD_SAFE_MODE:
+    if NON_LOCAL_MODE:
+        st.selectbox(
+            "Verification Provider",
+            ["ComplianceVerifier (Trusted Adapter)"],
+            key="provider_cloud_select",
+            disabled=True,
+            help="Non-local mode permits only trusted external compliance attestations.",
+        )
+        provider = "FMCSA"
+    elif CLOUD_SAFE_MODE:
         provider_choice = st.selectbox(
             "Verification Provider",
-            ["MockBiometricProvider", "FMCSA (Authority)"],
+            ["ComplianceVerifier (Authority Mock)", "IdentityVerifier (Mock)"],
             key="provider_cloud_select",
             help="Cloud-safe mode disables local-only verifier paths.",
         )
-        provider = "FMCSA" if provider_choice.startswith("FMCSA") else "MockBiometricProvider"
+        provider = (
+            "FMCSA"
+            if provider_choice.startswith("ComplianceVerifier")
+            else "MockBiometricProvider"
+        )
     else:
         provider = st.selectbox(
             "Verification Provider",
-            ["FMCSA", "MockBiometricProvider", "iDenfy (Legacy Alias)"],
+            ["ComplianceVerifier (FMCSA)", "IdentityVerifier (Mock)", "iDenfy (Legacy Alias)"],
             key="provider_local_select",
             help="iDenfy label is maintained as a legacy alias.",
         )
+        if provider == "ComplianceVerifier (FMCSA)":
+            provider = "FMCSA"
+        if provider == "IdentityVerifier (Mock)":
+            provider = "MockBiometricProvider"
         if provider == "iDenfy (Legacy Alias)":
             provider = "iDenfy"
 
     if provider == "FMCSA":
-        if CLOUD_SAFE_MODE:
+        if NON_LOCAL_MODE:
+            fmcsa_source = "hosted-adapter"
+            mc_number = st.text_input("MC Number", key="mc_number_input")
+            if HOSTED_FMCSA_CONFIGURED:
+                st.caption("Trusted hosted compliance adapter mode is active.")
+            else:
+                st.caption("Missing FAXP_FMCSA_ADAPTER_BASE_URL; verification fails closed in non-local mode.")
+        elif CLOUD_SAFE_MODE:
             options = []
             if HOSTED_FMCSA_CONFIGURED:
                 options.append("hosted-adapter")
@@ -605,6 +638,11 @@ if run_clicked:
             st.session_state.status_line = f"Unauthorized. Locked for {wait_seconds}s."
         else:
             st.session_state.status_line = "Unauthorized."
+    elif NON_LOCAL_MODE and not HOSTED_FMCSA_CONFIGURED:
+        st.session_state.status_line = (
+            "Hosted compliance adapter is required in non-local mode "
+            "(set FAXP_FMCSA_ADAPTER_BASE_URL)."
+        )
     else:
         run_flow(
             response_type=response_type,

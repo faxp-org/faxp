@@ -54,6 +54,7 @@ def _suite_commands() -> list[tuple[str, list[str]]]:
         ("protocol_compatibility_signature", [python, str(TESTS_DIR / "run_protocol_compatibility_signature.py")]),
         ("protocol_version_negotiation", [python, str(TESTS_DIR / "run_protocol_version_negotiation.py")]),
         ("cross_version_fixtures", [python, str(TESTS_DIR / "run_cross_version_fixtures.py")]),
+        ("trusted_verifier_registry", [python, str(TESTS_DIR / "run_trusted_verifier_registry.py")]),
         ("registry_apply", [python, str(TESTS_DIR / "run_apply_registry_update.py")]),
         ("certification_artifacts", [python, str(TESTS_DIR / "run_certification_artifacts.py")]),
         ("policy_profile_sync", [python, str(TESTS_DIR / "run_policy_profile_sync.py")]),

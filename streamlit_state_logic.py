@@ -93,9 +93,9 @@ def default_sidebar_state(default_per_mile_bid: float) -> dict[str, Any]:
         "bid_amount_input": float(default_per_mile_bid),
         "response_type_select": "Accept",
         "provider_local_select": "FMCSA",
-        "provider_cloud_select": "MockBiometricProvider",
+        "provider_cloud_select": "ComplianceVerifier (Trusted Adapter)",
         "fmcsa_source_select_local": "authority-mock",
-        "fmcsa_source_select_cloud": "authority-mock",
+        "fmcsa_source_select_cloud": "hosted-adapter",
         "mc_number_input": "498282",
         "verification_status_select": "Success",
         "no_match_checkbox": False,
@@ -141,7 +141,7 @@ def apply_preset_to_state(
     provider = preset["provider"]
     if provider == "FMCSA":
         state["provider_local_select"] = "FMCSA"
-        state["provider_cloud_select"] = "FMCSA (Authority)"
+        state["provider_cloud_select"] = "ComplianceVerifier (Trusted Adapter)"
         state["fmcsa_source_select_local"] = preset.get(
             "fmcsa_source_local", "authority-mock"
         )

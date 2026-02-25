@@ -57,6 +57,14 @@ FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID = os.getenv(
     "FAXP_FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID",
     "",
 ).strip()
+TRUSTED_VERIFIER_REGISTRY_RAW = os.getenv("FAXP_TRUSTED_VERIFIER_REGISTRY", "").strip()
+TRUSTED_VERIFIER_REGISTRY_FILE = os.getenv(
+    "FAXP_TRUSTED_VERIFIER_REGISTRY_FILE", ""
+).strip()
+ENFORCE_TRUSTED_VERIFIER_REGISTRY_RAW = os.getenv(
+    "FAXP_ENFORCE_TRUSTED_VERIFIER_REGISTRY",
+    "1",
+).strip()
 
 LEGACY_MESSAGE_SIGNING_KEY = os.getenv("FAXP_MESSAGE_SIGNING_KEY", "").encode("utf-8")
 LEGACY_VERIFIER_SIGNING_KEY = os.getenv("FAXP_VERIFIER_SIGNING_KEY", "").encode("utf-8")
@@ -133,6 +141,9 @@ ALLOWED_EXTERNAL_SECRET_KEYS = {
     "FAXP_VERIFIER_ED25519_ACTIVE_KEY_ID",
     "FAXP_AGENT_KEY_REGISTRY",
     "FAXP_AGENT_KEY_REGISTRY_FILE",
+    "FAXP_TRUSTED_VERIFIER_REGISTRY",
+    "FAXP_TRUSTED_VERIFIER_REGISTRY_FILE",
+    "FAXP_ENFORCE_TRUSTED_VERIFIER_REGISTRY",
     "FAXP_FMCSA_ADAPTER_BASE_URL",
     "FAXP_FMCSA_ADAPTER_AUTH_TOKEN",
     "FAXP_FMCSA_ADAPTER_TIMEOUT_SECONDS",
@@ -305,6 +316,18 @@ FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID = _override_secret_value(
     "FAXP_FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID",
     FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID,
 ).strip()
+TRUSTED_VERIFIER_REGISTRY_RAW = _override_secret_value(
+    "FAXP_TRUSTED_VERIFIER_REGISTRY",
+    TRUSTED_VERIFIER_REGISTRY_RAW,
+).strip()
+TRUSTED_VERIFIER_REGISTRY_FILE = _override_secret_value(
+    "FAXP_TRUSTED_VERIFIER_REGISTRY_FILE",
+    TRUSTED_VERIFIER_REGISTRY_FILE,
+).strip()
+ENFORCE_TRUSTED_VERIFIER_REGISTRY_RAW = _override_secret_value(
+    "FAXP_ENFORCE_TRUSTED_VERIFIER_REGISTRY",
+    ENFORCE_TRUSTED_VERIFIER_REGISTRY_RAW,
+).strip()
 try:
     FMCSA_ADAPTER_TIMEOUT_SECONDS = int(
         _override_secret_value(
@@ -325,6 +348,9 @@ FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER = _is_truthy(
     FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER_RAW
 )
 FMCSA_ADAPTER_SIGN_REQUESTS = _is_truthy(FMCSA_ADAPTER_SIGN_REQUESTS_RAW)
+ENFORCE_TRUSTED_VERIFIER_REGISTRY = _is_truthy(
+    ENFORCE_TRUSTED_VERIFIER_REGISTRY_RAW
+)
 
 
 def _load_agent_key_registry():
@@ -386,6 +412,74 @@ def _load_agent_key_registry():
 
 
 AGENT_KEY_REGISTRY = _load_agent_key_registry()
+FALLBACK_TRUSTED_VERIFIER_REGISTRY_FILE = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "conformance",
+    "trusted_verifier_registry.sample.json",
+)
+
+
+def _load_trusted_verifier_registry():
+    registry_text = TRUSTED_VERIFIER_REGISTRY_RAW
+    registry_file = TRUSTED_VERIFIER_REGISTRY_FILE
+    if not registry_text and not registry_file and os.path.exists(
+        FALLBACK_TRUSTED_VERIFIER_REGISTRY_FILE
+    ):
+        registry_file = FALLBACK_TRUSTED_VERIFIER_REGISTRY_FILE
+
+    if not registry_text and registry_file:
+        with open(registry_file, "r", encoding="utf-8") as handle:
+            registry_text = handle.read()
+    if not registry_text:
+        return {}
+
+    try:
+        payload = json.loads(registry_text)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError("Trusted verifier registry is not valid JSON.") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError("Trusted verifier registry must be a JSON object.")
+    entries = payload.get("entries")
+    if not isinstance(entries, list):
+        raise RuntimeError("Trusted verifier registry must include an entries array.")
+
+    index = {}
+    for entry in entries:
+        if not isinstance(entry, dict):
+            raise RuntimeError("Trusted verifier registry entries must be objects.")
+        provider_id = str(entry.get("providerId") or "").strip()
+        if not provider_id:
+            raise RuntimeError("Trusted verifier registry entry missing providerId.")
+        status = str(entry.get("status") or "").strip() or "Unknown"
+        provider_type = str(entry.get("providerType") or "").strip() or "Unknown"
+
+        allowed_sources = []
+        raw_sources = entry.get("allowedSources")
+        if isinstance(raw_sources, list):
+            allowed_sources = [str(item).strip().lower() for item in raw_sources if str(item).strip()]
+
+        allowed_assurance_levels = []
+        raw_aals = entry.get("allowedAssuranceLevels")
+        if isinstance(raw_aals, list):
+            allowed_assurance_levels = [str(item).strip().upper() for item in raw_aals if str(item).strip()]
+
+        allowed_attestation_kids = []
+        raw_kids = entry.get("allowedAttestationKids")
+        if isinstance(raw_kids, list):
+            allowed_attestation_kids = [str(item).strip() for item in raw_kids if str(item).strip()]
+
+        index[provider_id] = {
+            "providerId": provider_id,
+            "providerType": provider_type,
+            "status": status,
+            "allowedSources": allowed_sources,
+            "allowedAssuranceLevels": allowed_assurance_levels,
+            "allowedAttestationKids": allowed_attestation_kids,
+        }
+    return index
+
+
+TRUSTED_VERIFIER_REGISTRY = _load_trusted_verifier_registry()
 
 
 class FaxpProtocol:
@@ -1326,6 +1420,10 @@ def enforce_security_baseline():
     _validate_key_age(VERIFIER_ACTIVE_KEY_ISSUED_AT, "FAXP_VERIFIER_ACTIVE_KEY_ISSUED_AT")
     _validate_agent_key_registry()
     if NON_LOCAL_MODE:
+        if ENFORCE_TRUSTED_VERIFIER_REGISTRY and not TRUSTED_VERIFIER_REGISTRY:
+            raise RuntimeError(
+                "Trusted verifier registry enforcement is enabled in non-local mode but no registry entries are configured."
+            )
         if SIGNATURE_SCHEME == "HMAC_SHA256" and not MESSAGE_SIGNING_KEYS:
             raise RuntimeError(
                 "Missing message signing key material in non-local mode."
@@ -1741,6 +1839,55 @@ def _validate_verification_result(result, context):
                 VERIFIER_ED25519_PUBLIC_KEYS,
             ):
                 raise ValueError(f"{context}.attestation signature verification failed.")
+
+    _enforce_trusted_verifier_registry_result(result, context)
+
+
+def _enforce_trusted_verifier_registry_result(result, context):
+    if not (NON_LOCAL_MODE and ENFORCE_TRUSTED_VERIFIER_REGISTRY):
+        return
+    if not isinstance(result, dict):
+        raise ValueError(f"{context} must be an object.")
+    provider_id = str(result.get("provider") or "").strip()
+    if not provider_id:
+        raise ValueError(f"{context}.provider is required in non-local mode.")
+    if provider_id not in TRUSTED_VERIFIER_REGISTRY:
+        raise ValueError(
+            f"{context}.provider is not in trusted verifier registry: {provider_id}."
+        )
+    registry_entry = TRUSTED_VERIFIER_REGISTRY[provider_id]
+    status = str(registry_entry.get("status") or "").strip().lower()
+    if status not in {"active", "approved"}:
+        raise ValueError(
+            f"{context}.provider is not active in trusted verifier registry."
+        )
+
+    source = str(result.get("source") or "").strip().lower()
+    allowed_sources = registry_entry.get("allowedSources") or []
+    if allowed_sources and source not in allowed_sources:
+        raise ValueError(
+            f"{context}.source '{source}' is not allowed for trusted provider '{provider_id}'."
+        )
+
+    assurance_level = str(result.get("assuranceLevel") or "").strip().upper()
+    allowed_assurance_levels = registry_entry.get("allowedAssuranceLevels") or []
+    if allowed_assurance_levels and assurance_level not in allowed_assurance_levels:
+        raise ValueError(
+            f"{context}.assuranceLevel '{assurance_level}' is not allowed for trusted provider '{provider_id}'."
+        )
+
+    allowed_attestation_kids = registry_entry.get("allowedAttestationKids") or []
+    if allowed_attestation_kids:
+        attestation = result.get("attestation")
+        if not isinstance(attestation, dict):
+            raise ValueError(
+                f"{context}.attestation is required for trusted verifier registry enforcement."
+            )
+        attestation_kid = str(attestation.get("kid") or "").strip()
+        if attestation_kid not in allowed_attestation_kids:
+            raise ValueError(
+                f"{context}.attestation.kid '{attestation_kid}' is not approved for trusted provider '{provider_id}'."
+            )
 
 
 def _validate_string_array(values, context):
@@ -2768,6 +2915,38 @@ def run_verification(
             attestation_payload = {k: v for k, v in result.items() if k != "attestation"}
             result["attestation"] = _build_verifier_attestation(attestation_payload)
         return result
+
+    if NON_LOCAL_MODE and normalized_provider == "FMCSA" and fmcsa_source != "hosted-adapter":
+        verification_result = build_result(
+            status_value="Fail",
+            provider_value=NEUTRAL_VERIFICATION_PROVIDER_IDS["compliance_mock"],
+            category="Compliance",
+            method="AuthorityRecordCheck",
+            assurance_level="AAL1",
+            score_value=0,
+            token_value=f"fmcsa-{uuid4().hex[:14]}",
+            source_value="policy-enforcement",
+            source_authority="FMCSA",
+            extra={
+                "mcNumber": _normalize_mc(mc_number),
+                "error": "Non-local mode requires hosted-adapter compliance verification source.",
+            },
+        )
+        return verification_result, "None"
+
+    if NON_LOCAL_MODE and normalized_provider == "MockBiometricProvider":
+        verification_result = build_result(
+            status_value="Fail",
+            provider_value=NEUTRAL_VERIFICATION_PROVIDER_IDS["biometric_mock"],
+            category="Biometric",
+            method="LivenessPlusDocument",
+            assurance_level="AAL2",
+            score_value=0,
+            token_value=f"biometric-{uuid4().hex[:14]}",
+            source_value="policy-enforcement",
+            extra={"error": "Non-local mode requires trusted external identity verifier attestations."},
+        )
+        return verification_result, "None"
 
     if normalized_provider == "FMCSA":
         fm_token = f"fmcsa-{uuid4().hex[:14]}"

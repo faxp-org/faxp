@@ -30,7 +30,10 @@ def main() -> int:
 
     ensure_state_defaults(state, defaults)
     _assert(state["quick_preset_select"] == "MockBiometric success", "default preset mismatch")
-    _assert(state["provider_cloud_select"] == "MockBiometricProvider", "default provider mismatch")
+    _assert(
+        state["provider_cloud_select"] == "ComplianceVerifier (Trusted Adapter)",
+        "default provider mismatch",
+    )
     _assert(state["policy_profile_select"] == "US_FMCSA_BALANCED_V1", "default policy profile mismatch")
     _assert(state["risk_tier_select"] == 1, "default risk tier mismatch")
 
@@ -51,7 +54,10 @@ def main() -> int:
         state["quick_preset_select"] == prior_preset_selection,
         "preset selection key should remain user-owned",
     )
-    _assert(state["provider_cloud_select"] == "FMCSA (Authority)", "cloud provider label mismatch")
+    _assert(
+        state["provider_cloud_select"] == "ComplianceVerifier (Trusted Adapter)",
+        "cloud provider label mismatch",
+    )
 
     apply_preset_to_state(
         state,

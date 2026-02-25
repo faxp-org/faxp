@@ -1,0 +1,42 @@
+{
+  "registryVersion": "1.0.0",
+  "generatedAt": "2026-02-25T00:00:00Z",
+  "entries": [
+    {
+      "providerId": "compliance.authority-record.adapter",
+      "providerType": "Compliance",
+      "status": "Active",
+      "allowedSources": ["hosted-adapter"],
+      "allowedAssuranceLevels": ["AAL1"],
+      "allowedAttestationKids": [],
+      "notes": "Builder-hosted compliance adapter provider IDs are validated against this registry."
+    },
+    {
+      "providerId": "identity.liveness-document.adapter",
+      "providerType": "Identity",
+      "status": "Active",
+      "allowedSources": ["hosted-adapter"],
+      "allowedAssuranceLevels": ["AAL2", "AAL3"],
+      "allowedAttestationKids": [],
+      "notes": "Builder-hosted identity adapter provider IDs are validated against this registry."
+    },
+    {
+      "providerId": "compliance.authority-record.mock",
+      "providerType": "Compliance",
+      "status": "Inactive",
+      "allowedSources": ["authority-mock"],
+      "allowedAssuranceLevels": ["AAL1"],
+      "allowedAttestationKids": [],
+      "notes": "Mock-only provider; must not be used in non-local mode."
+    },
+    {
+      "providerId": "identity.liveness-document.mock",
+      "providerType": "Identity",
+      "status": "Inactive",
+      "allowedSources": ["mock-biometric"],
+      "allowedAssuranceLevels": ["AAL2"],
+      "allowedAttestationKids": [],
+      "notes": "Mock-only provider; must not be used in non-local mode."
+    }
+  ]
+}
