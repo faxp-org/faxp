@@ -104,6 +104,10 @@ def main() -> int:
         "conformance suite must include accessorial_terms in default checks",
     )
     _assert(
+        "accessorial_terms_profile" in listed_checks.stdout.splitlines(),
+        "conformance suite must include accessorial_terms_profile in default checks",
+    )
+    _assert(
         "protocol_compatibility_profile" in listed_checks.stdout.splitlines(),
         "conformance suite must include protocol_compatibility_profile in default checks",
     )
