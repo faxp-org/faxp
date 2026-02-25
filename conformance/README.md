@@ -185,6 +185,12 @@ Accessorial commercial-term profile check:
 python3 tests/run_accessorial_terms_profile.py
 ```
 
+Booking-plane commercial terms governance check:
+
+```bash
+python3 tests/run_booking_plane_commercial_terms_doc.py
+```
+
 Certification decision record template check:
 
 ```bash

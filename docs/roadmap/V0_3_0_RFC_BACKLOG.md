@@ -72,5 +72,6 @@ Scope policy: Booking-plane and certification governance only.
 2. Telematics/tracking lifecycle model.
 3. POD/BOL custody and document workflow standards.
 4. Invoice/payment/settlement rails.
+5. Operations-plane agent messaging profile (`FAXP-OPS`) until separate scope-expansion RFC is approved.
 
 These remain scope expansions and require separate governance track beyond current protocol boundary.

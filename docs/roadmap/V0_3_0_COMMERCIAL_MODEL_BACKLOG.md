@@ -106,6 +106,23 @@ Purpose: Central place to capture commercial model requirements before implement
 - Acceptance:
   - Clear pre-booking vs post-booking state boundaries.
 
+### E) Scope-Lock Baseline (Commercial Terms)
+
+1. Booking-plane accessorial/addendum contract baseline
+- Target: `v0.3.0`
+- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-rate-model-extensibility.md`
+- Acceptance:
+  - Commercial terms are structured for booking (`PricingMode`, `PayerParty`, `PayeeParty`, optional `CapAmount`).
+  - Settlement/payment execution remains explicitly out of scope in governance docs.
+  - Conformance tests enforce booking-plane-only semantics.
+
+2. Operations-plane communications track (`FAXP-OPS`) governance placeholder
+- Target: `deferred`
+- RFC: `TBD (separate scope-expansion RFC required)`
+- Acceptance:
+  - Track is documented as separate from protocol core.
+  - No protocol-core implementation until RFC/governance approval.
+
 ## Intake Template (for new items)
 
 - Requirement name:
