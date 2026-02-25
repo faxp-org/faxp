@@ -9,3 +9,6 @@ faxp_agent_keys.filled.json
 __pycache__/
 *.pyc
 .DS_Store
+
+# Website build/output
+website/
