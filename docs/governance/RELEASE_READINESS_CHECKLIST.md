@@ -31,6 +31,7 @@ Use this checklist as the final go/no-go gate before a tagged release.
     "docs/governance/REGISTRY_ADMISSION_POLICY.md",
     "docs/governance/REGISTRY_CHANGELOG_POLICY.md",
     "docs/governance/TRUSTED_VERIFIER_ADMISSION_REQUIREMENTS.md",
+    "docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md",
     "docs/governance/CERTIFICATION_DECISION_RECORD_TEMPLATE.md",
     "docs/governance/DECISION_RECORDS_RUNBOOK.md",
     "docs/governance/CERTIFICATION_PLAYBOOK.md",
