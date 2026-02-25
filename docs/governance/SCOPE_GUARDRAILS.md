@@ -37,6 +37,7 @@ These guardrails prevent scope creep into dispatch operations, tracking operatio
 - `DispatchAuthorization` in `ExecutionReport` is currently treated as a booking-time policy gate only.
 - It must not expand into dispatch orchestration message types or downstream dispatch lifecycle state in protocol core.
 - FAXP may enforce trusted-attestation policy and verifier admission criteria, but verifier execution remains implementer-hosted.
+- Verification ownership boundaries are documented in `docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md`.
 
 ## Change Control
 - Any proposed expansion into an out-of-scope domain requires an RFC using `/docs/rfc/RFC_TEMPLATE.md`.

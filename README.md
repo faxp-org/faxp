@@ -106,6 +106,7 @@ This repository includes:
 - Provider integrations (FMCSA, biometric vendors, future verifiers) are adapter concerns and should remain outside protocol-core contracts.
 - `VerificationResult.provider` remains an opaque string in v0.2 compatibility schema; no vendor enum is required.
 - Production adapters are expected to be implementer-hosted; FAXP provides reference implementation + certification contracts.
+- Responsibility split is defined in `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md`.
 
 ## Legacy Field Deprecation Timeline
 

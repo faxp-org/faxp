@@ -6,6 +6,8 @@ Purpose:
 - Keep FAXP protocol governance separate from adapter operations.
 - Standardize certification intake for any builder-hosted adapter.
 - Provide deterministic pass/fail checks before registry acceptance.
+- Responsibility boundary reference:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md`
 
 ## 1) Certification Tiers
 
@@ -49,6 +51,7 @@ Reference paths:
 - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/REGISTRY_OPERATIONS_RUNBOOK.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/REGISTRY_CHANGELOG_POLICY.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/TRUSTED_VERIFIER_ADMISSION_REQUIREMENTS.md`
+- `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/GOVERNANCE_INDEX.json`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/RELEASE_READINESS_CHECKLIST.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/apply_registry_update.py`
