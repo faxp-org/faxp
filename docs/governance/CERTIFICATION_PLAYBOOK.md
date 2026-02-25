@@ -51,6 +51,7 @@ Reference paths:
 - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/REGISTRY_OPERATIONS_RUNBOOK.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/REGISTRY_CHANGELOG_POLICY.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/TRUSTED_VERIFIER_ADMISSION_REQUIREMENTS.md`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/TRUST_MODEL.md`
 - `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/GOVERNANCE_INDEX.json`
@@ -59,6 +60,7 @@ Reference paths:
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/trusted_verifier_registry.sample.json`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/vendor_direct_verifier_profile.v1.json`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/trust_profile.v1.json`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/accessorial_terms_profile.v1.json`
 
 ## 3) Intake Workflow
 
@@ -75,6 +77,9 @@ Reference paths:
 - `python3 tests/run_trusted_verifier_registry.py`
 - `python3 tests/run_vendor_direct_profile.py`
 - `python3 tests/run_trust_profile.py`
+- `python3 tests/run_accessorial_terms.py`
+- `python3 tests/run_accessorial_terms_profile.py`
+- `python3 tests/run_booking_plane_commercial_terms_doc.py`
 - `python3 tests/run_governance_index.py`
 - `python3 tests/run_release_readiness.py`
 - `python3 tests/run_apply_registry_update.py`
@@ -133,6 +138,11 @@ Mandatory gates:
 13. Trust profile checks pass:
 - `python3 tests/run_trust_profile.py`
 - trust profile artifact remains aligned with registry policy, source class semantics, and non-local trust requirements.
+14. Accessorial commercial-term profile checks pass:
+- `python3 tests/run_accessorial_terms.py`
+- `python3 tests/run_accessorial_terms_profile.py`
+- `python3 tests/run_booking_plane_commercial_terms_doc.py`
+- booking-plane accessorial semantics remain explicit, and settlement operations remain out of scope for protocol core.
 
 Additional gates for `TrustedProduction`:
 1. Operational evidence references are present in manifest.

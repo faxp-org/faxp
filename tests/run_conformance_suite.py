@@ -64,6 +64,10 @@ def main() -> int:
         "conformance suite must include release_readiness in default checks",
     )
     _assert(
+        "booking_plane_commercial_terms_doc" in listed_checks.stdout.splitlines(),
+        "conformance suite must include booking_plane_commercial_terms_doc in default checks",
+    )
+    _assert(
         "a2a_profile" in listed_checks.stdout.splitlines(),
         "conformance suite must include a2a_profile in default checks",
     )
