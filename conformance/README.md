@@ -18,6 +18,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `key_lifecycle_policy.sample.json`: sample policy binding active KIDs to signed artifacts.
 - `vendor_direct_verifier_profile.v1.json`: canonical non-local vendor-direct verifier certification profile.
 - `trust_profile.v1.json`: canonical protocol trust baseline for signed envelopes, attestation, and source classes.
+- `accessorial_terms_profile.v1.json`: canonical booking-plane accessorial commercial-term profile.
 - `registry_update.schema.json`: schema for registry operations request payloads.
 - `registry_update.sample.json`: sample registry operations request with upsert/revoke/rollback.
 - `registry_update.sample.audit.log`: sample audit log for registry operations.
@@ -176,6 +177,12 @@ Accessorial commercial-term check:
 
 ```bash
 python3 tests/run_accessorial_terms.py
+```
+
+Accessorial commercial-term profile check:
+
+```bash
+python3 tests/run_accessorial_terms_profile.py
 ```
 
 Certification decision record template check:

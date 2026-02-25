@@ -1,0 +1,73 @@
+{
+  "profileVersion": "1.0.0",
+  "profileId": "accessorial-commercial-terms.v1",
+  "protocol": "FAXP",
+  "scope": "booking-plane-commercial-terms",
+  "description": "Canonical booking-time accessorial policy profile for pricing mode, payer/payee allocation, and evidence intent. Settlement and payment execution remain out of FAXP core scope.",
+  "requiredPolicyFields": [
+    "AllowedTypes",
+    "RequiresApproval",
+    "Currency"
+  ],
+  "termFields": {
+    "required": [
+      "Type",
+      "PricingMode"
+    ],
+    "optional": [
+      "PayerParty",
+      "PayeeParty",
+      "ApprovalRequired",
+      "EvidenceRequired",
+      "EvidenceType",
+      "CapAmount",
+      "Currency",
+      "SettlementReference",
+      "Notes"
+    ]
+  },
+  "pricingModes": [
+    "IncludedInBaseRate",
+    "Reimbursable",
+    "PassThrough",
+    "TBD"
+  ],
+  "partyRoles": [
+    "Broker",
+    "Carrier",
+    "Shipper",
+    "Vendor",
+    "Unknown"
+  ],
+  "evidenceTypes": [
+    "Receipt",
+    "Permit",
+    "EscortInvoice",
+    "Other"
+  ],
+  "entryStatuses": [
+    "Pending",
+    "Approved",
+    "Rejected",
+    "TBD"
+  ],
+  "normativeConstraints": {
+    "nonUsdNotSupportedInV011": true,
+    "passThroughRequiresPayerPayee": true,
+    "reimbursableRequiresPayerPayee": true,
+    "tbdRequiresPayerPayee": true,
+    "evidenceTypeRequiredWhenEvidenceRequired": true,
+    "maxAmountNotRequired": true,
+    "settlementExecutionOutOfScope": true
+  },
+  "conformanceRequirements": {
+    "requiredTests": [
+      "tests/run_accessorial_terms.py",
+      "tests/run_accessorial_terms_profile.py"
+    ],
+    "requiredSuiteChecks": [
+      "accessorial_terms",
+      "accessorial_terms_profile"
+    ]
+  }
+}
