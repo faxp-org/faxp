@@ -31,6 +31,10 @@ def main() -> int:
         "FMCSA hosted adapter (MC 498282)" in presets,
         "legacy hosted-adapter preset alias should remain available",
     )
+    _assert(
+        "Compliance implementer-adapter (MC 498282)" in presets,
+        "compliance implementer-adapter preset should be available",
+    )
 
     ensure_state_defaults(state, defaults)
     _assert(state["quick_preset_select"] == "MockBiometric success", "default preset mismatch")
@@ -46,7 +50,7 @@ def main() -> int:
     apply_preset_to_state(
         state,
         presets,
-        "FMCSA implementer-adapter (MC 498282)",
+        "Compliance implementer-adapter (MC 498282)",
         hosted_fmcsa_configured=False,
     )
     _assert(
@@ -66,7 +70,7 @@ def main() -> int:
     apply_preset_to_state(
         state,
         presets,
-        "FMCSA implementer-adapter (MC 498282)",
+        "Compliance implementer-adapter (MC 498282)",
         hosted_fmcsa_configured=True,
     )
     _assert(
