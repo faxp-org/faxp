@@ -28,10 +28,15 @@ These guardrails prevent scope creep into dispatch operations, tracking operatio
   - remittance
   - payment rails
   - factoring
+- Direct verifier operations:
+  - hosting third-party compliance or biometric services
+  - running ongoing carrier monitoring infrastructure
+  - managing provider credentials for implementer deployments
 
 ## Clarification
 - `DispatchAuthorization` in `ExecutionReport` is currently treated as a booking-time policy gate only.
 - It must not expand into dispatch orchestration message types or downstream dispatch lifecycle state in protocol core.
+- FAXP may enforce trusted-attestation policy and verifier admission criteria, but verifier execution remains implementer-hosted.
 
 ## Change Control
 - Any proposed expansion into an out-of-scope domain requires an RFC using `/docs/rfc/RFC_TEMPLATE.md`.

@@ -48,9 +48,11 @@ Reference paths:
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/create_registry_update.py`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/REGISTRY_OPERATIONS_RUNBOOK.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/REGISTRY_CHANGELOG_POLICY.md`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/TRUSTED_VERIFIER_ADMISSION_REQUIREMENTS.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/GOVERNANCE_INDEX.json`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/RELEASE_READINESS_CHECKLIST.md`
 - `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/apply_registry_update.py`
+- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/trusted_verifier_registry.sample.json`
 
 ## 3) Intake Workflow
 
@@ -64,6 +66,7 @@ Reference paths:
 - `python3 tests/run_key_lifecycle_policy.py`
 - `python3 tests/run_registry_ops_artifacts.py`
 - `python3 tests/run_registry_changelog_artifacts.py`
+- `python3 tests/run_trusted_verifier_registry.py`
 - `python3 tests/run_governance_index.py`
 - `python3 tests/run_release_readiness.py`
 - `python3 tests/run_apply_registry_update.py`
@@ -113,6 +116,9 @@ Mandatory gates:
 10. Release readiness checks pass:
 - `python3 tests/run_release_readiness.py`
 - `RELEASE_READINESS_CHECKLIST.md` coverage matches required artifacts, tests, suite checks, and governance-index sync.
+11. Trusted verifier admission checks pass:
+- `python3 tests/run_trusted_verifier_registry.py`
+- trusted verifier registry artifact is present and runtime trust checks reject non-admitted providers in non-local mode.
 
 Additional gates for `TrustedProduction`:
 1. Operational evidence references are present in manifest.
