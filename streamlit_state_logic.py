@@ -7,8 +7,7 @@ from typing import Any, Mapping, MutableMapping
 
 
 def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]]:
-    return {
-        "FMCSA hosted adapter (MC 498282)": {
+    implementer_adapter_preset = {
             "provider": "FMCSA",
             "policy_profile_id": "US_FMCSA_BALANCED_V1",
             "risk_tier": 1,
@@ -20,9 +19,13 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
             "verification_status": "Success",
             "no_match": False,
             "mc_number": "498282",
-            "fmcsa_source_local": "hosted-adapter",
-            "fmcsa_source_cloud": "hosted-adapter",
-        },
+            "fmcsa_source_local": "implementer-adapter",
+            "fmcsa_source_cloud": "implementer-adapter",
+    }
+    return {
+        "FMCSA implementer-adapter (MC 498282)": dict(implementer_adapter_preset),
+        # Backward-compatible preset alias for previous releases.
+        "FMCSA hosted adapter (MC 498282)": dict(implementer_adapter_preset),
         "FMCSA authority-mock": {
             "provider": "FMCSA",
             "policy_profile_id": "US_FMCSA_BALANCED_V1",
@@ -76,8 +79,8 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
             "verification_status": "Success",
             "no_match": False,
             "mc_number": "498282",
-            "fmcsa_source_local": "hosted-adapter",
-            "fmcsa_source_cloud": "hosted-adapter",
+            "fmcsa_source_local": "implementer-adapter",
+            "fmcsa_source_cloud": "implementer-adapter",
         },
     }
 
@@ -95,7 +98,7 @@ def default_sidebar_state(default_per_mile_bid: float) -> dict[str, Any]:
         "provider_local_select": "FMCSA",
         "provider_cloud_select": "ComplianceVerifier (Trusted Adapter)",
         "fmcsa_source_select_local": "authority-mock",
-        "fmcsa_source_select_cloud": "hosted-adapter",
+        "fmcsa_source_select_cloud": "implementer-adapter",
         "mc_number_input": "498282",
         "verification_status_select": "Success",
         "no_match_checkbox": False,
@@ -146,7 +149,7 @@ def apply_preset_to_state(
             "fmcsa_source_local", "authority-mock"
         )
         cloud_source = preset.get("fmcsa_source_cloud", "authority-mock")
-        if cloud_source == "hosted-adapter" and not hosted_fmcsa_configured:
+        if cloud_source in {"hosted-adapter", "implementer-adapter", "vendor-direct"} and not hosted_fmcsa_configured:
             cloud_source = "authority-mock"
         state["fmcsa_source_select_cloud"] = cloud_source
     else:

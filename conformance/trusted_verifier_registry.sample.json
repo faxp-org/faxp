@@ -6,19 +6,19 @@
       "providerId": "compliance.authority-record.adapter",
       "providerType": "Compliance",
       "status": "Active",
-      "allowedSources": ["hosted-adapter"],
+      "allowedSources": ["implementer-adapter", "vendor-direct", "hosted-adapter"],
       "allowedAssuranceLevels": ["AAL1"],
       "allowedAttestationKids": [],
-      "notes": "Builder-hosted compliance adapter provider IDs are validated against this registry."
+      "notes": "Builder-hosted or vendor-direct compliance provider IDs are validated against this registry."
     },
     {
       "providerId": "identity.liveness-document.adapter",
       "providerType": "Identity",
       "status": "Active",
-      "allowedSources": ["hosted-adapter"],
+      "allowedSources": ["implementer-adapter", "vendor-direct", "hosted-adapter"],
       "allowedAssuranceLevels": ["AAL2", "AAL3"],
       "allowedAttestationKids": [],
-      "notes": "Builder-hosted identity adapter provider IDs are validated against this registry."
+      "notes": "Builder-hosted or vendor-direct identity provider IDs are validated against this registry."
     },
     {
       "providerId": "compliance.authority-record.mock",

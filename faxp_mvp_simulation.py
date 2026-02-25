@@ -1269,9 +1269,12 @@ def parse_args():
     )
     parser.add_argument(
         "--fmcsa-source",
-        choices=["authority-mock", "hosted-adapter"],
+        choices=["authority-mock", "hosted-adapter", "implementer-adapter", "vendor-direct"],
         default="authority-mock",
-        help="FMCSA verification source. 'hosted-adapter' calls a builder-hosted FMCSA wrapper API.",
+        help=(
+            "FMCSA verification source. 'implementer-adapter' and 'vendor-direct' are preferred labels; "
+            "'hosted-adapter' is retained as a backward-compatible alias."
+        ),
     )
     parser.add_argument(
         "--rate-model",
@@ -1863,8 +1866,16 @@ def _enforce_trusted_verifier_registry_result(result, context):
         )
 
     source = str(result.get("source") or "").strip().lower()
+    source_normalized = _normalize_verifier_source(source)
     allowed_sources = registry_entry.get("allowedSources") or []
-    if allowed_sources and source not in allowed_sources:
+    allowed_sources_normalized = {
+        _normalize_verifier_source(item) for item in allowed_sources if str(item or "").strip()
+    }
+    if (
+        allowed_sources
+        and source not in allowed_sources
+        and source_normalized not in allowed_sources_normalized
+    ):
         raise ValueError(
             f"{context}.source '{source}' is not allowed for trusted provider '{provider_id}'."
         )
@@ -1901,11 +1912,38 @@ def _validate_string_array(values, context):
         _bounded_string(item, f"{context}[{idx}]")
 
 
+def _normalize_verifier_source(source_value):
+    source = str(source_value or "").strip().lower()
+    if source in {"hosted-adapter", "implementer-adapter", "builder-hosted-adapter"}:
+        return "implementer-adapter"
+    if source in {"vendor-direct", "vendor-attestation"}:
+        return "vendor-direct"
+    if source in {"authority-mock", "mock-compliance", "authority-only", "live-fmcsa", "fmcsa-api"}:
+        return "authority-only"
+    if source in {"self-attested", "self-attest"}:
+        return "self-attested"
+    if source in {"cache", "cached-fmcsa", "fmcsa-cache"}:
+        return "cached-authority"
+    if source in {"mock-biometric", "simulated", "simulation"}:
+        return "simulated"
+    return source
+
+
+def _normalize_fmcsa_source(fmcsa_source):
+    source = str(fmcsa_source or "").strip().lower()
+    if source in {"hosted-adapter", "implementer-adapter", "vendor-direct"}:
+        return source
+    if source == "authority-mock":
+        return source
+    return source
+
+
 def _derive_verification_mode(verification_result):
     source = str((verification_result or {}).get("source") or "").strip().lower()
-    if source in {"hosted-adapter"}:
+    source_normalized = _normalize_verifier_source(source)
+    if source_normalized in {"implementer-adapter", "vendor-direct", "authority-only"}:
         return "Live"
-    if source in {"cache", "cached-fmcsa", "fmcsa-cache"}:
+    if source_normalized in {"cached-authority"}:
         return "Cached"
     return "Fallback"
 
@@ -2880,6 +2918,7 @@ def run_verification(
     """
     requested_provider = str(provider or "").strip()
     normalized_provider = normalize_verification_provider(requested_provider)
+    normalized_fmcsa_source = _normalize_fmcsa_source(fmcsa_source)
 
     def build_result(
         status_value,
@@ -2902,6 +2941,7 @@ def run_verification(
             "score": int(score_value),
             "token": token_value,
             "source": source_value,
+            "provenance": _normalize_verifier_source(source_value),
             "verifiedAt": now_utc(),
             "evidenceRef": f"sha256:{hashlib.sha256(token_value.encode('utf-8')).hexdigest()[:24]}",
         }
@@ -2916,7 +2956,11 @@ def run_verification(
             result["attestation"] = _build_verifier_attestation(attestation_payload)
         return result
 
-    if NON_LOCAL_MODE and normalized_provider == "FMCSA" and fmcsa_source != "hosted-adapter":
+    if NON_LOCAL_MODE and normalized_provider == "FMCSA" and normalized_fmcsa_source not in {
+        "hosted-adapter",
+        "implementer-adapter",
+        "vendor-direct",
+    }:
         verification_result = build_result(
             status_value="Fail",
             provider_value=NEUTRAL_VERIFICATION_PROVIDER_IDS["compliance_mock"],
@@ -2929,7 +2973,10 @@ def run_verification(
             source_authority="FMCSA",
             extra={
                 "mcNumber": _normalize_mc(mc_number),
-                "error": "Non-local mode requires hosted-adapter compliance verification source.",
+                "error": (
+                    "Non-local mode requires implementer-adapter or vendor-direct compliance "
+                    "verification source."
+                ),
             },
         )
         return verification_result, "None"
@@ -2950,7 +2997,7 @@ def run_verification(
 
     if normalized_provider == "FMCSA":
         fm_token = f"fmcsa-{uuid4().hex[:14]}"
-        if fmcsa_source == "hosted-adapter":
+        if normalized_fmcsa_source in {"hosted-adapter", "implementer-adapter", "vendor-direct"}:
             live = lookup_fmcsa_with_hosted_adapter(mc_number=mc_number)
             if live.get("ok"):
                 live_status = live.get("status", "Fail")
@@ -2964,7 +3011,7 @@ def run_verification(
                     assurance_level="AAL1",
                     score_value=score,
                     token_value=fm_token,
-                    source_value="hosted-adapter",
+                    source_value=normalized_fmcsa_source,
                     source_authority="FMCSA",
                     extra={
                         "mcNumber": _normalize_mc(mc_number),
@@ -2988,7 +3035,7 @@ def run_verification(
                 assurance_level="AAL1",
                 score_value=0,
                 token_value=fm_token,
-                source_value="hosted-adapter",
+                source_value=normalized_fmcsa_source,
                 source_authority="FMCSA",
                 extra={
                     "mcNumber": _normalize_mc(mc_number),
@@ -2997,7 +3044,12 @@ def run_verification(
             )
             return verification_result, "None"
 
-        if fmcsa_source not in {"authority-mock", "hosted-adapter"}:
+        if normalized_fmcsa_source not in {
+            "authority-mock",
+            "hosted-adapter",
+            "implementer-adapter",
+            "vendor-direct",
+        }:
             verification_result = build_result(
                 status_value="Fail",
                 provider_value=NEUTRAL_VERIFICATION_PROVIDER_IDS["compliance_mock"],

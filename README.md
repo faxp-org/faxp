@@ -182,7 +182,7 @@ Hosted FMCSA adapter simulation path:
 ```bash
 python3 faxp_mvp_simulation.py \
   --provider FMCSA \
-  --fmcsa-source hosted-adapter \
+  --fmcsa-source implementer-adapter \
   --mc-number 498282 \
   --policy-profile-id US_FMCSA_BALANCED_V1 \
   --risk-tier 1 \
@@ -193,14 +193,14 @@ python3 faxp_mvp_simulation.py \
 Expected success line:
 - `Booking completed successfully ...`
 
-If verification fails in hosted-adapter mode, that is expected when authority/insurance checks fail for the MC or the adapter fails closed.
+If verification fails in adapter mode, that is expected when authority/insurance checks fail for the MC or the adapter fails closed.
 
 Degraded verification policy demo (provisional/hold path):
 
 ```bash
 python3 faxp_mvp_simulation.py \
   --provider FMCSA \
-  --fmcsa-source hosted-adapter \
+  --fmcsa-source implementer-adapter \
   --mc-number 498282 \
   --policy-profile-id US_FMCSA_BALANCED_V1 \
   --risk-tier 2 \
@@ -215,7 +215,7 @@ Hosted FMCSA adapter simulation path:
 ```bash
 python3 faxp_mvp_simulation.py \
   --provider FMCSA \
-  --fmcsa-source hosted-adapter \
+  --fmcsa-source implementer-adapter \
   --mc-number 498282 \
   --response Accept \
   --verification-status Success
@@ -277,7 +277,8 @@ FAXP_ENFORCE_TRUSTED_VERIFIER_REGISTRY="1"
 ```
 
 Notes:
-- Non-local mode requires `hosted-adapter` compliance verification and fails closed if the adapter URL is missing.
+- Non-local mode requires `implementer-adapter` or `vendor-direct` compliance verification and fails closed if the adapter URL is missing.
+- `hosted-adapter` remains accepted as a backward-compatible alias for `implementer-adapter`.
 - Non-local mode enforces trusted verifier registry validation on verification results.
 - Access key is enforced when `FAXP_APP_MODE` is non-local.
 

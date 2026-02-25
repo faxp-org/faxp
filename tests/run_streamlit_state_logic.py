@@ -27,6 +27,10 @@ def main() -> int:
     defaults = default_sidebar_state(2.62)
     presets = build_quick_presets(2.62)
     state: dict[str, object] = {}
+    _assert(
+        "FMCSA hosted adapter (MC 498282)" in presets,
+        "legacy hosted-adapter preset alias should remain available",
+    )
 
     ensure_state_defaults(state, defaults)
     _assert(state["quick_preset_select"] == "MockBiometric success", "default preset mismatch")
@@ -42,7 +46,7 @@ def main() -> int:
     apply_preset_to_state(
         state,
         presets,
-        "FMCSA hosted adapter (MC 498282)",
+        "FMCSA implementer-adapter (MC 498282)",
         hosted_fmcsa_configured=False,
     )
     _assert(
@@ -62,12 +66,12 @@ def main() -> int:
     apply_preset_to_state(
         state,
         presets,
-        "FMCSA hosted adapter (MC 498282)",
+        "FMCSA implementer-adapter (MC 498282)",
         hosted_fmcsa_configured=True,
     )
     _assert(
-        state["fmcsa_source_select_cloud"] == "hosted-adapter",
-        "hosted adapter should remain selected when configured",
+        state["fmcsa_source_select_cloud"] == "implementer-adapter",
+        "implementer adapter should remain selected when configured",
     )
 
     apply_preset_to_state(
