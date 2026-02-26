@@ -164,6 +164,64 @@ def main() -> int:
         "RequiredEquipmentTags[0] must be one of",
     )
 
+    alias_load_search = {
+        "OriginState": "TX",
+        "DestinationState": "GA",
+        "EquipmentType": "Van - Hazmat",
+        "EquipmentClass": "van",
+        "EquipmentSubClass": "hazmat",
+        "RequiredEquipmentTags": ["hazmat"],
+        "TrailerLengthMin": 48,
+        "TrailerLengthMax": 53,
+        "PickupDate": "2026-03-01",
+        "RateModel": "PerMile",
+        "UnitBasis": "mile",
+        "MaxRate": 2.8,
+    }
+    validate_message_body("LoadSearch", alias_load_search)
+    _assert(
+        alias_load_search["EquipmentClass"] == "Van",
+        "LoadSearch EquipmentClass alias should canonicalize to Van",
+    )
+    _assert(
+        alias_load_search["EquipmentSubClass"] == "Hazmat",
+        "LoadSearch EquipmentSubClass alias should canonicalize to Hazmat",
+    )
+    _assert(
+        alias_load_search["RequiredEquipmentTags"] == ["HazmatCapable"],
+        "LoadSearch tag aliases should canonicalize to HazmatCapable",
+    )
+
+    alias_truck_search = {
+        "LocationRadiusMiles": 120,
+        "OriginState": "TX",
+        "EquipmentType": "Van - Hazmat",
+        "EquipmentClass": "van",
+        "EquipmentSubClass": "hazmat",
+        "RequiredEquipmentTags": ["hazmat"],
+        "TrailerLengthMin": 48,
+        "TrailerLengthMax": 53,
+        "AvailableFrom": "2026-03-01",
+        "AvailableTo": "2026-03-03",
+        "RateModel": "PerMile",
+        "UnitBasis": "mile",
+        "MinRate": 2.0,
+        "MaxRate": 3.0,
+    }
+    validate_message_body("TruckSearch", alias_truck_search)
+    _assert(
+        alias_truck_search["EquipmentClass"] == "Van",
+        "TruckSearch EquipmentClass alias should canonicalize to Van",
+    )
+    _assert(
+        alias_truck_search["EquipmentSubClass"] == "Hazmat",
+        "TruckSearch EquipmentSubClass alias should canonicalize to Hazmat",
+    )
+    _assert(
+        alias_truck_search["RequiredEquipmentTags"] == ["HazmatCapable"],
+        "TruckSearch tag aliases should canonicalize to HazmatCapable",
+    )
+
     valid_bid = {
         "LoadID": "load-equipment-001",
         "Rate": build_rate("PerMile", 2.62),
@@ -234,9 +292,51 @@ def main() -> int:
         "strict trailer length mismatch should use EquipmentCompatibilityDispute",
     )
 
+    load["EquipmentType"] = "Van - Hazmat"
+    load["EquipmentClass"] = "Van"
+    load["EquipmentSubClass"] = "Hazmat"
+    load["EquipmentTags"] = ["HazmatCapable"]
+    load["TrailerLength"] = 53
     truck = carrier.post_new_truck(rate_model="PerMile")
+    truck["EquipmentType"] = "Van - Hazmat"
+    truck["EquipmentClass"] = "Van"
+    truck["EquipmentSubClass"] = "Hazmat"
+    truck["EquipmentTags"] = ["HazmatCapable"]
+    truck["TrailerLength"] = 53
+
+    parity_load_filters = dict(alias_load_search)
+    parity_load_filters["PickupDate"] = load["PickupEarliest"]
+    parity_load_matches = broker.search_loads(parity_load_filters)
+    _assert(
+        len(parity_load_matches) >= 1,
+        "LoadSearch should match using canonicalized alias filters for Van/Hazmat",
+    )
+    parity_truck_filters = dict(alias_truck_search)
+    parity_truck_filters["AvailableFrom"] = truck["AvailabilityDate"]
+    parity_truck_filters["AvailableTo"] = truck["AvailabilityDate"]
+    parity_truck_matches = carrier.search_trucks(parity_truck_filters)
+    _assert(
+        len(parity_truck_matches) >= 1,
+        "TruckSearch should match using canonicalized alias filters for Van/Hazmat",
+    )
+
+    parity_load_filters_no_match = dict(alias_load_search)
+    parity_load_filters_no_match["EquipmentSubClass"] = "air ride"
+    validate_message_body("LoadSearch", parity_load_filters_no_match)
+    _assert(
+        not broker.search_loads(parity_load_filters_no_match),
+        "LoadSearch subclass mismatch should produce no matches",
+    )
+    parity_truck_filters_no_match = dict(alias_truck_search)
+    parity_truck_filters_no_match["EquipmentSubClass"] = "air ride"
+    validate_message_body("TruckSearch", parity_truck_filters_no_match)
+    _assert(
+        not carrier.search_trucks(parity_truck_filters_no_match),
+        "TruckSearch subclass mismatch should produce no matches",
+    )
+
     truck_bid = broker.create_truck_bid_request(truck, bid_amount=2.62)
-    truck_bid["EquipmentAcceptance"]["EquipmentClass"] = "Van"
+    truck_bid["EquipmentAcceptance"]["EquipmentClass"] = "Flatbed"
     truck_response = carrier.respond_to_truck_bid(truck_bid, forced_response="Accept")
     _assert(truck_response["ResponseType"] == "Counter", "truck equipment mismatch must counter")
     _assert(
