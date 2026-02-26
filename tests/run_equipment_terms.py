@@ -53,8 +53,82 @@ def _base_new_load() -> dict:
     }
 
 
+def _alias_normalization_matrix() -> list[tuple[str, str, str]]:
+    return [
+        ("Dry Van", "Van", ""),
+        ("Reefer", "Reefer", ""),
+        ("Flatbed", "Flatbed", ""),
+        ("Auto Carrier", "AutoCarrier", ""),
+        ("B-Train", "BTrain", ""),
+        ("Conestoga", "Flatbed", "Conestoga"),
+        ("Container", "Container", ""),
+        ("Container - Insultated", "Container", "Insulated"),
+        ("Container - Refrigerated", "Container", "Insulated"),
+        ("Conveyor", "Conveyor", ""),
+        ("Double Drop", "DoubleDrop", "Double"),
+        ("Drop Deck Landoll", "StepDeck", "Landoll"),
+        ("Dump Trailer", "DumpTrailer", ""),
+        ("Flatbed - Air Ride", "Flatbed", "AirRide"),
+        ("Flatbed - Contestoga", "Flatbed", "Conestoga"),
+        ("Flatbed - Double", "Flatbed", "Double"),
+        ("Flatbed - Hazmat", "Flatbed", "Hazmat"),
+        ("Flatbed - Hotshot", "Flatbed", "Hotshot"),
+        ("Flatbed - Maxi", "Flatbed", "Maxi"),
+        ("Flabtbed - Over Dimension", "Flatbed", "OverDimension"),
+        ("Hopper Bottom", "HopperBottom", ""),
+        ("Lowboy", "Lowboy", ""),
+        ("RGN", "RGN", ""),
+        ("Lowboy - Over Dimension", "Lowboy", "OverDimension"),
+        ("Moving Van", "MovingVan", ""),
+        ("Pneumatic", "Pneumatic", ""),
+        ("Power Only", "PowerOnly", ""),
+        ("Reefer - Air Ride", "Reefer", "AirRide"),
+        ("Reefer - Double", "Reefer", "Double"),
+        ("Reefer - Hazmat", "Reefer", "Hazmat"),
+        ("Reefer - Intermodal", "Reefer", "Intermodal"),
+        ("Removeable Gooseneck", "RGN", ""),
+        ("Stepdeck", "StepDeck", ""),
+        ("Stepdeck - Conestoga", "StepDeck", "Conestoga"),
+        ("Straight Box Truck", "StraightBoxTruck", ""),
+        ("Stretch Trailer", "Flatbed", "Stretch"),
+        ("Tanker - Aluminum", "Tanker", "Aluminum"),
+        ("Tanker - Intermodal", "Tanker", "Intermodal"),
+        ("Tanker - Steel", "Tanker", "Steel"),
+        ("Van - Air Ride", "Van", "AirRide"),
+        ("Van - Conestoga", "Van", "Conestoga"),
+        ("Van - Hazmat", "Van", "Hazmat"),
+        ("Van - Hotshot", "Van", "Hotshot"),
+        ("Van - Insulated", "Van", "Insulated"),
+        ("Van - Intermodal", "Van", "Intermodal"),
+        ("Van - Lift Gate", "Van", "LiftGate"),
+        ("Van - Open Top", "Van", "OpenTop"),
+        ("Van - Roller Bed", "Van", "RollerBed"),
+        ("Van - Triple", "Van", "Triple"),
+        ("Van - Vented", "Van", "Vented"),
+        ("Sprinter Van", "SprinterVan", ""),
+        ("Sprinter Van - Hazmat", "SprinterVan", "Hazmat"),
+    ]
+
+
 def main() -> int:
     validate_message_body("NewLoad", _base_new_load())
+
+    for equipment_type, expected_class, expected_subclass in _alias_normalization_matrix():
+        alias_load = _base_new_load()
+        alias_load["EquipmentType"] = equipment_type
+        alias_load.pop("EquipmentClass", None)
+        alias_load.pop("EquipmentSubClass", None)
+        alias_load.pop("EquipmentTags", None)
+        validate_message_body("NewLoad", alias_load)
+        _assert(
+            alias_load["EquipmentClass"] == expected_class,
+            f"{equipment_type}: expected EquipmentClass={expected_class}, got {alias_load['EquipmentClass']}",
+        )
+        actual_subclass = alias_load.get("EquipmentSubClass", "")
+        _assert(
+            actual_subclass == expected_subclass,
+            f"{equipment_type}: expected EquipmentSubClass={expected_subclass}, got {actual_subclass}",
+        )
 
     special_missing_desc = _base_new_load()
     special_missing_desc["EquipmentClass"] = "Special"
