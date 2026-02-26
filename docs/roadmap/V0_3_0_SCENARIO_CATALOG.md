@@ -122,6 +122,16 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
   - Carrier bid declares single/team capability.
   - Policy handles mismatch deterministically.
 
+### S13: External Load Reference Correlation
+
+- Description: Broker and shipper need neutral cross-system reference numbers distinct from protocol `LoadID`.
+- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- Target: `v0.3.1`
+- Expected outcome:
+  - `NewLoad` can include `LoadReferenceNumbers` with neutral primary/secondary reference numbers.
+  - Additional typed references support partner-specific identifiers without schema churn.
+  - `ExecutionReport` preserves references for downstream TMS/document handoff.
+
 ## Scenario Expansion Policy
 
 1. New scenario proposals must be added here first.

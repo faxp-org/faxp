@@ -95,6 +95,14 @@ Purpose: Central place to capture commercial model requirements before implement
   - Carrier bid can declare provided configuration.
   - Mismatch can trigger negotiation or fail-closed per policy.
 
+6. Neutral external load reference metadata
+- Target: `v0.3.1`
+- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- Acceptance:
+  - Load carries `LoadReferenceNumbers` distinct from protocol `LoadID`.
+  - Supports neutral `PrimaryReferenceNumber` / `SecondaryReferenceNumber` and typed additional references.
+  - Execution report snapshots references for cross-system correlation.
+
 ### D) Future Commercial Scenarios
 
 1. Additional rate structures (hourly, lane-minimums, tiered pricing)

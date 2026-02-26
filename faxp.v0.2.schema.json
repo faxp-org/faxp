@@ -95,6 +95,7 @@
         "TrailerLength": { "type": "number" },
         "Weight": { "type": "number" },
         "Commodity": { "type": "string" },
+        "LoadReferenceNumbers": { "type": "object" },
         "Rate": { "$ref": "#/$defs/Rate" },
         "RequireTracking": { "type": "boolean" }
       },
@@ -304,6 +305,7 @@
         "Status": { "type": "string", "enum": ["Booked"] },
         "Timestamp": { "type": "string" },
         "AgreedRate": { "$ref": "#/$defs/Rate" },
+        "LoadReferenceNumbers": { "type": "object" },
         "VerifiedBadge": {
           "type": "string",
           "enum": ["None", "Basic", "Premium"]

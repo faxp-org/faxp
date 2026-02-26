@@ -44,6 +44,8 @@ def main() -> int:
             "TrailerLengthMin",
             "DriverConfiguration",
             "DriverConfigurationAcceptance",
+            "LoadReferenceNumbers",
+            "PrimaryReferenceNumber",
             "PassThrough",
             "Reimbursable",
             "Settlement and payment execution",

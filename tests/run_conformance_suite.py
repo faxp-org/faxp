@@ -160,6 +160,14 @@ def main() -> int:
         "conformance suite must include driver_configuration_profile in default checks",
     )
     _assert(
+        "load_reference_numbers_terms" in listed_checks.stdout.splitlines(),
+        "conformance suite must include load_reference_numbers_terms in default checks",
+    )
+    _assert(
+        "load_reference_numbers_profile" in listed_checks.stdout.splitlines(),
+        "conformance suite must include load_reference_numbers_profile in default checks",
+    )
+    _assert(
         "equipment_terms" in listed_checks.stdout.splitlines(),
         "conformance suite must include equipment_terms in default checks",
     )
