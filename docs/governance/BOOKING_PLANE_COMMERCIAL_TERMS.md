@@ -19,7 +19,7 @@ It does not run dispatch operations, document adjudication, or payment execution
 4. Schedule commitments as booking terms (`PickupEarliest`/`PickupLatest`, optional `DeliveryEarliest`/`DeliveryLatest`, and optional pickup/delivery time windows) with explicit acceptance/counter semantics (`ScheduleAcceptance`).
 5. Equipment taxonomy terms as booking compatibility commitments (`EquipmentClass`, optional `EquipmentSubClass`, optional `EquipmentTags`, optional trailer length range via `TrailerLengthMin`/`TrailerLengthMax`, optional `TrailerCount`) with explicit acceptance/counter semantics (`EquipmentAcceptance`).
 6. Driver configuration terms (`DriverConfiguration`) as booking commitments (`Single` or `Team`) with explicit acceptance/counter semantics (`DriverConfigurationAcceptance`).
-7. Neutral external reference metadata (`LoadReferenceNumbers`) for broker/shipper/TMS correlation, separate from `LoadID`.
+7. Neutral external reference metadata (`LoadReferenceNumbers`) for broker/shipper/TMS correlation, separate from `LoadID`. Canonical keys include `PrimaryReferenceNumber`, optional `SecondaryReferenceNumber`, and optional `Additional` reference entries.
 8. Detention commercial policy terms as booking metadata (for example grace period, hourly amount, billing increment, and delay/location evidence intent).
 9. Multi-stop terms as booking commitments (ordered pickup/drop plan, stop-count expectations, and stop-plan acceptance/counter semantics).
 10. Carrier acceptance of these terms in booking negotiation.
