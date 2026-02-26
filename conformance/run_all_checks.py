@@ -60,6 +60,8 @@ def _suite_commands() -> list[tuple[str, list[str]]]:
         ("accessorial_terms_profile", [python, str(TESTS_DIR / "run_accessorial_terms_profile.py")]),
         ("detention_terms_profile", [python, str(TESTS_DIR / "run_detention_terms_profile.py")]),
         ("accessorial_type_registry", [python, str(TESTS_DIR / "run_accessorial_type_registry.py")]),
+        ("multi_stop_terms", [python, str(TESTS_DIR / "run_multi_stop_terms.py")]),
+        ("multi_stop_terms_profile", [python, str(TESTS_DIR / "run_multi_stop_terms_profile.py")]),
         ("protocol_compatibility_profile", [python, str(TESTS_DIR / "run_protocol_compatibility_profile.py")]),
         ("protocol_compatibility_signature", [python, str(TESTS_DIR / "run_protocol_compatibility_signature.py")]),
         ("protocol_version_negotiation", [python, str(TESTS_DIR / "run_protocol_version_negotiation.py")]),
