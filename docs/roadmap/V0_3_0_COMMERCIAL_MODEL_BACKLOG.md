@@ -81,7 +81,7 @@ Purpose: Central place to capture commercial model requirements before implement
 
 4. Equipment taxonomy expansion (specialty trailers + dimensional constraints)
 - Target: `v0.3.x`
-- RFC: `TBD (new RFC required)`
+- RFC: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-equipment-taxonomy-expansion.md`
 - Acceptance:
   - Trailer type vocabulary includes `Hopper`, `StepDeck`, and others.
   - Trailer size/length is normalized and validated by equipment type.
