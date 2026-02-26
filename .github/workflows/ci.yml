@@ -57,6 +57,7 @@ jobs:
             scripts/incident_drill.sh \
             scripts/run_a2a_conformance.sh \
             scripts/run_mcp_conformance.sh \
+            scripts/run_release_smoke_local.sh \
             scripts/run_secure_demo.sh \
             conformance/quickstart/make_conformance_bundle.sh
 
@@ -69,6 +70,7 @@ jobs:
             scripts/incident_drill.sh \
             scripts/run_a2a_conformance.sh \
             scripts/run_mcp_conformance.sh \
+            scripts/run_release_smoke_local.sh \
             scripts/run_secure_demo.sh \
             conformance/quickstart/make_conformance_bundle.sh
 
@@ -200,6 +202,20 @@ jobs:
       - name: Release readiness checks
         run: |
           python tests/run_release_readiness.py
+
+      - name: Canonical local release smoke script
+        run: |
+          REPORT_PATH="$RUNNER_TEMP/faxp_conformance_suite_report.ci_local_smoke.json"
+          ./scripts/run_release_smoke_local.sh "$REPORT_PATH"
+          python - <<'PY' "$REPORT_PATH"
+          import json
+          import sys
+          from pathlib import Path
+          report_path = Path(sys.argv[1])
+          payload = json.loads(report_path.read_text(encoding="utf-8"))
+          print("[INFO] Canonical smoke summary:", json.dumps(payload.get("summary", {}), sort_keys=True))
+          print("[INFO] Canonical smoke report:", str(report_path))
+          PY
 
       - name: Booking-plane commercial terms governance checks
         run: |
