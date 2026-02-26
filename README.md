@@ -11,6 +11,21 @@ This repository includes:
 - Security controls (message signing, verifier signing, replay/TTL, key rotation, incident drill).
 - CI checks for parser regressions, Streamlit state regressions, and schema compatibility.
 
+## One-Command Local Release Smoke
+
+Run the same local-mode gate path used for release validation:
+
+```bash
+cd /Users/zglitch009/projects/logistics-ai/FIX-F
+./scripts/run_release_smoke_local.sh
+```
+
+Optional conformance report path:
+
+```bash
+./scripts/run_release_smoke_local.sh /tmp/faxp_conformance_suite_report.local_smoke.json
+```
+
 ## Release Checkpoints
 
 - `v0.2.0-alpha.1`: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/releases/RELEASE_NOTES_v0.2.0-alpha.1.md`
