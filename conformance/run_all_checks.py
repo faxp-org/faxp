@@ -65,6 +65,10 @@ def _suite_commands() -> list[tuple[str, list[str]]]:
         ("cross_version_fixtures", [python, str(TESTS_DIR / "run_cross_version_fixtures.py")]),
         ("trusted_verifier_registry", [python, str(TESTS_DIR / "run_trusted_verifier_registry.py")]),
         ("vendor_direct_profile", [python, str(TESTS_DIR / "run_vendor_direct_profile.py")]),
+        (
+            "vendor_direct_attestation_flow",
+            [python, str(TESTS_DIR / "run_vendor_direct_attestation_flow.py")],
+        ),
         ("trust_profile", [python, str(TESTS_DIR / "run_trust_profile.py")]),
         ("registry_apply", [python, str(TESTS_DIR / "run_apply_registry_update.py")]),
         ("certification_artifacts", [python, str(TESTS_DIR / "run_certification_artifacts.py")]),
