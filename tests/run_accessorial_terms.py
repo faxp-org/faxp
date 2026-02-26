@@ -31,7 +31,7 @@ def _expect_validation_error(message_type: str, body: dict, text: str) -> None:
 
 def _base_accessorial_policy() -> dict:
     return {
-        "AllowedTypes": ["UnloadingFee", "OverweightPermit", "EscortVehicle"],
+        "AllowedTypes": ["UnloadingFee", "OverweightPermit", "EscortVehicle", "Detention"],
         "RequiresApproval": True,
         "MaxTotal": 300.0,
         "Currency": "USD",
@@ -66,6 +66,24 @@ def _base_accessorial_policy() -> dict:
                 "EvidenceRequired": True,
                 "EvidenceType": "EscortInvoice",
                 "Currency": "USD",
+            },
+            {
+                "Type": "Detention",
+                "PricingMode": "Reimbursable",
+                "PayerParty": "Broker",
+                "PayeeParty": "Carrier",
+                "ApprovalRequired": True,
+                "EvidenceRequired": False,
+                "Currency": "USD",
+                "DetentionTerms": {
+                    "GracePeriodMinutes": 120,
+                    "RateAmount": 25.0,
+                    "RateUnit": "Hour",
+                    "BillingIncrementMinutes": 60,
+                    "RequiresDelayNotice": True,
+                    "RequiresLocationEvidence": True,
+                    "LocationEvidenceType": "GPS",
+                },
             },
         ],
     }
@@ -119,11 +137,39 @@ def main() -> int:
         )
 
         bad_type = _base_accessorial_policy()
-        bad_type["Terms"][2]["Type"] = "Detention"
+        bad_type["Terms"][2]["Type"] = "UnknownType"
         _expect_validation_error(
             "NewLoad",
             {**new_load, "AccessorialPolicy": bad_type},
             "Type must be present in NewLoad.AccessorialPolicy.AllowedTypes",
+        )
+
+        missing_detention_terms = _base_accessorial_policy()
+        del missing_detention_terms["Terms"][3]["DetentionTerms"]
+        _expect_validation_error(
+            "NewLoad",
+            {**new_load, "AccessorialPolicy": missing_detention_terms},
+            "missing required fields",
+        )
+
+        invalid_detention_evidence = _base_accessorial_policy()
+        invalid_detention_evidence["Terms"][3]["DetentionTerms"]["LocationEvidenceType"] = "Camera"
+        _expect_validation_error(
+            "NewLoad",
+            {**new_load, "AccessorialPolicy": invalid_detention_evidence},
+            "LocationEvidenceType must be one of",
+        )
+
+        invalid_detention_attachment = _base_accessorial_policy()
+        invalid_detention_attachment["Terms"][0]["DetentionTerms"] = {
+            "GracePeriodMinutes": 120,
+            "RateAmount": 25.0,
+            "RateUnit": "Hour",
+        }
+        _expect_validation_error(
+            "NewLoad",
+            {**new_load, "AccessorialPolicy": invalid_detention_attachment},
+            "DetentionTerms is only allowed when Type is 'Detention'",
         )
 
         bid_request = {
@@ -132,7 +178,7 @@ def main() -> int:
             "AvailabilityDate": "2026-03-01",
             "AccessorialPolicyAcceptance": {
                 "Accepted": True,
-                "AllowedTypes": ["UnloadingFee", "OverweightPermit", "EscortVehicle"],
+                "AllowedTypes": ["UnloadingFee", "OverweightPermit", "EscortVehicle", "Detention"],
             },
         }
         validate_message_body("BidRequest", bid_request)
@@ -185,7 +231,7 @@ def main() -> int:
         bad_execution = {
             **execution_report,
             "Accessorials": [
-                {"Type": "Detention", "Amount": 80.0, "Currency": "USD", "Status": "Approved"}
+                {"Type": "Layover", "Amount": 80.0, "Currency": "USD", "Status": "Approved"}
             ],
         }
         _expect_validation_error(

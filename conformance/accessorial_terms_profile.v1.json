@@ -3,7 +3,7 @@
   "profileId": "accessorial-commercial-terms.v1",
   "protocol": "FAXP",
   "scope": "booking-plane-commercial-terms",
-  "description": "Canonical booking-time accessorial policy profile for pricing mode, payer/payee allocation, and evidence intent. Settlement and payment execution remain out of FAXP core scope.",
+  "description": "Canonical booking-time accessorial policy profile for pricing mode, payer/payee allocation, evidence intent, and detention commercial terms. Settlement and payment execution remain out of FAXP core scope.",
   "requiredPolicyFields": [
     "AllowedTypes",
     "RequiresApproval",
@@ -23,7 +23,31 @@
       "CapAmount",
       "Currency",
       "SettlementReference",
+      "Notes",
+      "DetentionTerms"
+    ]
+  },
+  "detentionTerms": {
+    "required": [
+      "GracePeriodMinutes",
+      "RateAmount",
+      "RateUnit"
+    ],
+    "optional": [
+      "BillingIncrementMinutes",
+      "RequiresDelayNotice",
+      "RequiresLocationEvidence",
+      "LocationEvidenceType",
       "Notes"
+    ],
+    "rateUnits": [
+      "Hour"
+    ],
+    "locationEvidenceTypes": [
+      "GPS",
+      "ELDPosition",
+      "GeofenceCheckIn",
+      "Other"
     ]
   },
   "pricingModes": [
@@ -57,6 +81,9 @@
     "reimbursableRequiresPayerPayee": true,
     "tbdRequiresPayerPayee": true,
     "evidenceTypeRequiredWhenEvidenceRequired": true,
+    "detentionTermsRequiredForDetentionType": true,
+    "detentionTermsOnlyAllowedForDetentionType": true,
+    "locationEvidenceTypeRequiredWhenLocationEvidenceRequired": true,
     "maxAmountNotRequired": true,
     "settlementExecutionOutOfScope": true
   },
