@@ -28,16 +28,23 @@ def main() -> int:
     presets = build_quick_presets(2.62)
     state: dict[str, object] = {}
     _assert(
-        "FMCSA hosted adapter (MC 498282)" in presets,
-        "legacy hosted-adapter preset alias should remain available",
+        "Compliance implementer-adapter (balanced)" in presets,
+        "compliance implementer-adapter balanced preset should be available",
     )
     _assert(
-        "Compliance implementer-adapter (MC 498282)" in presets,
-        "compliance implementer-adapter preset should be available",
+        "Compliance strict mileage policy" in presets,
+        "strict mileage policy preset should be available",
+    )
+    _assert(
+        "Identity verifier (mock success)" in presets,
+        "identity mock success preset should be available",
     )
 
     ensure_state_defaults(state, defaults)
-    _assert(state["quick_preset_select"] == "MockBiometric success", "default preset mismatch")
+    _assert(
+        state["quick_preset_select"] == "Identity verifier (mock success)",
+        "default preset mismatch",
+    )
     _assert(
         state["provider_cloud_select"] == "ComplianceVerifier (Trusted Adapter)",
         "default provider mismatch",
@@ -59,7 +66,7 @@ def main() -> int:
     apply_preset_to_state(
         state,
         presets,
-        "Compliance implementer-adapter (MC 498282)",
+        "Compliance implementer-adapter (balanced)",
         hosted_fmcsa_configured=False,
     )
     _assert(
@@ -79,7 +86,7 @@ def main() -> int:
     apply_preset_to_state(
         state,
         presets,
-        "Compliance implementer-adapter (MC 498282)",
+        "Compliance implementer-adapter (balanced)",
         hosted_fmcsa_configured=True,
     )
     _assert(
@@ -109,6 +116,15 @@ def main() -> int:
         state["exception_approval_ref_input"] == "APPROVAL-DEMO-001",
         "exception approval ref mismatch",
     )
+
+    apply_preset_to_state(
+        state,
+        presets,
+        "Compliance strict mileage policy",
+        hosted_fmcsa_configured=True,
+    )
+    _assert(state["provider_local_select"] == "FMCSA", "strict preset provider mismatch")
+    _assert(state["mileage_policy_select"] == "strict", "strict preset mileage policy mismatch")
 
     source = (PROJECT_ROOT / "streamlit_app.py").read_text(encoding="utf-8")
     _assert(
