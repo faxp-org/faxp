@@ -28,6 +28,7 @@ from faxp_mvp_simulation import (
     get_protocol_run_id,
     reset_protocol_runtime_state,
     run_verification,
+    resolve_agent_id,
     set_protocol_run_id,
     validate_envelope,
 )
@@ -149,6 +150,8 @@ def reset_state():
     reset_protocol_runtime_state()
     st.session_state.broker = BrokerAgent("Broker Agent")
     st.session_state.carrier = CarrierAgent("Carrier Agent")
+    st.session_state.broker_agent_id = resolve_agent_id(st.session_state.broker.name)
+    st.session_state.carrier_agent_id = resolve_agent_id(st.session_state.carrier.name)
     st.session_state.messages = []
     st.session_state.summary = ""
     st.session_state.execution_report = None
@@ -530,6 +533,10 @@ with st.sidebar:
         f"Runtime mode: {'cloud-safe' if CLOUD_SAFE_MODE else 'full/local'} "
         f"(FAXP_APP_MODE={APP_MODE})"
     )
+    st.caption(
+        f"Agent IDs: Broker={st.session_state.get('broker_agent_id', 'n/a')} | "
+        f"Carrier={st.session_state.get('carrier_agent_id', 'n/a')}"
+    )
     preset_name = st.selectbox(
         "Quick Preset",
         list(QUICK_PRESETS.keys()),
@@ -774,6 +781,17 @@ st.json(
     {
         "Broker": getattr(st.session_state.broker, "verification_capabilities", {}),
         "Carrier": getattr(st.session_state.carrier, "verification_capabilities", {}),
+    }
+)
+
+st.subheader("Agent Identity")
+st.json(
+    {
+        "BrokerName": getattr(st.session_state.broker, "name", "n/a"),
+        "BrokerAgentID": st.session_state.get("broker_agent_id", "n/a"),
+        "CarrierName": getattr(st.session_state.carrier, "name", "n/a"),
+        "CarrierAgentID": st.session_state.get("carrier_agent_id", "n/a"),
+        "IdentityBinding": "Envelope.FromAgentID/ToAgentID are signed and validated against key mapping.",
     }
 )
 

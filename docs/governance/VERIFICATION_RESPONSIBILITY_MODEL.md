@@ -42,6 +42,13 @@ Legacy alias:
 - FAXP enforces attestation validity and trust policy.
 - FAXP does not execute external verification itself.
 - Non-local runs fail closed when trusted verification requirements are unmet.
+- FAXP does not determine regulatory eligibility; it authenticates protocol messages and can transport optional verifier evidence.
+
+## Recommended Handoff Flow
+1. FAXP booking complete (`ExecutionReport`).
+2. Broker/carrier systems generate native legal docs (rate con/addendum) from FAXP terms.
+3. Existing onboarding/payment/dispatch process executes in TMS/portals.
+4. FAXP stays out of dispatch tracking and payment rails.
 
 ## Certification Implications
 - Admission checks evaluate provider/source/assurance alignment and signature validity.
