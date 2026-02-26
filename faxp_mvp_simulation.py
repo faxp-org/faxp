@@ -155,6 +155,7 @@ EXPECTED_VERIFIER_COMPONENT_SHA256 = os.getenv(
     "",
 ).strip().lower()
 SUPPORTED_SIGNATURE_SCHEMES = {"HMAC_SHA256", "ED25519"}
+AGENT_ID_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._:-]{1,127}$")
 ALLOWED_EXTERNAL_SECRET_KEYS = {
     "FAXP_SIGNATURE_SCHEME",
     "FAXP_MESSAGE_SIGNING_KEY",
@@ -192,6 +193,24 @@ ROUTE_POLICY = {
     "ExecutionReport": {("Broker", "Carrier")},
     "AmendRequest": {("Broker", "Carrier")},
 }
+
+
+def _default_agent_id(agent_name):
+    normalized_name = str(agent_name or "").strip().lower()
+    slug = re.sub(r"[^a-z0-9]+", "-", normalized_name).strip("-")
+    if not slug:
+        digest = hashlib.sha256(normalized_name.encode("utf-8")).hexdigest()[:10]
+        slug = f"agent-{digest}"
+    return slug[:128]
+
+
+def _normalize_agent_id(value):
+    candidate = str(value or "").strip().lower()
+    if not candidate:
+        return ""
+    if not AGENT_ID_PATTERN.fullmatch(candidate):
+        return ""
+    return candidate
 SEEN_MESSAGE_IDS = set()
 SEEN_NONCES = set()
 LAST_AUDIT_HASH = ""
@@ -407,16 +426,24 @@ def _load_agent_key_registry():
         if not isinstance(config, dict):
             raise RuntimeError(f"Agent key registry entry for '{agent_name}' must be an object.")
         active_kid = str(config.get("active_kid") or "").strip()
+        agent_id = _normalize_agent_id(config.get("agent_id")) or _default_agent_id(agent_name)
         private_keys = {}
         public_keys = {}
         metadata = {}
+        allowed_kids = set()
 
         if isinstance(config.get("private_keys"), dict):
             for kid, path in config["private_keys"].items():
-                private_keys[str(kid).strip()] = os.path.realpath(str(path))
+                kid_text = str(kid).strip()
+                private_keys[kid_text] = os.path.realpath(str(path))
+                if kid_text:
+                    allowed_kids.add(kid_text)
         if isinstance(config.get("public_keys"), dict):
             for kid, path in config["public_keys"].items():
-                public_keys[str(kid).strip()] = os.path.realpath(str(path))
+                kid_text = str(kid).strip()
+                public_keys[kid_text] = os.path.realpath(str(path))
+                if kid_text:
+                    allowed_kids.add(kid_text)
         if isinstance(config.get("key_metadata"), dict):
             for kid, details in config["key_metadata"].items():
                 if isinstance(details, dict):
@@ -436,17 +463,82 @@ def _load_agent_key_registry():
                 if pub_path:
                     public_keys[key_id] = os.path.realpath(str(pub_path))
                 metadata[key_id] = details
+                if key_id:
+                    allowed_kids.add(key_id)
+
+        raw_allowed_kids = config.get("allowed_kids")
+        if isinstance(raw_allowed_kids, list):
+            parsed_allowed = {
+                str(item).strip()
+                for item in raw_allowed_kids
+                if str(item).strip()
+            }
+            if parsed_allowed:
+                allowed_kids = parsed_allowed
+        if active_kid:
+            allowed_kids.add(active_kid)
 
         normalized[agent_name] = {
+            "agent_id": agent_id,
             "active_kid": active_kid,
             "private_keys": private_keys,
             "public_keys": public_keys,
             "key_metadata": metadata,
+            "allowed_kids": sorted(allowed_kids),
         }
     return normalized
 
 
 AGENT_KEY_REGISTRY = _load_agent_key_registry()
+
+
+def _build_agent_identity_bindings(registry):
+    by_name = {}
+    by_id = {}
+
+    for agent_name, material in registry.items():
+        if not isinstance(material, dict):
+            continue
+        agent_id = (
+            _normalize_agent_id(material.get("agent_id")) or _default_agent_id(agent_name)
+        )
+        allowed_kids = {
+            str(item).strip()
+            for item in (material.get("allowed_kids") or [])
+            if str(item).strip()
+        }
+        if not allowed_kids:
+            allowed_kids.update(str(key).strip() for key in (material.get("public_keys") or {}).keys())
+            allowed_kids.update(str(key).strip() for key in (material.get("private_keys") or {}).keys())
+        active_kid = str(material.get("active_kid") or "").strip()
+        if active_kid:
+            allowed_kids.add(active_kid)
+
+        binding = {
+            "agent_name": str(agent_name),
+            "agent_id": agent_id,
+            "allowed_kids": sorted(item for item in allowed_kids if item),
+        }
+        by_name[str(agent_name)] = binding
+        existing = by_id.get(agent_id)
+        if existing and existing["agent_name"] != binding["agent_name"] and NON_LOCAL_MODE:
+            raise RuntimeError(
+                f"Duplicate agent_id '{agent_id}' in FAXP_AGENT_KEY_REGISTRY for "
+                f"'{existing['agent_name']}' and '{binding['agent_name']}'."
+            )
+        by_id.setdefault(agent_id, binding)
+
+    return {"by_name": by_name, "by_id": by_id}
+
+
+AGENT_ID_BINDINGS = _build_agent_identity_bindings(AGENT_KEY_REGISTRY)
+
+
+def resolve_agent_id(agent_name):
+    binding = AGENT_ID_BINDINGS["by_name"].get(str(agent_name))
+    if binding:
+        return binding["agent_id"]
+    return _default_agent_id(agent_name)
 FALLBACK_TRUSTED_VERIFIER_REGISTRY_FILE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     "conformance",
@@ -791,9 +883,19 @@ def _ed25519_verify_bytes(message_bytes, signature_bytes, public_key_path):
 
 def _load_key_material_for_agent(agent_name):
     config = AGENT_KEY_REGISTRY.get(agent_name, {})
+    binding = AGENT_ID_BINDINGS["by_name"].get(str(agent_name), {})
     if not isinstance(config, dict):
-        return {"active_kid": "", "private_keys": {}, "public_keys": {}, "key_metadata": {}}
+        return {
+            "agent_id": resolve_agent_id(agent_name),
+            "allowed_kids": [],
+            "active_kid": "",
+            "private_keys": {},
+            "public_keys": {},
+            "key_metadata": {},
+        }
     return {
+        "agent_id": str(binding.get("agent_id") or resolve_agent_id(agent_name)),
+        "allowed_kids": list(binding.get("allowed_kids") or []),
         "active_kid": str(config.get("active_kid", "")).strip(),
         "private_keys": dict(config.get("private_keys", {})),
         "public_keys": dict(config.get("public_keys", {})),
@@ -804,7 +906,22 @@ def _load_key_material_for_agent(agent_name):
 def _sign_asymmetric(envelope):
     signer = envelope.get("From")
     material = _load_key_material_for_agent(signer)
+    expected_agent_id = str(material.get("agent_id") or resolve_agent_id(signer))
+    current_agent_id = str(envelope.get("FromAgentID") or "").strip().lower()
+    if current_agent_id and current_agent_id != expected_agent_id:
+        if NON_LOCAL_MODE:
+            raise RuntimeError(
+                f"FromAgentID '{current_agent_id}' does not match expected agent identity "
+                f"'{expected_agent_id}' for sender '{signer}'."
+            )
+    envelope["FromAgentID"] = expected_agent_id
     kid = material["active_kid"]
+    allowed_kids = set(str(item).strip() for item in material.get("allowed_kids", []))
+    if NON_LOCAL_MODE and allowed_kids and kid and kid not in allowed_kids:
+        raise RuntimeError(
+            f"Active SignatureKeyID '{kid}' is not allowed for sender '{signer}' "
+            f"(AgentID: {expected_agent_id})."
+        )
     private_key_path = material["private_keys"].get(kid)
     if not kid or not private_key_path:
         if NON_LOCAL_MODE:
@@ -1207,6 +1324,15 @@ def _bounded_string(value, context):
         raise ValueError(f"{context} exceeds max length ({MAX_STRING_LENGTH}).")
 
 
+def _validate_agent_id(value, context):
+    _bounded_string(value, context)
+    normalized = str(value).strip().lower()
+    if not AGENT_ID_PATTERN.fullmatch(normalized):
+        raise ValueError(
+            f"{context} must match pattern '{AGENT_ID_PATTERN.pattern}' and be lowercase."
+        )
+
+
 def _validate_iso_date(value, context):
     _bounded_string(value, context)
     try:
@@ -1256,6 +1382,50 @@ def _validate_verifier_dependency_integrity():
         raise RuntimeError("Verifier dependency file not found.") from exc
     if digest != EXPECTED_VERIFIER_COMPONENT_SHA256:
         raise RuntimeError("Verifier dependency hash mismatch.")
+
+
+def _validate_agent_identity_binding(envelope):
+    sender_name = str(envelope.get("From") or "")
+    receiver_name = str(envelope.get("To") or "")
+    sender_agent_id = str(envelope.get("FromAgentID") or "").strip().lower()
+    receiver_agent_id = str(envelope.get("ToAgentID") or "").strip().lower()
+    expected_sender_id = resolve_agent_id(sender_name)
+    expected_receiver_id = resolve_agent_id(receiver_name)
+
+    if sender_agent_id and sender_agent_id != expected_sender_id:
+        raise ValueError(
+            f"Envelope.FromAgentID '{sender_agent_id}' does not match expected sender AgentID "
+            f"'{expected_sender_id}'."
+        )
+    if receiver_agent_id and receiver_agent_id != expected_receiver_id:
+        raise ValueError(
+            f"Envelope.ToAgentID '{receiver_agent_id}' does not match expected receiver AgentID "
+            f"'{expected_receiver_id}'."
+        )
+
+    if NON_LOCAL_MODE:
+        if not sender_agent_id:
+            raise ValueError("Envelope.FromAgentID is required in non-local mode.")
+        if not receiver_agent_id:
+            raise ValueError("Envelope.ToAgentID is required in non-local mode.")
+        if AGENT_KEY_REGISTRY and sender_name not in AGENT_ID_BINDINGS["by_name"]:
+            raise ValueError(
+                f"Envelope.From '{sender_name}' is not present in configured AGENT_KEY_REGISTRY."
+            )
+        if AGENT_KEY_REGISTRY and receiver_name not in AGENT_ID_BINDINGS["by_name"]:
+            raise ValueError(
+                f"Envelope.To '{receiver_name}' is not present in configured AGENT_KEY_REGISTRY."
+            )
+
+    signature_key_id = str(envelope.get("SignatureKeyID") or "").strip()
+    sender_binding = AGENT_ID_BINDINGS["by_name"].get(sender_name)
+    if signature_key_id and sender_binding:
+        allowed_kids = set(sender_binding.get("allowed_kids") or [])
+        if allowed_kids and signature_key_id not in allowed_kids:
+            raise ValueError(
+                f"Envelope.SignatureKeyID '{signature_key_id}' is not allowed for "
+                f"Envelope.FromAgentID '{expected_sender_id}'."
+            )
 
 
 def _append_audit_event(envelope, validation_status="pass"):
@@ -1455,10 +1625,24 @@ def _validate_agent_key_registry():
             )
         return
     for agent_name, material in AGENT_KEY_REGISTRY.items():
+        agent_id = str(material.get("agent_id") or resolve_agent_id(agent_name)).strip().lower()
+        if not AGENT_ID_PATTERN.fullmatch(agent_id):
+            raise RuntimeError(
+                f"Agent '{agent_name}' has invalid agent_id '{agent_id}' in FAXP_AGENT_KEY_REGISTRY."
+            )
         active_kid = material.get("active_kid", "")
         private_keys = material.get("private_keys", {})
         public_keys = material.get("public_keys", {})
         key_metadata = material.get("key_metadata", {})
+        allowed_kids = {
+            str(item).strip()
+            for item in (material.get("allowed_kids") or [])
+            if str(item).strip()
+        }
+        if allowed_kids and active_kid and active_kid not in allowed_kids:
+            raise RuntimeError(
+                f"Agent '{agent_name}' active_kid '{active_kid}' is not listed in allowed_kids."
+            )
         if not active_kid:
             raise RuntimeError(f"Agent '{agent_name}' missing active_kid.")
         if active_kid not in public_keys:
@@ -3008,6 +3192,11 @@ def validate_envelope(envelope, track_replay=True, track_state=True):
         )
     _bounded_string(envelope["From"], "Envelope.From")
     _bounded_string(envelope["To"], "Envelope.To")
+    if "FromAgentID" in envelope:
+        _validate_agent_id(envelope["FromAgentID"], "Envelope.FromAgentID")
+    if "ToAgentID" in envelope:
+        _validate_agent_id(envelope["ToAgentID"], "Envelope.ToAgentID")
+    _validate_agent_identity_binding(envelope)
     if "RunID" in envelope:
         _bounded_string(envelope["RunID"], "Envelope.RunID")
     _bounded_string(envelope["MessageID"], "Envelope.MessageID")
@@ -3082,6 +3271,8 @@ def build_envelope(sender, receiver, message_type, body):
         "MessageType": message_type,
         "From": sender,
         "To": receiver,
+        "FromAgentID": resolve_agent_id(sender),
+        "ToAgentID": resolve_agent_id(receiver),
         "Timestamp": now_utc(),
         "MessageID": str(uuid4()),
         "Nonce": uuid4().hex,
