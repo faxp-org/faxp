@@ -1,0 +1,36 @@
+{
+  "profileVersion": "1.0.0",
+  "profileId": "special-instructions-commercial-terms.v1",
+  "protocol": "FAXP",
+  "scope": "booking-plane-commercial-terms",
+  "description": "Canonical booking-time special instructions profile. Instructions are negotiated commercial terms with explicit acceptance/counter semantics and execution snapshotting.",
+  "newLoadField": "SpecialInstructions",
+  "bidRequestAcceptanceField": "SpecialInstructionsAcceptance",
+  "bidRequestAcceptance": {
+    "requiredFields": [
+      "Accepted"
+    ],
+    "optionalFields": [
+      "Exceptions",
+      "Notes"
+    ]
+  },
+  "executionReportField": "SpecialInstructions",
+  "normativeConstraints": {
+    "instructionsAreBookingTerms": true,
+    "explicitAcceptanceRequiredWhenPresent": true,
+    "exceptionsMayCounter": true,
+    "counterReasonCode": "SpecialInstructionsDispute",
+    "dispatchTrackingOutOfScope": true
+  },
+  "conformanceRequirements": {
+    "requiredTests": [
+      "tests/run_special_instructions_terms.py",
+      "tests/run_special_instructions_profile.py"
+    ],
+    "requiredSuiteChecks": [
+      "special_instructions_terms",
+      "special_instructions_profile"
+    ]
+  }
+}

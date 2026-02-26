@@ -1497,6 +1497,39 @@ def _validate_stop_plan_acceptance(acceptance, context):
         _bounded_string(acceptance["Notes"], f"{context}.Notes")
 
 
+def _validate_special_instructions(instructions, context):
+    if not isinstance(instructions, list) or not instructions:
+        raise ValueError(f"{context} must be a non-empty array.")
+    seen = set()
+    for idx, value in enumerate(instructions):
+        _bounded_string(value, f"{context}[{idx}]")
+        normalized = str(value).strip().lower()
+        if normalized in seen:
+            raise ValueError(f"{context} must not contain duplicates.")
+        seen.add(normalized)
+
+
+def _validate_special_instructions_acceptance(acceptance, context):
+    if not isinstance(acceptance, dict):
+        raise ValueError(f"{context} must be an object.")
+    _require_fields(acceptance, ["Accepted"], context)
+    if not isinstance(acceptance["Accepted"], bool):
+        raise ValueError(f"{context}.Accepted must be boolean.")
+    if "Exceptions" in acceptance:
+        exceptions = acceptance["Exceptions"]
+        if not isinstance(exceptions, list):
+            raise ValueError(f"{context}.Exceptions must be an array.")
+        seen = set()
+        for idx, value in enumerate(exceptions):
+            _bounded_string(value, f"{context}.Exceptions[{idx}]")
+            normalized = str(value).strip().lower()
+            if normalized in seen:
+                raise ValueError(f"{context}.Exceptions must not contain duplicates.")
+            seen.add(normalized)
+    if "Notes" in acceptance:
+        _bounded_string(acceptance["Notes"], f"{context}.Notes")
+
+
 def _validate_verifier_dependency_integrity():
     if not NON_LOCAL_MODE:
         return
@@ -3034,6 +3067,8 @@ def validate_message_body(message_type, body):
                 origin=body.get("Origin"),
                 destination=body.get("Destination"),
             )
+        if "SpecialInstructions" in body:
+            _validate_special_instructions(body["SpecialInstructions"], "NewLoad.SpecialInstructions")
         if "Accessorials" in body:
             allowed_types = []
             policy = body.get("AccessorialPolicy")
@@ -3125,6 +3160,11 @@ def validate_message_body(message_type, body):
             _bounded_string(body["TruckID"], "BidRequest.TruckID")
         if "StopPlanAcceptance" in body:
             _validate_stop_plan_acceptance(body["StopPlanAcceptance"], "BidRequest.StopPlanAcceptance")
+        if "SpecialInstructionsAcceptance" in body:
+            _validate_special_instructions_acceptance(
+                body["SpecialInstructionsAcceptance"],
+                "BidRequest.SpecialInstructionsAcceptance",
+            )
         if "AccessorialPolicyAcceptance" in body:
             _validate_accessorial_policy_acceptance(
                 body["AccessorialPolicyAcceptance"],
@@ -3189,6 +3229,8 @@ def validate_message_body(message_type, body):
                 "ExecutionReport.Accessorials",
                 allowed_types,
             )
+        if "SpecialInstructions" in body:
+            _validate_special_instructions(body["SpecialInstructions"], "ExecutionReport.SpecialInstructions")
         _bounded_string(body["ContractID"], "ExecutionReport.ContractID")
         _validate_iso_datetime(body["Timestamp"], "ExecutionReport.Timestamp")
         _validate_verification_result(body["VerificationResult"], "ExecutionReport.VerificationResult")
@@ -3993,6 +4035,10 @@ class BrokerAgent:
             "Weight": 42000,
             "Commodity": "Frozen Poultry",
             "Rate": build_rate(rate_model, floor_amount),
+            "SpecialInstructions": [
+                "Reefer must be pre-cooled to 34F before pickup.",
+                "Driver must notify broker at each stop arrival/departure.",
+            ],
             "Stops": [
                 {
                     "StopSequence": 1,
@@ -4125,6 +4171,8 @@ class BrokerAgent:
         bid_rate = bid_request["Rate"]
         stop_summary = _derive_stop_plan_summary(load)
         stop_plan_acceptance = bid_request.get("StopPlanAcceptance") or {}
+        special_instructions = list(load.get("SpecialInstructions") or [])
+        special_acceptance = bid_request.get("SpecialInstructionsAcceptance") or {}
         stop_plan_mismatch = False
         if stop_plan_acceptance:
             accepted = bool(stop_plan_acceptance.get("Accepted"))
@@ -4136,6 +4184,14 @@ class BrokerAgent:
                 stop_plan_mismatch = True
             if accepted_stop_types and accepted_stop_types != set(stop_summary["stopTypes"]):
                 stop_plan_mismatch = True
+        special_instructions_mismatch = False
+        if special_instructions:
+            if not special_acceptance:
+                special_instructions_mismatch = True
+            elif special_acceptance.get("Accepted") is not True:
+                special_instructions_mismatch = True
+            elif special_acceptance.get("Exceptions"):
+                special_instructions_mismatch = True
 
         if bid_rate["RateModel"] != load_rate["RateModel"]:
             return {
@@ -4201,6 +4257,24 @@ class BrokerAgent:
                 "VerifiedBadge": "None",
             }
 
+        if special_instructions_mismatch:
+            counter_metadata = {}
+            if rate_model == "PerMile":
+                for field in ["AgreedMiles", "MilesSource", "MilesSourceVersion", "MilesCalculatedAt"]:
+                    if field in load_rate:
+                        counter_metadata[field] = load_rate[field]
+            return {
+                "LoadID": load_id,
+                "ResponseType": "Counter",
+                "ProposedRate": build_rate(
+                    rate_model,
+                    counter_amount(rate_model, rate_floor),
+                    **counter_metadata,
+                ),
+                "ReasonCode": "SpecialInstructionsDispute",
+                "VerifiedBadge": "None",
+            }
+
         if mileage_decision["requiresCounter"]:
             counter_metadata = {}
             for field in ["AgreedMiles", "MilesSource", "MilesSourceVersion", "MilesCalculatedAt"]:
@@ -4246,6 +4320,7 @@ class BrokerAgent:
             "Status": "Booked",
             "Timestamp": now_utc(),
             "AgreedRate": bid_request["Rate"],
+            "SpecialInstructions": list(load.get("SpecialInstructions") or []),
             "AccessorialPolicy": load["AccessorialPolicy"],
             "Accessorials": [],
             "VerifiedBadge": verified_badge,
@@ -4370,6 +4445,10 @@ class CarrierAgent:
             "LoadID": load["LoadID"],
             "Rate": build_rate(rate_model, amount, **metadata),
             "AvailabilityDate": (date.today() + timedelta(days=2)).isoformat(),
+            "SpecialInstructionsAcceptance": {
+                "Accepted": True,
+                "Exceptions": [],
+            },
             "StopPlanAcceptance": {
                 "Accepted": True,
                 "StopCount": stop_summary["stopCount"],

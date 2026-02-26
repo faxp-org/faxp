@@ -37,6 +37,7 @@ def main() -> int:
             "PayerParty",
             "PayeeParty",
             "CapAmount",
+            "SpecialInstructions",
             "PassThrough",
             "Reimbursable",
             "Settlement and payment execution",
