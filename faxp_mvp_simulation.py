@@ -2045,6 +2045,48 @@ def _validate_schedule_acceptance(acceptance, context):
         _bounded_string(acceptance["Notes"], f"{context}.Notes")
 
 
+def _validate_load_reference_numbers(reference_numbers, context):
+    if not isinstance(reference_numbers, dict):
+        raise ValueError(f"{context} must be an object.")
+
+    allowed_fields = {
+        "PrimaryReferenceNumber",
+        "SecondaryReferenceNumber",
+        "Additional",
+    }
+    unknown_fields = sorted(set(reference_numbers.keys()) - allowed_fields)
+    if unknown_fields:
+        raise ValueError(f"{context} contains unsupported fields: {unknown_fields}.")
+
+    has_reference = False
+    for field in ["PrimaryReferenceNumber", "SecondaryReferenceNumber"]:
+        if field in reference_numbers:
+            _bounded_string(reference_numbers[field], f"{context}.{field}")
+            has_reference = True
+
+    if "Additional" in reference_numbers:
+        additional = reference_numbers["Additional"]
+        if not isinstance(additional, list):
+            raise ValueError(f"{context}.Additional must be an array.")
+        for idx, entry in enumerate(additional):
+            item_context = f"{context}.Additional[{idx}]"
+            if not isinstance(entry, dict):
+                raise ValueError(f"{item_context} must be an object.")
+            _require_fields(entry, ["ReferenceType", "ReferenceValue"], item_context)
+            _bounded_string(entry["ReferenceType"], f"{item_context}.ReferenceType")
+            _bounded_string(entry["ReferenceValue"], f"{item_context}.ReferenceValue")
+            if "IssuerParty" in entry:
+                _bounded_string(entry["IssuerParty"], f"{item_context}.IssuerParty")
+                if entry["IssuerParty"] not in VALID_ACCESSORIAL_PARTIES:
+                    raise ValueError(
+                        f"{item_context}.IssuerParty must be one of {sorted(VALID_ACCESSORIAL_PARTIES)}."
+                    )
+            has_reference = True
+
+    if not has_reference:
+        raise ValueError(f"{context} must include at least one reference number.")
+
+
 def _validate_verifier_dependency_integrity():
     if not NON_LOCAL_MODE:
         return
@@ -3705,6 +3747,8 @@ def validate_message_body(message_type, body):
             )
         if "SpecialInstructions" in body:
             _validate_special_instructions(body["SpecialInstructions"], "NewLoad.SpecialInstructions")
+        if "LoadReferenceNumbers" in body:
+            _validate_load_reference_numbers(body["LoadReferenceNumbers"], "NewLoad.LoadReferenceNumbers")
         if "Accessorials" in body:
             allowed_types = []
             policy = body.get("AccessorialPolicy")
@@ -3889,6 +3933,11 @@ def validate_message_body(message_type, body):
                 raise ValueError("ExecutionReport.DriverTerms must be an object.")
             _require_fields(body["DriverTerms"], ["DriverConfiguration"], "ExecutionReport.DriverTerms")
             _validate_driver_configuration_terms(body["DriverTerms"], "ExecutionReport.DriverTerms")
+        if "LoadReferenceNumbers" in body:
+            _validate_load_reference_numbers(
+                body["LoadReferenceNumbers"],
+                "ExecutionReport.LoadReferenceNumbers",
+            )
         if "EquipmentTerms" in body:
             equipment_terms = dict(body["EquipmentTerms"])
             if "EquipmentType" not in equipment_terms:
@@ -4720,6 +4769,17 @@ class BrokerAgent:
                 "Reefer must be pre-cooled to 34F before pickup.",
                 "Driver must notify broker at each stop arrival/departure.",
             ],
+            "LoadReferenceNumbers": {
+                "PrimaryReferenceNumber": "BRK-2026-000421",
+                "SecondaryReferenceNumber": "SHIP-2026-18411",
+                "Additional": [
+                    {
+                        "ReferenceType": "PartnerReference",
+                        "ReferenceValue": "REF-772991",
+                        "IssuerParty": "Shipper",
+                    }
+                ],
+            },
             "Stops": [
                 {
                     "StopSequence": 1,
@@ -5113,6 +5173,8 @@ class BrokerAgent:
         }
         if load.get("DriverConfiguration"):
             report["DriverTerms"] = {"DriverConfiguration": load.get("DriverConfiguration")}
+        if isinstance(load.get("LoadReferenceNumbers"), dict):
+            report["LoadReferenceNumbers"] = dict(load["LoadReferenceNumbers"])
         if policy_decision.get("ExceptionApprovalRef"):
             report["ExceptionApprovalRef"] = policy_decision["ExceptionApprovalRef"]
         self.completed_bookings[load_id] = report
@@ -5490,6 +5552,10 @@ class ShipperAgent:
             "EquipmentType": "DryVan",
             "EquipmentClass": "Van",
             "DriverConfiguration": "Single",
+            "LoadReferenceNumbers": {
+                "PrimaryReferenceNumber": "SHIP-2026-00112",
+                "SecondaryReferenceNumber": "EXT-550184",
+            },
             "TrailerLength": 53,
             "Weight": 38000,
             "Commodity": "Packaged Foods",
