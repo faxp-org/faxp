@@ -110,6 +110,17 @@ def _alias_normalization_matrix() -> list[tuple[str, str, str]]:
     ]
 
 
+def _alias_tag_inference_matrix() -> list[tuple[str, list[str]]]:
+    return [
+        ("vanhazmat", ["HazmatCapable"]),
+        ("reeferintermodal", ["Intermodal"]),
+        ("flatbedairride", ["AirRide"]),
+        ("flatbeddouble", ["DoubleTrailer"]),
+        ("vantriple", ["TripleTrailer"]),
+        ("flabtbedoverdimension", ["OverDimensionCapable"]),
+    ]
+
+
 def main() -> int:
     validate_message_body("NewLoad", _base_new_load())
 
@@ -128,6 +139,19 @@ def main() -> int:
         _assert(
             actual_subclass == expected_subclass,
             f"{equipment_type}: expected EquipmentSubClass={expected_subclass}, got {actual_subclass}",
+        )
+
+    for equipment_type, expected_tags in _alias_tag_inference_matrix():
+        alias_load = _base_new_load()
+        alias_load["EquipmentType"] = equipment_type
+        alias_load.pop("EquipmentClass", None)
+        alias_load.pop("EquipmentSubClass", None)
+        alias_load.pop("EquipmentTags", None)
+        validate_message_body("NewLoad", alias_load)
+        actual_tags = sorted(alias_load.get("EquipmentTags") or [])
+        _assert(
+            actual_tags == sorted(expected_tags),
+            f"{equipment_type}: expected EquipmentTags={sorted(expected_tags)}, got {actual_tags}",
         )
 
     special_missing_desc = _base_new_load()

@@ -1654,18 +1654,25 @@ def _infer_equipment_subclass_from_type(equipment_type):
 
 def _infer_equipment_tags_from_type(equipment_type):
     source = str(equipment_type or "").strip().lower()
+    normalized_source = _normalize_equipment_token(source)
     tags = set()
-    if "air ride" in source:
+
+    subclass_value = _infer_equipment_subclass_from_type(equipment_type)
+    subclass_tag = EQUIPMENT_TAGS_BY_SUBCLASS.get(subclass_value, "")
+    if subclass_tag:
+        tags.add(subclass_tag)
+
+    if "airride" in normalized_source:
         tags.add("AirRide")
-    if "hazmat" in source:
+    if "hazmat" in normalized_source:
         tags.add("HazmatCapable")
-    if "intermodal" in source:
+    if "intermodal" in normalized_source:
         tags.add("Intermodal")
-    if "over dimension" in source:
+    if "overdimension" in normalized_source:
         tags.add("OverDimensionCapable")
-    if "double" in source:
+    if "double" in normalized_source:
         tags.add("DoubleTrailer")
-    if "triple" in source:
+    if "triple" in normalized_source:
         tags.add("TripleTrailer")
     return sorted(tags)
 
@@ -2789,6 +2796,14 @@ EQUIPMENT_TAG_ALIASES = {
     "doubletrailer": "DoubleTrailer",
     "triple": "TripleTrailer",
     "tripletrailer": "TripleTrailer",
+}
+EQUIPMENT_TAGS_BY_SUBCLASS = {
+    "AirRide": "AirRide",
+    "Hazmat": "HazmatCapable",
+    "Intermodal": "Intermodal",
+    "OverDimension": "OverDimensionCapable",
+    "Double": "DoubleTrailer",
+    "Triple": "TripleTrailer",
 }
 EQUIPMENT_TYPE_CLASS_ALIASES = {
     "dryvan": "Van",
