@@ -14,6 +14,8 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from faxp_mvp_simulation import (  # noqa: E402
+    VALID_DETENTION_LOCATION_EVIDENCE_TYPES,
+    VALID_DETENTION_RATE_UNITS,
     VALID_ACCESSORIAL_EVIDENCE_TYPES,
     VALID_ACCESSORIAL_PARTIES,
     VALID_ACCESSORIAL_PRICING_MODES,
@@ -51,6 +53,7 @@ def main() -> int:
         "pricingModes",
         "partyRoles",
         "evidenceTypes",
+        "detentionTerms",
         "entryStatuses",
         "normativeConstraints",
         "conformanceRequirements",
@@ -73,6 +76,26 @@ def main() -> int:
     _assert(
         {str(item) for item in term_fields.get("required") or []} == {"Type", "PricingMode"},
         "termFields.required must be Type and PricingMode",
+    )
+    _assert(
+        "DetentionTerms" in {str(item) for item in term_fields.get("optional") or []},
+        "termFields.optional must include DetentionTerms",
+    )
+
+    detention_terms = profile.get("detentionTerms") or {}
+    _assert(
+        {str(item) for item in detention_terms.get("required") or []}
+        == {"GracePeriodMinutes", "RateAmount", "RateUnit"},
+        "detentionTerms.required must be GracePeriodMinutes, RateAmount, and RateUnit",
+    )
+    _assert(
+        set(detention_terms.get("rateUnits") or []) == set(VALID_DETENTION_RATE_UNITS),
+        "detentionTerms.rateUnits must match VALID_DETENTION_RATE_UNITS",
+    )
+    _assert(
+        set(detention_terms.get("locationEvidenceTypes") or [])
+        == set(VALID_DETENTION_LOCATION_EVIDENCE_TYPES),
+        "detentionTerms.locationEvidenceTypes must match VALID_DETENTION_LOCATION_EVIDENCE_TYPES",
     )
 
     _assert(
@@ -99,6 +122,9 @@ def main() -> int:
         "reimbursableRequiresPayerPayee",
         "tbdRequiresPayerPayee",
         "evidenceTypeRequiredWhenEvidenceRequired",
+        "detentionTermsRequiredForDetentionType",
+        "detentionTermsOnlyAllowedForDetentionType",
+        "locationEvidenceTypeRequiredWhenLocationEvidenceRequired",
         "maxAmountNotRequired",
         "settlementExecutionOutOfScope",
     ]:

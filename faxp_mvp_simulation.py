@@ -1743,8 +1743,8 @@ ACCESSORIAL_TYPE_CATALOG = {
     "UnloadingFee": {"status": "active"},
     "OverweightPermit": {"status": "active"},
     "EscortVehicle": {"status": "active"},
+    "Detention": {"status": "active"},
     # Planned types are declared for roadmap visibility and future RFC-governed expansion.
-    "Detention": {"status": "planned"},
     "Layover": {"status": "planned"},
     "LumperFee": {"status": "planned"},
 }
@@ -1757,6 +1757,8 @@ PLANNED_ACCESSORIAL_TYPES = tuple(
 VALID_ACCESSORIAL_PARTIES = {"Broker", "Carrier", "Shipper", "Vendor", "Unknown"}
 VALID_ACCESSORIAL_EVIDENCE_TYPES = {"Receipt", "Permit", "EscortInvoice", "Other"}
 VALID_ACCESSORIAL_STATUSES = {"Pending", "Approved", "Rejected", "TBD"}
+VALID_DETENTION_RATE_UNITS = {"Hour"}
+VALID_DETENTION_LOCATION_EVIDENCE_TYPES = {"GPS", "ELDPosition", "GeofenceCheckIn", "Other"}
 FORBIDDEN_BIOMETRIC_FIELDS = {
     "faceimage",
     "selfieimage",
@@ -2062,6 +2064,12 @@ def _validate_accessorial_term(term, context):
     if term.get("EvidenceRequired") is True and "EvidenceType" not in term:
         raise ValueError(f"{context}.EvidenceType is required when EvidenceRequired is true.")
 
+    if term["Type"] == "Detention":
+        _require_fields(term, ["DetentionTerms"], context)
+        _validate_detention_terms(term["DetentionTerms"], f"{context}.DetentionTerms")
+    elif "DetentionTerms" in term:
+        raise ValueError(f"{context}.DetentionTerms is only allowed when Type is 'Detention'.")
+
     if "CapAmount" in term:
         value = term["CapAmount"]
         if not isinstance(value, (int, float)) or value < 0:
@@ -2074,6 +2082,49 @@ def _validate_accessorial_term(term, context):
         _bounded_string(term["SettlementReference"], f"{context}.SettlementReference")
     if "Notes" in term:
         _bounded_string(term["Notes"], f"{context}.Notes")
+
+
+def _validate_detention_terms(terms, context):
+    if not isinstance(terms, dict):
+        raise ValueError(f"{context} must be an object.")
+    _require_fields(terms, ["GracePeriodMinutes", "RateAmount", "RateUnit"], context)
+
+    grace_period = terms["GracePeriodMinutes"]
+    if not isinstance(grace_period, int) or grace_period < 0:
+        raise ValueError(f"{context}.GracePeriodMinutes must be a non-negative integer.")
+
+    rate_amount = terms["RateAmount"]
+    if not isinstance(rate_amount, (int, float)) or rate_amount <= 0:
+        raise ValueError(f"{context}.RateAmount must be a positive number.")
+
+    _bounded_string(terms["RateUnit"], f"{context}.RateUnit")
+    if terms["RateUnit"] not in VALID_DETENTION_RATE_UNITS:
+        raise ValueError(f"{context}.RateUnit must be one of {sorted(VALID_DETENTION_RATE_UNITS)}.")
+
+    if "BillingIncrementMinutes" in terms:
+        billing_increment = terms["BillingIncrementMinutes"]
+        if not isinstance(billing_increment, int) or billing_increment <= 0:
+            raise ValueError(f"{context}.BillingIncrementMinutes must be a positive integer.")
+
+    for field in ["RequiresDelayNotice", "RequiresLocationEvidence"]:
+        if field in terms and not isinstance(terms[field], bool):
+            raise ValueError(f"{context}.{field} must be boolean.")
+
+    if "LocationEvidenceType" in terms:
+        _bounded_string(terms["LocationEvidenceType"], f"{context}.LocationEvidenceType")
+        if terms["LocationEvidenceType"] not in VALID_DETENTION_LOCATION_EVIDENCE_TYPES:
+            raise ValueError(
+                f"{context}.LocationEvidenceType must be one of "
+                f"{sorted(VALID_DETENTION_LOCATION_EVIDENCE_TYPES)}."
+            )
+
+    if terms.get("RequiresLocationEvidence") is True and "LocationEvidenceType" not in terms:
+        raise ValueError(
+            f"{context}.LocationEvidenceType is required when RequiresLocationEvidence is true."
+        )
+
+    if "Notes" in terms:
+        _bounded_string(terms["Notes"], f"{context}.Notes")
 
 
 def _validate_accessorial_policy(policy, context):
@@ -3650,6 +3701,25 @@ class BrokerAgent:
                         "EvidenceType": "EscortInvoice",
                         "Currency": "USD",
                     },
+                    {
+                        "Type": "Detention",
+                        "PricingMode": "Reimbursable",
+                        "PayerParty": "Broker",
+                        "PayeeParty": "Carrier",
+                        "ApprovalRequired": True,
+                        "EvidenceRequired": False,
+                        "Currency": "USD",
+                        "DetentionTerms": {
+                            "GracePeriodMinutes": 120,
+                            "RateAmount": 25.0,
+                            "RateUnit": "Hour",
+                            "BillingIncrementMinutes": 60,
+                            "RequiresDelayNotice": True,
+                            "RequiresLocationEvidence": True,
+                            "LocationEvidenceType": "GPS",
+                            "Notes": "Delay notice and location evidence are commercial preconditions only.",
+                        },
+                    },
                 ],
             },
             # Charges are intentionally empty at booking time; they can be approved later.
@@ -4080,6 +4150,25 @@ class ShipperAgent:
                         "EvidenceRequired": True,
                         "EvidenceType": "EscortInvoice",
                         "Currency": "USD",
+                    },
+                    {
+                        "Type": "Detention",
+                        "PricingMode": "Reimbursable",
+                        "PayerParty": "Broker",
+                        "PayeeParty": "Carrier",
+                        "ApprovalRequired": True,
+                        "EvidenceRequired": False,
+                        "Currency": "USD",
+                        "DetentionTerms": {
+                            "GracePeriodMinutes": 120,
+                            "RateAmount": 25.0,
+                            "RateUnit": "Hour",
+                            "BillingIncrementMinutes": 60,
+                            "RequiresDelayNotice": True,
+                            "RequiresLocationEvidence": True,
+                            "LocationEvidenceType": "GPS",
+                            "Notes": "Delay notice and location evidence are commercial preconditions only.",
+                        },
                     },
                 ],
             },
