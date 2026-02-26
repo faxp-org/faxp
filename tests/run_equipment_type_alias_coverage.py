@@ -56,6 +56,7 @@ def main() -> int:
         "classAliasMap",
         "subclassAliasMap",
         "requiredTypoAliases",
+        "changePolicy",
         "conformanceRequirements",
     ]:
         _assert(field in profile, f"equipment type alias profile missing field: {field}")
@@ -97,6 +98,26 @@ def main() -> int:
             alias in class_alias_map or alias in subclass_alias_map,
             f"required typo alias missing from both maps: {alias}",
         )
+
+    change_policy = profile.get("changePolicy") or {}
+    _assert(
+        change_policy.get("requireProfileUpdateBeforeRuntimeUse") is True,
+        "changePolicy.requireProfileUpdateBeforeRuntimeUse must be true",
+    )
+    _assert(
+        change_policy.get("requireVersionBumpOnAliasMapChange") is True,
+        "changePolicy.requireVersionBumpOnAliasMapChange must be true",
+    )
+    _assert(
+        int(change_policy.get("lockedProfileMajor", 0)) == 1,
+        "changePolicy.lockedProfileMajor must equal 1",
+    )
+    profile_version = str(profile.get("profileVersion") or "").strip()
+    _assert(profile_version.startswith("1."), "profileVersion must remain in major version 1 for v1 artifact")
+    _assert(
+        isinstance(change_policy.get("scopeNote"), str) and change_policy.get("scopeNote").strip(),
+        "changePolicy.scopeNote must be a non-empty string",
+    )
 
     conformance_requirements = profile.get("conformanceRequirements") or {}
     required_tests = [str(item) for item in conformance_requirements.get("requiredTests") or []]
