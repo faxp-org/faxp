@@ -64,11 +64,12 @@ Purpose: Central place to capture commercial model requirements before implement
   - Conformance profile and runtime checks are release-gated.
 
 2. Service requirements (reefer temp bands, tarping, handling constraints)
-- Target: `v0.3.x`
-- RFC: `TBD (new RFC required)`
+- Target: `v0.3.1`
+- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
 - Acceptance:
-  - Structured requirements object (not only free text).
-  - Validation rules by equipment/load type.
+  - Booking-time `SpecialInstructions` terms with explicit accept/counter semantics.
+  - Carrier can return exceptions through `SpecialInstructionsAcceptance`.
+  - Deterministic dispute reason code for unresolved instructions.
 
 3. Required delivery date / service commitment windows
 - Target: `v0.3.x`

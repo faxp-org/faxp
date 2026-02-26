@@ -136,6 +136,14 @@ def main() -> int:
         "conformance suite must include multi_stop_terms_profile in default checks",
     )
     _assert(
+        "special_instructions_terms" in listed_checks.stdout.splitlines(),
+        "conformance suite must include special_instructions_terms in default checks",
+    )
+    _assert(
+        "special_instructions_profile" in listed_checks.stdout.splitlines(),
+        "conformance suite must include special_instructions_profile in default checks",
+    )
+    _assert(
         "protocol_compatibility_profile" in listed_checks.stdout.splitlines(),
         "conformance suite must include protocol_compatibility_profile in default checks",
     )

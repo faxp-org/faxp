@@ -60,20 +60,20 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S6: Reefer Temperature Requirement
 
 - Description: Reefer load requires specific temperature range and monitoring instructions.
-- RFC: `TBD (new RFC required)`
-- Target: `v0.3.x`
+- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- Target: `v0.3.1`
 - Expected outcome:
-  - Structured temperature requirements captured.
-  - Validation enforces required fields for reefer loads.
+  - Requirement can be represented in `SpecialInstructions`.
+  - Carrier explicitly accepts or returns exceptions in bid negotiation.
 
 ### S7: Flatbed Tarping Requirement
 
 - Description: Flatbed load requires tarping and securement notes.
-- RFC: `TBD (new RFC required)`
-- Target: `v0.3.x`
+- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- Target: `v0.3.1`
 - Expected outcome:
-  - Structured service requirement captured.
-  - Requirement appears in booking record and audit output.
+  - Requirement can be represented in `SpecialInstructions`.
+  - Carrier explicitly accepts or returns exceptions in bid negotiation.
 
 ### S8: Verification Degraded Path with Provisional Hold
 
