@@ -176,6 +176,10 @@ def main() -> int:
         "conformance suite must include equipment_profile in default checks",
     )
     _assert(
+        "equipment_type_alias_coverage" in listed_checks.stdout.splitlines(),
+        "conformance suite must include equipment_type_alias_coverage in default checks",
+    )
+    _assert(
         "protocol_compatibility_profile" in listed_checks.stdout.splitlines(),
         "conformance suite must include protocol_compatibility_profile in default checks",
     )

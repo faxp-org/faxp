@@ -78,6 +78,10 @@ def _suite_commands() -> list[tuple[str, list[str]]]:
         ),
         ("equipment_terms", [python, str(TESTS_DIR / "run_equipment_terms.py")]),
         ("equipment_profile", [python, str(TESTS_DIR / "run_equipment_profile.py")]),
+        (
+            "equipment_type_alias_coverage",
+            [python, str(TESTS_DIR / "run_equipment_type_alias_coverage.py")],
+        ),
         ("protocol_compatibility_profile", [python, str(TESTS_DIR / "run_protocol_compatibility_profile.py")]),
         ("protocol_compatibility_signature", [python, str(TESTS_DIR / "run_protocol_compatibility_signature.py")]),
         ("protocol_version_negotiation", [python, str(TESTS_DIR / "run_protocol_version_negotiation.py")]),
