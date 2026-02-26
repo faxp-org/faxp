@@ -1,0 +1,62 @@
+{
+  "profileVersion": "1.0.0",
+  "profileId": "equipment-taxonomy-compatibility.v1",
+  "protocol": "FAXP",
+  "scope": "booking-plane-commercial-terms",
+  "description": "Canonical equipment taxonomy profile with primary class, optional secondary subclass, and optional tags for booking compatibility checks.",
+  "equipmentFields": {
+    "required": [
+      "EquipmentType"
+    ],
+    "optional": [
+      "EquipmentClass",
+      "EquipmentSubClass",
+      "EquipmentTags",
+      "TrailerCount",
+      "EquipmentSpecialDescription"
+    ]
+  },
+  "searchFilterFields": [
+    "EquipmentClass",
+    "EquipmentSubClass",
+    "RequiredEquipmentTags",
+    "TrailerLengthMin",
+    "TrailerLengthMax"
+  ],
+  "bidAcceptanceField": "EquipmentAcceptance",
+  "bidAcceptance": {
+    "requiredFields": [
+      "Accepted"
+    ],
+    "optionalFields": [
+      "EquipmentClass",
+      "EquipmentSubClass",
+      "EquipmentTags",
+      "TrailerLength",
+      "TrailerLengthMin",
+      "TrailerLengthMax",
+      "TrailerCount",
+      "Notes"
+    ]
+  },
+  "executionReportField": "EquipmentTerms",
+  "normativeConstraints": {
+    "primaryClassSupported": true,
+    "secondarySubclassSupported": true,
+    "tagBasedCapabilitySupported": true,
+    "specialClassRequiresDescription": true,
+    "equipmentMismatchMayCounter": true,
+    "counterReasonCode": "EquipmentCompatibilityDispute",
+    "dispatchAssetAssignmentOutOfScope": true
+  },
+  "conformanceRequirements": {
+    "requiredTests": [
+      "tests/run_equipment_terms.py",
+      "tests/run_equipment_profile.py"
+    ],
+    "requiredSuiteChecks": [
+      "equipment_terms",
+      "equipment_profile"
+    ]
+  }
+}

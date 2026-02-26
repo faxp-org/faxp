@@ -25,6 +25,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `multi_stop_terms_profile.v1.json`: canonical booking-plane multi-stop commercial-term profile.
 - `special_instructions_profile.v1.json`: canonical booking-plane special-instructions commercial-term profile.
 - `schedule_terms_profile.v1.json`: canonical booking-plane schedule commitment profile.
+- `equipment_profile.v1.json`: canonical booking-plane equipment taxonomy compatibility profile.
 - `registry_update.schema.json`: schema for registry operations request payloads.
 - `registry_update.sample.json`: sample registry operations request with upsert/revoke/rollback.
 - `registry_update.sample.audit.log`: sample audit log for registry operations.
@@ -255,6 +256,18 @@ Schedule commitment profile check:
 
 ```bash
 python3 tests/run_schedule_terms_profile.py
+```
+
+Equipment taxonomy compatibility check:
+
+```bash
+python3 tests/run_equipment_terms.py
+```
+
+Equipment taxonomy profile check:
+
+```bash
+python3 tests/run_equipment_profile.py
 ```
 
 Booking-plane commercial terms governance check:

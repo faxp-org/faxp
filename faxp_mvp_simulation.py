@@ -1539,6 +1539,375 @@ def _validate_special_instructions_acceptance(acceptance, context):
         _bounded_string(acceptance["Notes"], f"{context}.Notes")
 
 
+def _normalize_equipment_token(value):
+    return re.sub(r"[^a-z0-9]+", "", str(value or "").strip().lower())
+
+
+def _canonical_equipment_class(value):
+    token = _normalize_equipment_token(value)
+    if not token:
+        return ""
+    return EQUIPMENT_CLASS_ALIASES.get(token, "")
+
+
+def _canonical_equipment_subclass(value):
+    token = _normalize_equipment_token(value)
+    if not token:
+        return ""
+    return EQUIPMENT_SUBCLASS_ALIASES.get(token, "")
+
+
+def _canonical_equipment_tag(value):
+    token = _normalize_equipment_token(value)
+    if not token:
+        return ""
+    return EQUIPMENT_TAG_ALIASES.get(token, "")
+
+
+def _infer_equipment_class_from_type(equipment_type):
+    source = str(equipment_type or "").strip().lower()
+    if not source:
+        return ""
+    direct_alias = _canonical_equipment_class(equipment_type)
+    if direct_alias:
+        return direct_alias
+    if "sprinter van" in source:
+        return "SprinterVan"
+    if "straight box truck" in source:
+        return "StraightBoxTruck"
+    if "moving van" in source:
+        return "MovingVan"
+    if "b-train" in source or "b train" in source:
+        return "BTrain"
+    if "power only" in source:
+        return "PowerOnly"
+    if "double drop" in source:
+        return "DoubleDrop"
+    if "stepdeck" in source or "step deck" in source or "drop deck" in source:
+        return "StepDeck"
+    if "lowboy" in source:
+        return "Lowboy"
+    if "removeable gooseneck" in source or "removable gooseneck" in source or " rgn" in source:
+        return "RGN"
+    if "flatbed" in source:
+        return "Flatbed"
+    if "reefer" in source:
+        return "Reefer"
+    if "dry van" in source or source.startswith("van") or " van -" in source:
+        return "Van"
+    if "container" in source:
+        return "Container"
+    if "tanker" in source:
+        return "Tanker"
+    if "auto carrier" in source:
+        return "AutoCarrier"
+    if "dump trailer" in source:
+        return "DumpTrailer"
+    if "hopper" in source:
+        return "HopperBottom"
+    if "pneumatic" in source:
+        return "Pneumatic"
+    if "conveyor" in source:
+        return "Conveyor"
+    return "Special"
+
+
+def _infer_equipment_subclass_from_type(equipment_type):
+    source = str(equipment_type or "").strip().lower()
+    candidates = [
+        ("conestoga", "Conestoga"),
+        ("contestoga", "Conestoga"),
+        ("hotshot", "Hotshot"),
+        ("landoll", "Landoll"),
+        ("stretch", "Stretch"),
+        ("maxi", "Maxi"),
+        ("open top", "OpenTop"),
+        ("lift gate", "LiftGate"),
+        ("roller bed", "RollerBed"),
+        ("vented", "Vented"),
+        ("insulated", "Insulated"),
+        ("intermodal", "Intermodal"),
+        ("air ride", "AirRide"),
+        ("hazmat", "Hazmat"),
+        ("over dimension", "OverDimension"),
+        ("double", "Double"),
+        ("triple", "Triple"),
+        ("aluminum", "Aluminum"),
+        ("steel", "Steel"),
+    ]
+    for marker, canonical in candidates:
+        if marker in source:
+            return canonical
+    return ""
+
+
+def _infer_equipment_tags_from_type(equipment_type):
+    source = str(equipment_type or "").strip().lower()
+    tags = set()
+    if "air ride" in source:
+        tags.add("AirRide")
+    if "hazmat" in source:
+        tags.add("HazmatCapable")
+    if "intermodal" in source:
+        tags.add("Intermodal")
+    if "over dimension" in source:
+        tags.add("OverDimensionCapable")
+    if "double" in source:
+        tags.add("DoubleTrailer")
+    if "triple" in source:
+        tags.add("TripleTrailer")
+    return sorted(tags)
+
+
+def _validate_equipment_contract(payload, context):
+    _bounded_string(payload["EquipmentType"], f"{context}.EquipmentType")
+
+    raw_class = payload.get("EquipmentClass")
+    class_value = _canonical_equipment_class(raw_class) if raw_class else ""
+    if raw_class and not class_value:
+        raise ValueError(f"{context}.EquipmentClass must be one of {sorted(VALID_EQUIPMENT_CLASSES)}.")
+    if not class_value:
+        class_value = _infer_equipment_class_from_type(payload.get("EquipmentType"))
+    if class_value not in VALID_EQUIPMENT_CLASSES:
+        raise ValueError(f"{context}.EquipmentClass must be one of {sorted(VALID_EQUIPMENT_CLASSES)}.")
+    payload["EquipmentClass"] = class_value
+
+    raw_subclass = payload.get("EquipmentSubClass")
+    subclass_value = _canonical_equipment_subclass(raw_subclass) if raw_subclass else ""
+    if raw_subclass and not subclass_value:
+        raise ValueError(
+            f"{context}.EquipmentSubClass must be one of {sorted(VALID_EQUIPMENT_SUBCLASSES)}."
+        )
+    if not subclass_value:
+        subclass_value = _infer_equipment_subclass_from_type(payload.get("EquipmentType"))
+    if subclass_value:
+        payload["EquipmentSubClass"] = subclass_value
+
+    tags = payload.get("EquipmentTags")
+    if tags is None:
+        inferred_tags = _infer_equipment_tags_from_type(payload.get("EquipmentType"))
+        if inferred_tags:
+            payload["EquipmentTags"] = inferred_tags
+    else:
+        if not isinstance(tags, list):
+            raise ValueError(f"{context}.EquipmentTags must be an array.")
+        normalized = []
+        seen = set()
+        for idx, item in enumerate(tags):
+            _bounded_string(item, f"{context}.EquipmentTags[{idx}]")
+            canonical_tag = _canonical_equipment_tag(item)
+            if not canonical_tag:
+                raise ValueError(f"{context}.EquipmentTags[{idx}] must be one of {sorted(VALID_EQUIPMENT_TAGS)}.")
+            if canonical_tag in seen:
+                raise ValueError(f"{context}.EquipmentTags must not contain duplicates.")
+            seen.add(canonical_tag)
+            normalized.append(canonical_tag)
+        payload["EquipmentTags"] = normalized
+
+    if "TrailerCount" in payload:
+        trailer_count = payload["TrailerCount"]
+        if not isinstance(trailer_count, int) or trailer_count <= 0:
+            raise ValueError(f"{context}.TrailerCount must be a positive integer.")
+
+    if class_value == "Special":
+        description = payload.get("EquipmentSpecialDescription")
+        if not description:
+            raise ValueError(
+                f"{context}.EquipmentSpecialDescription is required when EquipmentClass is 'Special'."
+            )
+        _bounded_string(description, f"{context}.EquipmentSpecialDescription")
+
+
+def _validate_equipment_search_filters(payload, context):
+    if "EquipmentClass" in payload:
+        class_value = _canonical_equipment_class(payload["EquipmentClass"])
+        if not class_value:
+            raise ValueError(f"{context}.EquipmentClass must be one of {sorted(VALID_EQUIPMENT_CLASSES)}.")
+        payload["EquipmentClass"] = class_value
+    if "EquipmentSubClass" in payload:
+        subclass_value = _canonical_equipment_subclass(payload["EquipmentSubClass"])
+        if not subclass_value:
+            raise ValueError(
+                f"{context}.EquipmentSubClass must be one of {sorted(VALID_EQUIPMENT_SUBCLASSES)}."
+            )
+        payload["EquipmentSubClass"] = subclass_value
+    if "RequiredEquipmentTags" in payload:
+        tags = payload["RequiredEquipmentTags"]
+        if not isinstance(tags, list) or not tags:
+            raise ValueError(f"{context}.RequiredEquipmentTags must be a non-empty array.")
+        seen = set()
+        normalized = []
+        for idx, item in enumerate(tags):
+            _bounded_string(item, f"{context}.RequiredEquipmentTags[{idx}]")
+            canonical_tag = _canonical_equipment_tag(item)
+            if not canonical_tag:
+                raise ValueError(
+                    f"{context}.RequiredEquipmentTags[{idx}] must be one of {sorted(VALID_EQUIPMENT_TAGS)}."
+                )
+            if canonical_tag in seen:
+                raise ValueError(f"{context}.RequiredEquipmentTags must not contain duplicates.")
+            seen.add(canonical_tag)
+            normalized.append(canonical_tag)
+        payload["RequiredEquipmentTags"] = normalized
+    for field in ["TrailerLengthMin", "TrailerLengthMax"]:
+        if field in payload:
+            value = payload[field]
+            if not isinstance(value, (int, float)) or value <= 0:
+                raise ValueError(f"{context}.{field} must be a positive number.")
+    if "TrailerLengthMin" in payload and "TrailerLengthMax" in payload:
+        if float(payload["TrailerLengthMin"]) > float(payload["TrailerLengthMax"]):
+            raise ValueError(f"{context}.TrailerLengthMin must be <= TrailerLengthMax.")
+
+
+def _validate_equipment_acceptance(acceptance, context):
+    if not isinstance(acceptance, dict):
+        raise ValueError(f"{context} must be an object.")
+    _require_fields(acceptance, ["Accepted"], context)
+    if not isinstance(acceptance["Accepted"], bool):
+        raise ValueError(f"{context}.Accepted must be boolean.")
+    if "EquipmentClass" in acceptance:
+        class_value = _canonical_equipment_class(acceptance["EquipmentClass"])
+        if not class_value:
+            raise ValueError(f"{context}.EquipmentClass must be one of {sorted(VALID_EQUIPMENT_CLASSES)}.")
+        acceptance["EquipmentClass"] = class_value
+    if "EquipmentSubClass" in acceptance:
+        subclass_value = _canonical_equipment_subclass(acceptance["EquipmentSubClass"])
+        if not subclass_value:
+            raise ValueError(
+                f"{context}.EquipmentSubClass must be one of {sorted(VALID_EQUIPMENT_SUBCLASSES)}."
+            )
+        acceptance["EquipmentSubClass"] = subclass_value
+    if "EquipmentTags" in acceptance:
+        tags = acceptance["EquipmentTags"]
+        if not isinstance(tags, list):
+            raise ValueError(f"{context}.EquipmentTags must be an array.")
+        seen = set()
+        normalized = []
+        for idx, item in enumerate(tags):
+            _bounded_string(item, f"{context}.EquipmentTags[{idx}]")
+            canonical_tag = _canonical_equipment_tag(item)
+            if not canonical_tag:
+                raise ValueError(f"{context}.EquipmentTags[{idx}] must be one of {sorted(VALID_EQUIPMENT_TAGS)}.")
+            if canonical_tag in seen:
+                raise ValueError(f"{context}.EquipmentTags must not contain duplicates.")
+            seen.add(canonical_tag)
+            normalized.append(canonical_tag)
+        acceptance["EquipmentTags"] = normalized
+    for field in ["TrailerLength", "TrailerLengthMin", "TrailerLengthMax"]:
+        if field in acceptance:
+            value = acceptance[field]
+            if not isinstance(value, (int, float)) or value <= 0:
+                raise ValueError(f"{context}.{field} must be a positive number.")
+    if "TrailerLengthMin" in acceptance and "TrailerLengthMax" in acceptance:
+        if float(acceptance["TrailerLengthMin"]) > float(acceptance["TrailerLengthMax"]):
+            raise ValueError(f"{context}.TrailerLengthMin must be <= TrailerLengthMax.")
+    if "TrailerLength" in acceptance and "TrailerLengthMin" in acceptance:
+        if float(acceptance["TrailerLength"]) < float(acceptance["TrailerLengthMin"]):
+            raise ValueError(f"{context}.TrailerLength must be >= TrailerLengthMin when both are present.")
+    if "TrailerLength" in acceptance and "TrailerLengthMax" in acceptance:
+        if float(acceptance["TrailerLength"]) > float(acceptance["TrailerLengthMax"]):
+            raise ValueError(f"{context}.TrailerLength must be <= TrailerLengthMax when both are present.")
+    if "TrailerCount" in acceptance:
+        value = acceptance["TrailerCount"]
+        if not isinstance(value, int) or value <= 0:
+            raise ValueError(f"{context}.TrailerCount must be a positive integer.")
+    if "Notes" in acceptance:
+        _bounded_string(acceptance["Notes"], f"{context}.Notes")
+
+
+def _extract_equipment_terms(payload):
+    class_value = _canonical_equipment_class(payload.get("EquipmentClass")) or _infer_equipment_class_from_type(
+        payload.get("EquipmentType")
+    )
+    subclass_value = _canonical_equipment_subclass(payload.get("EquipmentSubClass")) or _infer_equipment_subclass_from_type(
+        payload.get("EquipmentType")
+    )
+    tags = set()
+    for item in payload.get("EquipmentTags") or []:
+        canonical_tag = _canonical_equipment_tag(item)
+        if canonical_tag:
+            tags.add(canonical_tag)
+    if not tags:
+        tags.update(_infer_equipment_tags_from_type(payload.get("EquipmentType")))
+    trailer_length = payload.get("TrailerLength")
+    trailer_count = payload.get("TrailerCount", 1)
+    return {
+        "EquipmentClass": class_value,
+        "EquipmentSubClass": subclass_value,
+        "EquipmentTags": sorted(tags),
+        "TrailerLength": trailer_length,
+        "TrailerCount": trailer_count,
+    }
+
+
+def _equipment_matches_search_terms(resource_payload, filters):
+    resource_terms = _extract_equipment_terms(resource_payload)
+    filter_class = _canonical_equipment_class(filters.get("EquipmentClass")) if filters.get("EquipmentClass") else ""
+    filter_subclass = (
+        _canonical_equipment_subclass(filters.get("EquipmentSubClass"))
+        if filters.get("EquipmentSubClass")
+        else ""
+    )
+    required_tags = set(filters.get("RequiredEquipmentTags") or [])
+    trailer_length_min = filters.get("TrailerLengthMin")
+    trailer_length_max = filters.get("TrailerLengthMax")
+
+    if filter_class and resource_terms["EquipmentClass"] != filter_class:
+        return False
+    if filter_subclass and resource_terms["EquipmentSubClass"] != filter_subclass:
+        return False
+    if required_tags and not required_tags.issubset(set(resource_terms["EquipmentTags"])):
+        return False
+    trailer_length = resource_terms.get("TrailerLength")
+    if trailer_length_min is not None and trailer_length is not None:
+        if float(trailer_length) < float(trailer_length_min):
+            return False
+    if trailer_length_max is not None and trailer_length is not None:
+        if float(trailer_length) > float(trailer_length_max):
+            return False
+    return True
+
+
+def _equipment_acceptance_mismatch(reference_terms, acceptance):
+    if not acceptance:
+        return True
+    if acceptance.get("Accepted") is not True:
+        return True
+
+    accepted_class = _canonical_equipment_class(acceptance.get("EquipmentClass"))
+    accepted_subclass = _canonical_equipment_subclass(acceptance.get("EquipmentSubClass"))
+    accepted_tags = set(acceptance.get("EquipmentTags") or [])
+    accepted_trailer_length = acceptance.get("TrailerLength")
+    accepted_trailer_length_min = acceptance.get("TrailerLengthMin")
+    accepted_trailer_length_max = acceptance.get("TrailerLengthMax")
+    accepted_trailer_count = acceptance.get("TrailerCount")
+
+    if accepted_class and accepted_class != reference_terms["EquipmentClass"]:
+        return True
+    if accepted_subclass and reference_terms.get("EquipmentSubClass"):
+        if accepted_subclass != reference_terms["EquipmentSubClass"]:
+            return True
+    if accepted_tags and not set(reference_terms["EquipmentTags"]).issubset(accepted_tags):
+        return True
+    reference_trailer_length = reference_terms.get("TrailerLength")
+    if reference_trailer_length is not None:
+        has_range = accepted_trailer_length_min is not None or accepted_trailer_length_max is not None
+        if has_range:
+            if accepted_trailer_length_min is not None:
+                if float(reference_trailer_length) < (float(accepted_trailer_length_min) - 0.01):
+                    return True
+            if accepted_trailer_length_max is not None:
+                if float(reference_trailer_length) > (float(accepted_trailer_length_max) + 0.01):
+                    return True
+        elif accepted_trailer_length is not None:
+            if abs(float(accepted_trailer_length) - float(reference_trailer_length)) > 0.01:
+                return True
+    if accepted_trailer_count is not None and reference_terms.get("TrailerCount") is not None:
+        if int(accepted_trailer_count) != int(reference_terms["TrailerCount"]):
+            return True
+    return False
+
+
 def _validate_schedule_time_window(window, context):
     if not isinstance(window, dict):
         raise ValueError(f"{context} must be an object.")
@@ -2182,6 +2551,114 @@ VALID_ACCESSORIAL_STATUSES = {"Pending", "Approved", "Rejected", "TBD"}
 VALID_DETENTION_RATE_UNITS = {"Hour"}
 VALID_DETENTION_LOCATION_EVIDENCE_TYPES = {"GPS", "ELDPosition", "GeofenceCheckIn", "Other"}
 VALID_STOP_TYPES = {"Pickup", "Drop"}
+VALID_EQUIPMENT_CLASSES = {
+    "Van",
+    "Reefer",
+    "Flatbed",
+    "StepDeck",
+    "DoubleDrop",
+    "Lowboy",
+    "RGN",
+    "Tanker",
+    "Container",
+    "AutoCarrier",
+    "DumpTrailer",
+    "HopperBottom",
+    "Pneumatic",
+    "StraightBoxTruck",
+    "SprinterVan",
+    "PowerOnly",
+    "BTrain",
+    "Conveyor",
+    "MovingVan",
+    "Special",
+}
+VALID_EQUIPMENT_SUBCLASSES = {
+    "Hotshot",
+    "Conestoga",
+    "Landoll",
+    "Stretch",
+    "Maxi",
+    "OpenTop",
+    "LiftGate",
+    "RollerBed",
+    "Vented",
+    "Insulated",
+    "Intermodal",
+    "AirRide",
+    "Hazmat",
+    "Double",
+    "Triple",
+    "OverDimension",
+    "Aluminum",
+    "Steel",
+}
+VALID_EQUIPMENT_TAGS = {
+    "AirRide",
+    "HazmatCapable",
+    "Intermodal",
+    "OverDimensionCapable",
+    "DoubleTrailer",
+    "TripleTrailer",
+}
+EQUIPMENT_CLASS_ALIASES = {
+    "dryvan": "Van",
+    "van": "Van",
+    "reefer": "Reefer",
+    "flatbed": "Flatbed",
+    "stepdeck": "StepDeck",
+    "doubledrop": "DoubleDrop",
+    "lowboy": "Lowboy",
+    "rgn": "RGN",
+    "removeablegooseneck": "RGN",
+    "removablegooseneck": "RGN",
+    "tanker": "Tanker",
+    "container": "Container",
+    "autocarrier": "AutoCarrier",
+    "dumptrailer": "DumpTrailer",
+    "hopperbottom": "HopperBottom",
+    "pneumatic": "Pneumatic",
+    "straightboxtruck": "StraightBoxTruck",
+    "sprintervan": "SprinterVan",
+    "poweronly": "PowerOnly",
+    "btrain": "BTrain",
+    "conveyor": "Conveyor",
+    "movingvan": "MovingVan",
+    "special": "Special",
+}
+EQUIPMENT_SUBCLASS_ALIASES = {
+    "hotshot": "Hotshot",
+    "conestoga": "Conestoga",
+    "contestoga": "Conestoga",
+    "landoll": "Landoll",
+    "stretch": "Stretch",
+    "maxi": "Maxi",
+    "opentop": "OpenTop",
+    "liftgate": "LiftGate",
+    "rollerbed": "RollerBed",
+    "vented": "Vented",
+    "insulated": "Insulated",
+    "intermodal": "Intermodal",
+    "airride": "AirRide",
+    "hazmat": "Hazmat",
+    "double": "Double",
+    "triple": "Triple",
+    "overdimension": "OverDimension",
+    "aluminum": "Aluminum",
+    "steel": "Steel",
+}
+EQUIPMENT_TAG_ALIASES = {
+    "airride": "AirRide",
+    "hazmat": "HazmatCapable",
+    "hazmatcapable": "HazmatCapable",
+    "intermodal": "Intermodal",
+    "overdimension": "OverDimensionCapable",
+    "overdimensioncapable": "OverDimensionCapable",
+    "double": "DoubleTrailer",
+    "doubletrailer": "DoubleTrailer",
+    "triple": "TripleTrailer",
+    "tripletrailer": "TripleTrailer",
+}
 FORBIDDEN_BIOMETRIC_FIELDS = {
     "faceimage",
     "selfieimage",
@@ -3130,6 +3607,7 @@ def validate_message_body(message_type, body):
         _validate_schedule_terms_fields(body, "NewLoad")
         _bounded_string(body["LoadType"], "NewLoad.LoadType")
         _bounded_string(body["EquipmentType"], "NewLoad.EquipmentType")
+        _validate_equipment_contract(body, "NewLoad")
         _bounded_string(body["Commodity"], "NewLoad.Commodity")
         if not isinstance(body["TrailerLength"], (int, float)) or body["TrailerLength"] <= 0:
             raise ValueError("NewLoad.TrailerLength must be a positive number.")
@@ -3166,6 +3644,7 @@ def validate_message_body(message_type, body):
         _validate_state_code(body["OriginState"], "LoadSearch.OriginState")
         _validate_state_code(body["DestinationState"], "LoadSearch.DestinationState")
         _bounded_string(body["EquipmentType"], "LoadSearch.EquipmentType")
+        _validate_equipment_search_filters(body, "LoadSearch")
         _validate_iso_date(body["PickupDate"], "LoadSearch.PickupDate")
         if not isinstance(body["MaxRate"], (int, float)) or body["MaxRate"] < 0:
             raise ValueError("LoadSearch.MaxRate must be a non-negative number.")
@@ -3193,6 +3672,7 @@ def validate_message_body(message_type, body):
         _validate_location_obj(body["Location"], "NewTruck.Location")
         _validate_iso_date(body["AvailabilityDate"], "NewTruck.AvailabilityDate")
         _bounded_string(body["EquipmentType"], "NewTruck.EquipmentType")
+        _validate_equipment_contract(body, "NewTruck")
         _bounded_string(body["Notes"], "NewTruck.Notes")
         if not isinstance(body["TrailerLength"], (int, float)) or body["TrailerLength"] <= 0:
             raise ValueError("NewTruck.TrailerLength must be a positive number.")
@@ -3218,6 +3698,7 @@ def validate_message_body(message_type, body):
         _validate_rate_model(body["RateModel"], "TruckSearch.RateModel")
         _validate_state_code(body["OriginState"], "TruckSearch.OriginState")
         _bounded_string(body["EquipmentType"], "TruckSearch.EquipmentType")
+        _validate_equipment_search_filters(body, "TruckSearch")
         _validate_iso_date(body["AvailableFrom"], "TruckSearch.AvailableFrom")
         _validate_iso_date(body["AvailableTo"], "TruckSearch.AvailableTo")
         for field in ["LocationRadiusMiles", "MinRate", "MaxRate"]:
@@ -3237,6 +3718,8 @@ def validate_message_body(message_type, body):
             _bounded_string(body["LoadID"], "BidRequest.LoadID")
         if has_truck_id:
             _bounded_string(body["TruckID"], "BidRequest.TruckID")
+        if "EquipmentAcceptance" in body:
+            _validate_equipment_acceptance(body["EquipmentAcceptance"], "BidRequest.EquipmentAcceptance")
         if "StopPlanAcceptance" in body:
             _validate_stop_plan_acceptance(body["StopPlanAcceptance"], "BidRequest.StopPlanAcceptance")
         if "SpecialInstructionsAcceptance" in body:
@@ -3314,6 +3797,11 @@ def validate_message_body(message_type, body):
             _validate_special_instructions(body["SpecialInstructions"], "ExecutionReport.SpecialInstructions")
         if "ScheduleTerms" in body:
             _validate_schedule_terms_fields(body["ScheduleTerms"], "ExecutionReport.ScheduleTerms")
+        if "EquipmentTerms" in body:
+            equipment_terms = dict(body["EquipmentTerms"])
+            if "EquipmentType" not in equipment_terms:
+                equipment_terms["EquipmentType"] = "Special"
+            _validate_equipment_contract(equipment_terms, "ExecutionReport.EquipmentTerms")
         _bounded_string(body["ContractID"], "ExecutionReport.ContractID")
         _validate_iso_datetime(body["Timestamp"], "ExecutionReport.Timestamp")
         _validate_verification_result(body["VerificationResult"], "ExecutionReport.VerificationResult")
@@ -4128,6 +4616,9 @@ class BrokerAgent:
             },
             "LoadType": "Full",
             "EquipmentType": "Reefer",
+            "EquipmentClass": "Reefer",
+            "EquipmentSubClass": "AirRide",
+            "EquipmentTags": ["AirRide"],
             "TrailerLength": 53,
             "Weight": 42000,
             "Commodity": "Frozen Poultry",
@@ -4250,6 +4741,7 @@ class BrokerAgent:
                 load["Origin"]["state"] == filters.get("OriginState")
                 and load["Destination"]["state"] == filters.get("DestinationState")
                 and load["EquipmentType"] == filters.get("EquipmentType")
+                and _equipment_matches_search_terms(load, filters)
                 and load["Rate"]["RateModel"] == filters.get("RateModel")
                 and in_pickup_window
                 and load["Rate"]["Amount"] <= filters.get("MaxRate", 9999)
@@ -4266,6 +4758,8 @@ class BrokerAgent:
         load = self.loads[load_id]
         load_rate = load["Rate"]
         bid_rate = bid_request["Rate"]
+        load_equipment_terms = _extract_equipment_terms(load)
+        equipment_acceptance = bid_request.get("EquipmentAcceptance") or {}
         stop_summary = _derive_stop_plan_summary(load)
         stop_plan_acceptance = bid_request.get("StopPlanAcceptance") or {}
         special_instructions = list(load.get("SpecialInstructions") or [])
@@ -4350,6 +4844,24 @@ class BrokerAgent:
             return {
                 "LoadID": load_id,
                 "ResponseType": "Reject",
+                "VerifiedBadge": "None",
+            }
+
+        if _equipment_acceptance_mismatch(load_equipment_terms, equipment_acceptance):
+            counter_metadata = {}
+            if rate_model == "PerMile":
+                for field in ["AgreedMiles", "MilesSource", "MilesSourceVersion", "MilesCalculatedAt"]:
+                    if field in load_rate:
+                        counter_metadata[field] = load_rate[field]
+            return {
+                "LoadID": load_id,
+                "ResponseType": "Counter",
+                "ProposedRate": build_rate(
+                    rate_model,
+                    counter_amount(rate_model, rate_floor),
+                    **counter_metadata,
+                ),
+                "ReasonCode": "EquipmentCompatibilityDispute",
                 "VerifiedBadge": "None",
             }
 
@@ -4440,6 +4952,7 @@ class BrokerAgent:
         policy_decision=None,
     ):
         load = self.loads[load_id]
+        load_equipment_terms = _extract_equipment_terms(load)
         if policy_decision is None:
             policy_decision = evaluate_verification_policy_decision(
                 verification_result,
@@ -4465,6 +4978,14 @@ class BrokerAgent:
                 }.items()
                 if value is not None
             },
+            "EquipmentTerms": {
+                "EquipmentType": load["EquipmentType"],
+                "EquipmentClass": load_equipment_terms["EquipmentClass"],
+                "EquipmentSubClass": load_equipment_terms["EquipmentSubClass"],
+                "EquipmentTags": list(load_equipment_terms["EquipmentTags"]),
+                "TrailerLength": load.get("TrailerLength"),
+                "TrailerCount": load.get("TrailerCount", 1),
+            },
             "AccessorialPolicy": load["AccessorialPolicy"],
             "Accessorials": [],
             "VerifiedBadge": verified_badge,
@@ -4488,6 +5009,11 @@ class BrokerAgent:
             "LocationRadiusMiles": 120,
             "OriginState": "TX",
             "EquipmentType": "Reefer",
+            "EquipmentClass": "Reefer",
+            "EquipmentSubClass": "AirRide",
+            "RequiredEquipmentTags": ["AirRide"],
+            "TrailerLengthMin": 53,
+            "TrailerLengthMax": 53,
             "AvailableFrom": target_date,
             "AvailableTo": (date.today() + timedelta(days=3)).isoformat(),
             "RateModel": rate_model,
@@ -4506,10 +5032,21 @@ class BrokerAgent:
                     metadata[field] = truck["RateMin"][field]
         if rate_model in {"PerPallet", "CWT"} and "Quantity" in truck["RateMin"]:
             metadata["Quantity"] = truck["RateMin"]["Quantity"]
+        truck_equipment_terms = _extract_equipment_terms(truck)
         return {
             "TruckID": truck["TruckID"],
             "Rate": build_rate(rate_model, amount, **metadata),
             "AvailabilityDate": truck["AvailabilityDate"],
+            "EquipmentAcceptance": {
+                "Accepted": True,
+                "EquipmentClass": truck_equipment_terms["EquipmentClass"],
+                "EquipmentSubClass": truck_equipment_terms["EquipmentSubClass"],
+                "EquipmentTags": list(truck_equipment_terms["EquipmentTags"]),
+                "TrailerLength": truck.get("TrailerLength"),
+                "TrailerLengthMin": truck.get("TrailerLength"),
+                "TrailerLengthMax": truck.get("TrailerLength"),
+                "TrailerCount": truck.get("TrailerCount", 1),
+            },
             "MatchType": "TruckCapacity",
         }
 
@@ -4521,6 +5058,8 @@ class BrokerAgent:
         verification_result,
         policy_decision=None,
     ):
+        truck = self.trucks.get(truck_id, {})
+        truck_equipment_terms = _extract_equipment_terms(truck) if truck else {}
         if policy_decision is None:
             policy_decision = evaluate_verification_policy_decision(
                 verification_result,
@@ -4533,6 +5072,18 @@ class BrokerAgent:
             "Status": "Booked",
             "Timestamp": now_utc(),
             "AgreedRate": bid_request["Rate"],
+            "EquipmentTerms": {
+                key: value
+                for key, value in {
+                    "EquipmentType": truck.get("EquipmentType"),
+                    "EquipmentClass": truck_equipment_terms.get("EquipmentClass"),
+                    "EquipmentSubClass": truck_equipment_terms.get("EquipmentSubClass"),
+                    "EquipmentTags": list(truck_equipment_terms.get("EquipmentTags") or []),
+                    "TrailerLength": truck.get("TrailerLength"),
+                    "TrailerCount": truck.get("TrailerCount"),
+                }.items()
+                if value not in (None, "", [])
+            },
             "VerifiedBadge": verified_badge,
             "VerificationResult": verification_result,
             "VerificationMode": policy_decision["VerificationMode"],
@@ -4563,6 +5114,11 @@ class CarrierAgent:
             "OriginState": "TX",
             "DestinationState": destination_state,
             "EquipmentType": "Reefer",
+            "EquipmentClass": "Reefer",
+            "EquipmentSubClass": "AirRide",
+            "RequiredEquipmentTags": ["AirRide"],
+            "TrailerLengthMin": 53,
+            "TrailerLengthMax": 53,
             "PickupDate": target_pickup,
             "RateModel": rate_model,
             "UnitBasis": default_unit_basis(rate_model),
@@ -4578,6 +5134,7 @@ class CarrierAgent:
         rate_model = load["Rate"]["RateModel"]
         amount = default_bid_amount(rate_model) if bid_amount is None else bid_amount
         stop_summary = _derive_stop_plan_summary(load)
+        load_equipment_terms = _extract_equipment_terms(load)
         metadata = {}
         if rate_model == "PerMile":
             for field in ["AgreedMiles", "MilesSource", "MilesSourceVersion", "MilesCalculatedAt"]:
@@ -4593,6 +5150,16 @@ class CarrierAgent:
             "LoadID": load["LoadID"],
             "Rate": build_rate(rate_model, amount, **metadata),
             "AvailabilityDate": (date.today() + timedelta(days=2)).isoformat(),
+            "EquipmentAcceptance": {
+                "Accepted": True,
+                "EquipmentClass": load_equipment_terms["EquipmentClass"],
+                "EquipmentSubClass": load_equipment_terms["EquipmentSubClass"],
+                "EquipmentTags": list(load_equipment_terms["EquipmentTags"]),
+                "TrailerLength": load.get("TrailerLength"),
+                "TrailerLengthMin": load.get("TrailerLength"),
+                "TrailerLengthMax": load.get("TrailerLength"),
+                "TrailerCount": load.get("TrailerCount", 1),
+            },
             "SpecialInstructionsAcceptance": {
                 "Accepted": True,
                 "Exceptions": [],
@@ -4620,7 +5187,11 @@ class CarrierAgent:
             "Location": {"city": "Fort Worth", "state": "TX", "zip": "76102"},
             "AvailabilityDate": availability,
             "EquipmentType": "Reefer",
+            "EquipmentClass": "Reefer",
+            "EquipmentSubClass": "AirRide",
+            "EquipmentTags": ["AirRide"],
             "TrailerLength": 53,
+            "TrailerCount": 1,
             "MaxWeight": 44000,
             "RateMin": build_rate(rate_model, default_floor_amount(rate_model)),
             "Notes": "Team driver available, same-day pickup preferred.",
@@ -4651,6 +5222,7 @@ class CarrierAgent:
                 and rate_model_ok
                 and rate_ok
                 and truck["EquipmentType"] == filters.get("EquipmentType")
+                and _equipment_matches_search_terms(truck, filters)
             ):
                 matches.append(truck)
         return matches
@@ -4660,6 +5232,8 @@ class CarrierAgent:
         truck = self.trucks[truck_id]
         min_rate = truck["RateMin"]
         bid_rate = bid_request["Rate"]
+        truck_equipment_terms = _extract_equipment_terms(truck)
+        equipment_acceptance = bid_request.get("EquipmentAcceptance") or {}
 
         if bid_rate["RateModel"] != min_rate["RateModel"]:
             return {
@@ -4701,6 +5275,24 @@ class CarrierAgent:
             return {
                 "TruckID": truck_id,
                 "ResponseType": "Reject",
+                "VerifiedBadge": "None",
+            }
+
+        if _equipment_acceptance_mismatch(truck_equipment_terms, equipment_acceptance):
+            counter_metadata = {}
+            if min_rate["RateModel"] == "PerMile":
+                for field in ["AgreedMiles", "MilesSource", "MilesSourceVersion", "MilesCalculatedAt"]:
+                    if field in min_rate:
+                        counter_metadata[field] = min_rate[field]
+            return {
+                "TruckID": truck_id,
+                "ResponseType": "Counter",
+                "ProposedRate": build_rate(
+                    min_rate["RateModel"],
+                    counter_amount(min_rate["RateModel"], min_rate["Amount"]),
+                    **counter_metadata,
+                ),
+                "ReasonCode": "EquipmentCompatibilityDispute",
                 "VerifiedBadge": "None",
             }
 
@@ -4748,6 +5340,7 @@ class ShipperAgent:
             "PickupLatest": pickup_latest.isoformat(),
             "LoadType": "Full",
             "EquipmentType": "DryVan",
+            "EquipmentClass": "Van",
             "TrailerLength": 53,
             "Weight": 38000,
             "Commodity": "Packaged Foods",
