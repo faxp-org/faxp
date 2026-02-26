@@ -11,6 +11,7 @@ Use this checklist as the final go/no-go gate before a tagged release.
 - [ ] Protocol schemas and simulation artifacts are present and version-aligned.
 - [ ] Security scripts and baseline policies are present.
 - [ ] Governance policies, templates, and runbooks are present.
+- [ ] Vendor-direct certification runbook is present and references attestation + decision-link checks.
 - [ ] Conformance and certification artifacts are present.
 - [ ] CI and conformance suite include all mandatory release-readiness checks.
 
@@ -36,6 +37,7 @@ Use this checklist as the final go/no-go gate before a tagged release.
     "docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md",
     "docs/governance/CERTIFICATION_DECISION_RECORD_TEMPLATE.md",
     "docs/governance/DECISION_RECORDS_RUNBOOK.md",
+    "docs/governance/VENDOR_DIRECT_CERTIFICATION_RUNBOOK.md",
     "docs/governance/CERTIFICATION_PLAYBOOK.md",
     "docs/governance/GOVERNANCE_INDEX.json",
     "conformance/rate_model_profile.v1.json",
