@@ -115,8 +115,8 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S12: Expedited Team Driver Requirement
 
 - Description: Expedited shipment requires team drivers.
-- RFC: `TBD (new RFC required)`
-- Target: `v0.3.x`
+- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- Target: `v0.3.1`
 - Expected outcome:
   - Driver configuration requirement is explicit in load terms.
   - Carrier bid declares single/team capability.

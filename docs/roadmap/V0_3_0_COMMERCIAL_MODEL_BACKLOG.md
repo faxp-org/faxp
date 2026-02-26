@@ -88,8 +88,8 @@ Purpose: Central place to capture commercial model requirements before implement
   - Compatibility matching handles `53' Reefer` vs `48' Reefer` correctly.
 
 5. Driver configuration requirements (single vs team) for expedited freight
-- Target: `v0.3.x`
-- RFC: `TBD (new RFC required)`
+- Target: `v0.3.1`
+- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
 - Acceptance:
   - Load can declare required driver configuration.
   - Carrier bid can declare provided configuration.
