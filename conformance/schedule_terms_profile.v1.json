@@ -1,0 +1,50 @@
+{
+  "profileVersion": "1.0.0",
+  "profileId": "schedule-commitment-terms.v1",
+  "protocol": "FAXP",
+  "scope": "booking-plane-commercial-terms",
+  "description": "Canonical booking-time schedule profile covering pickup/delivery date ranges and optional appointment/range time windows with explicit acceptance/counter semantics.",
+  "newLoadFields": {
+    "required": [
+      "PickupEarliest",
+      "PickupLatest"
+    ],
+    "optional": [
+      "DeliveryEarliest",
+      "DeliveryLatest",
+      "PickupTimeWindow",
+      "DeliveryTimeWindow"
+    ]
+  },
+  "bidRequestAcceptanceField": "ScheduleAcceptance",
+  "scheduleAcceptance": {
+    "requiredFields": [
+      "Accepted"
+    ],
+    "optionalFields": [
+      "Exceptions",
+      "PickupTimeWindow",
+      "DeliveryTimeWindow",
+      "Notes"
+    ]
+  },
+  "executionReportField": "ScheduleTerms",
+  "normativeConstraints": {
+    "pickupRangeRequired": true,
+    "deliveryRangePairRequiredWhenPresent": true,
+    "timeWindowSupportsAppointmentOrRange": true,
+    "scheduleDisputeMayCounter": true,
+    "counterReasonCode": "ScheduleWindowDispute",
+    "dispatchSchedulingExecutionOutOfScope": true
+  },
+  "conformanceRequirements": {
+    "requiredTests": [
+      "tests/run_schedule_terms.py",
+      "tests/run_schedule_terms_profile.py"
+    ],
+    "requiredSuiteChecks": [
+      "schedule_terms",
+      "schedule_terms_profile"
+    ]
+  }
+}

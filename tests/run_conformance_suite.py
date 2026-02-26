@@ -144,6 +144,14 @@ def main() -> int:
         "conformance suite must include special_instructions_profile in default checks",
     )
     _assert(
+        "schedule_terms" in listed_checks.stdout.splitlines(),
+        "conformance suite must include schedule_terms in default checks",
+    )
+    _assert(
+        "schedule_terms_profile" in listed_checks.stdout.splitlines(),
+        "conformance suite must include schedule_terms_profile in default checks",
+    )
+    _assert(
         "protocol_compatibility_profile" in listed_checks.stdout.splitlines(),
         "conformance suite must include protocol_compatibility_profile in default checks",
     )

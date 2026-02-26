@@ -87,11 +87,12 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S9: Required Delivery Date Commitment
 
 - Description: Shipper/broker requires delivery by specific date/time window.
-- RFC: `TBD (new RFC required)`
-- Target: `v0.3.x`
+- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- Target: `v0.3.1`
 - Expected outcome:
   - Delivery commitment fields are structured and validated.
-  - Carrier can accept/counter based on service window constraints.
+  - Pickup date range remains required.
+  - Carrier can accept/counter based on `ScheduleAcceptance` constraints.
 
 ### S10: Trailer Size Match (`53'` vs `48'` Reefer)
 

@@ -72,11 +72,12 @@ Purpose: Central place to capture commercial model requirements before implement
   - Deterministic dispute reason code for unresolved instructions.
 
 3. Required delivery date / service commitment windows
-- Target: `v0.3.x`
-- RFC: `TBD (new RFC required)`
+- Target: `v0.3.1`
+- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
 - Acceptance:
-  - Required delivery date/time windows are structured and validated.
-  - Commitments can be negotiated with explicit acceptance/counter semantics.
+  - Pickup date range remains required and validated (`PickupEarliest`/`PickupLatest`).
+  - Delivery date range and pickup/delivery time windows are structured and validated when provided.
+  - Commitments can be negotiated with explicit acceptance/counter semantics (`ScheduleAcceptance`).
 
 4. Equipment taxonomy expansion (specialty trailers + dimensional constraints)
 - Target: `v0.3.x`

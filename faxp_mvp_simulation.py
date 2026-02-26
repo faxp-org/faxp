@@ -156,6 +156,7 @@ EXPECTED_VERIFIER_COMPONENT_SHA256 = os.getenv(
 ).strip().lower()
 SUPPORTED_SIGNATURE_SCHEMES = {"HMAC_SHA256", "ED25519"}
 AGENT_ID_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._:-]{1,127}$")
+TIME_ZONE_PATTERN = re.compile(r"^[A-Za-z_]+(?:/[A-Za-z0-9_+-]+)+$")
 ALLOWED_EXTERNAL_SECRET_KEYS = {
     "FAXP_SIGNATURE_SCHEME",
     "FAXP_MESSAGE_SIGNING_KEY",
@@ -1349,6 +1350,14 @@ def _validate_iso_datetime(value, context):
         raise ValueError(f"{context} must be ISO datetime.") from exc
 
 
+def _parse_iso_datetime(value, context):
+    _bounded_string(value, context)
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError(f"{context} must be ISO datetime.") from exc
+
+
 def _validate_state_code(value, context):
     _bounded_string(value, context)
     if not re.fullmatch(r"[A-Z]{2}", value):
@@ -1526,6 +1535,75 @@ def _validate_special_instructions_acceptance(acceptance, context):
             if normalized in seen:
                 raise ValueError(f"{context}.Exceptions must not contain duplicates.")
             seen.add(normalized)
+    if "Notes" in acceptance:
+        _bounded_string(acceptance["Notes"], f"{context}.Notes")
+
+
+def _validate_schedule_time_window(window, context):
+    if not isinstance(window, dict):
+        raise ValueError(f"{context} must be an object.")
+    _require_fields(window, ["Start", "End", "TimeZone"], context)
+    start_dt = _parse_iso_datetime(window["Start"], f"{context}.Start")
+    end_dt = _parse_iso_datetime(window["End"], f"{context}.End")
+    if start_dt > end_dt:
+        raise ValueError(f"{context}.Start must be <= End.")
+    _bounded_string(window["TimeZone"], f"{context}.TimeZone")
+    timezone_value = str(window["TimeZone"]).strip()
+    if timezone_value and not TIME_ZONE_PATTERN.fullmatch(timezone_value):
+        raise ValueError(f"{context}.TimeZone must be an IANA timezone (e.g., America/Chicago).")
+
+
+def _validate_schedule_terms_fields(payload, context):
+    has_pickup_earliest = "PickupEarliest" in payload
+    has_pickup_latest = "PickupLatest" in payload
+    if has_pickup_earliest != has_pickup_latest:
+        raise ValueError(f"{context} must include both PickupEarliest and PickupLatest when either is present.")
+    if has_pickup_earliest:
+        _validate_iso_date(payload["PickupEarliest"], f"{context}.PickupEarliest")
+        _validate_iso_date(payload["PickupLatest"], f"{context}.PickupLatest")
+        if payload["PickupEarliest"] > payload["PickupLatest"]:
+            raise ValueError(f"{context}.PickupEarliest must be <= PickupLatest.")
+
+    has_delivery_earliest = "DeliveryEarliest" in payload
+    has_delivery_latest = "DeliveryLatest" in payload
+    if has_delivery_earliest != has_delivery_latest:
+        raise ValueError(f"{context} must include both DeliveryEarliest and DeliveryLatest when either is present.")
+    if has_delivery_earliest:
+        _validate_iso_date(payload["DeliveryEarliest"], f"{context}.DeliveryEarliest")
+        _validate_iso_date(payload["DeliveryLatest"], f"{context}.DeliveryLatest")
+        if payload["DeliveryEarliest"] > payload["DeliveryLatest"]:
+            raise ValueError(f"{context}.DeliveryEarliest must be <= DeliveryLatest.")
+        if has_pickup_earliest and payload["DeliveryLatest"] < payload["PickupEarliest"]:
+            raise ValueError(f"{context}.DeliveryLatest must be on/after PickupEarliest.")
+
+    if "PickupTimeWindow" in payload:
+        _validate_schedule_time_window(payload["PickupTimeWindow"], f"{context}.PickupTimeWindow")
+    if "DeliveryTimeWindow" in payload:
+        _validate_schedule_time_window(payload["DeliveryTimeWindow"], f"{context}.DeliveryTimeWindow")
+
+    if "DeliveryTimeWindow" in payload and not has_delivery_earliest:
+        raise ValueError(f"{context}.DeliveryEarliest/DeliveryLatest are required when DeliveryTimeWindow is present.")
+
+
+def _validate_schedule_acceptance(acceptance, context):
+    if not isinstance(acceptance, dict):
+        raise ValueError(f"{context} must be an object.")
+    _require_fields(acceptance, ["Accepted"], context)
+    if not isinstance(acceptance["Accepted"], bool):
+        raise ValueError(f"{context}.Accepted must be boolean.")
+    if "Exceptions" in acceptance:
+        if not isinstance(acceptance["Exceptions"], list):
+            raise ValueError(f"{context}.Exceptions must be an array.")
+        seen = set()
+        for idx, value in enumerate(acceptance["Exceptions"]):
+            _bounded_string(value, f"{context}.Exceptions[{idx}]")
+            normalized = str(value).strip().lower()
+            if normalized in seen:
+                raise ValueError(f"{context}.Exceptions must not contain duplicates.")
+            seen.add(normalized)
+    for field in ["PickupTimeWindow", "DeliveryTimeWindow"]:
+        if field in acceptance:
+            _validate_schedule_time_window(acceptance[field], f"{context}.{field}")
     if "Notes" in acceptance:
         _bounded_string(acceptance["Notes"], f"{context}.Notes")
 
@@ -3049,6 +3127,7 @@ def validate_message_body(message_type, body):
         _validate_location_obj(body["Destination"], "NewLoad.Destination")
         _validate_iso_date(body["PickupEarliest"], "NewLoad.PickupEarliest")
         _validate_iso_date(body["PickupLatest"], "NewLoad.PickupLatest")
+        _validate_schedule_terms_fields(body, "NewLoad")
         _bounded_string(body["LoadType"], "NewLoad.LoadType")
         _bounded_string(body["EquipmentType"], "NewLoad.EquipmentType")
         _bounded_string(body["Commodity"], "NewLoad.Commodity")
@@ -3165,6 +3244,8 @@ def validate_message_body(message_type, body):
                 body["SpecialInstructionsAcceptance"],
                 "BidRequest.SpecialInstructionsAcceptance",
             )
+        if "ScheduleAcceptance" in body:
+            _validate_schedule_acceptance(body["ScheduleAcceptance"], "BidRequest.ScheduleAcceptance")
         if "AccessorialPolicyAcceptance" in body:
             _validate_accessorial_policy_acceptance(
                 body["AccessorialPolicyAcceptance"],
@@ -3231,6 +3312,8 @@ def validate_message_body(message_type, body):
             )
         if "SpecialInstructions" in body:
             _validate_special_instructions(body["SpecialInstructions"], "ExecutionReport.SpecialInstructions")
+        if "ScheduleTerms" in body:
+            _validate_schedule_terms_fields(body["ScheduleTerms"], "ExecutionReport.ScheduleTerms")
         _bounded_string(body["ContractID"], "ExecutionReport.ContractID")
         _validate_iso_datetime(body["Timestamp"], "ExecutionReport.Timestamp")
         _validate_verification_result(body["VerificationResult"], "ExecutionReport.VerificationResult")
@@ -4021,6 +4104,8 @@ class BrokerAgent:
         load_id = str(uuid4())
         pickup_earliest = date.today() + timedelta(days=2)
         pickup_latest = pickup_earliest + timedelta(days=1)
+        delivery_earliest = pickup_latest + timedelta(days=1)
+        delivery_latest = delivery_earliest + timedelta(days=1)
         floor_amount = default_floor_amount(rate_model)
 
         new_load = {
@@ -4029,6 +4114,18 @@ class BrokerAgent:
             "Destination": {"city": "Atlanta", "state": "GA", "zip": "30301"},
             "PickupEarliest": pickup_earliest.isoformat(),
             "PickupLatest": pickup_latest.isoformat(),
+            "DeliveryEarliest": delivery_earliest.isoformat(),
+            "DeliveryLatest": delivery_latest.isoformat(),
+            "PickupTimeWindow": {
+                "Start": f"{pickup_earliest.isoformat()}T08:00:00-05:00",
+                "End": f"{pickup_earliest.isoformat()}T12:00:00-05:00",
+                "TimeZone": "America/Chicago",
+            },
+            "DeliveryTimeWindow": {
+                "Start": f"{delivery_earliest.isoformat()}T09:00:00-05:00",
+                "End": f"{delivery_earliest.isoformat()}T15:00:00-05:00",
+                "TimeZone": "America/New_York",
+            },
             "LoadType": "Full",
             "EquipmentType": "Reefer",
             "TrailerLength": 53,
@@ -4173,6 +4270,7 @@ class BrokerAgent:
         stop_plan_acceptance = bid_request.get("StopPlanAcceptance") or {}
         special_instructions = list(load.get("SpecialInstructions") or [])
         special_acceptance = bid_request.get("SpecialInstructionsAcceptance") or {}
+        schedule_acceptance = bid_request.get("ScheduleAcceptance") or {}
         stop_plan_mismatch = False
         if stop_plan_acceptance:
             accepted = bool(stop_plan_acceptance.get("Accepted"))
@@ -4192,6 +4290,22 @@ class BrokerAgent:
                 special_instructions_mismatch = True
             elif special_acceptance.get("Exceptions"):
                 special_instructions_mismatch = True
+        schedule_terms_present = any(
+            key in load
+            for key in ["DeliveryEarliest", "DeliveryLatest", "PickupTimeWindow", "DeliveryTimeWindow"]
+        )
+        schedule_mismatch = False
+        if schedule_terms_present:
+            if not schedule_acceptance or schedule_acceptance.get("Accepted") is not True:
+                schedule_mismatch = True
+            elif schedule_acceptance.get("Exceptions"):
+                schedule_mismatch = True
+            else:
+                for window_field in ["PickupTimeWindow", "DeliveryTimeWindow"]:
+                    expected_window = load.get(window_field)
+                    accepted_window = schedule_acceptance.get(window_field)
+                    if expected_window and accepted_window and accepted_window != expected_window:
+                        schedule_mismatch = True
 
         if bid_rate["RateModel"] != load_rate["RateModel"]:
             return {
@@ -4275,6 +4389,24 @@ class BrokerAgent:
                 "VerifiedBadge": "None",
             }
 
+        if schedule_mismatch:
+            counter_metadata = {}
+            if rate_model == "PerMile":
+                for field in ["AgreedMiles", "MilesSource", "MilesSourceVersion", "MilesCalculatedAt"]:
+                    if field in load_rate:
+                        counter_metadata[field] = load_rate[field]
+            return {
+                "LoadID": load_id,
+                "ResponseType": "Counter",
+                "ProposedRate": build_rate(
+                    rate_model,
+                    counter_amount(rate_model, rate_floor),
+                    **counter_metadata,
+                ),
+                "ReasonCode": "ScheduleWindowDispute",
+                "VerifiedBadge": "None",
+            }
+
         if mileage_decision["requiresCounter"]:
             counter_metadata = {}
             for field in ["AgreedMiles", "MilesSource", "MilesSourceVersion", "MilesCalculatedAt"]:
@@ -4321,6 +4453,18 @@ class BrokerAgent:
             "Timestamp": now_utc(),
             "AgreedRate": bid_request["Rate"],
             "SpecialInstructions": list(load.get("SpecialInstructions") or []),
+            "ScheduleTerms": {
+                key: value
+                for key, value in {
+                    "PickupEarliest": load.get("PickupEarliest"),
+                    "PickupLatest": load.get("PickupLatest"),
+                    "DeliveryEarliest": load.get("DeliveryEarliest"),
+                    "DeliveryLatest": load.get("DeliveryLatest"),
+                    "PickupTimeWindow": load.get("PickupTimeWindow"),
+                    "DeliveryTimeWindow": load.get("DeliveryTimeWindow"),
+                }.items()
+                if value is not None
+            },
             "AccessorialPolicy": load["AccessorialPolicy"],
             "Accessorials": [],
             "VerifiedBadge": verified_badge,
@@ -4441,6 +4585,10 @@ class CarrierAgent:
                     metadata[field] = load["Rate"][field]
         if rate_model in {"PerPallet", "CWT"} and "Quantity" in load["Rate"]:
             metadata["Quantity"] = load["Rate"]["Quantity"]
+        schedule_acceptance = {"Accepted": True, "Exceptions": []}
+        for field in ["PickupTimeWindow", "DeliveryTimeWindow"]:
+            if field in load:
+                schedule_acceptance[field] = load[field]
         return {
             "LoadID": load["LoadID"],
             "Rate": build_rate(rate_model, amount, **metadata),
@@ -4449,6 +4597,7 @@ class CarrierAgent:
                 "Accepted": True,
                 "Exceptions": [],
             },
+            "ScheduleAcceptance": schedule_acceptance,
             "StopPlanAcceptance": {
                 "Accepted": True,
                 "StopCount": stop_summary["stopCount"],
