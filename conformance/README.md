@@ -28,6 +28,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `driver_configuration_profile.v1.json`: canonical booking-plane driver configuration terms profile.
 - `load_reference_numbers_profile.v1.json`: canonical booking-plane external load reference metadata profile.
 - `equipment_profile.v1.json`: canonical booking-plane equipment taxonomy compatibility profile (includes alias normalization and subclass-driven tag inference constraints).
+- `equipment_type_alias_coverage.v1.json`: canonical booking-plane EquipmentType alias coverage map for class/subclass normalization.
 - `registry_update.schema.json`: schema for registry operations request payloads.
 - `registry_update.sample.json`: sample registry operations request with upsert/revoke/rollback.
 - `registry_update.sample.audit.log`: sample audit log for registry operations.
@@ -294,6 +295,12 @@ Equipment taxonomy profile check:
 
 ```bash
 python3 tests/run_equipment_profile.py
+```
+
+Equipment type alias coverage check:
+
+```bash
+python3 tests/run_equipment_type_alias_coverage.py
 ```
 
 Booking-plane commercial terms governance check:
