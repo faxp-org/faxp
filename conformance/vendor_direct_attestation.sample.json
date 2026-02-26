@@ -1,0 +1,20 @@
+{
+  "status": "Success",
+  "provider": "compliance.authority-record.adapter",
+  "source": "vendor-direct",
+  "provenance": "vendor-direct",
+  "assuranceLevel": "AAL1",
+  "score": 91,
+  "token": "vendor-direct-attest-20260226-0001",
+  "evidenceRef": "sha256:e390eb1c40cd29626b362f47",
+  "verifiedAt": "2026-02-26T00:00:00Z",
+  "category": "Compliance",
+  "method": "AuthorityRecordCheck",
+  "sourceAuthority": "FMCSA",
+  "mcNumber": "498282",
+  "attestation": {
+    "alg": "HMAC_SHA256",
+    "kid": "faxp-lab-selfattest-2026q1",
+    "sig": "bd6591f92c1f0a0ee576409a9348d87925b41a903ab8b208f08f2da2b54ef92f"
+  }
+}

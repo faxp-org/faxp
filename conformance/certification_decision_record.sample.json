@@ -9,7 +9,8 @@
     "CONFORMANCE_SUITE_PASS",
     "POLICY_PROFILE_SYNC_PASS",
     "REGISTRY_ADMISSION_POLICY_PASS",
-    "DECISION_TEMPLATE_VALIDATED"
+    "DECISION_TEMPLATE_VALIDATED",
+    "VENDOR_DIRECT_ATTESTATION_PASS"
   ],
   "registryVersionEvaluated": "1.0.0",
   "conformanceRunId": "sample-run-id-20260222-0001",
@@ -38,6 +39,10 @@
     {
       "type": "PolicyChecks",
       "ref": "tests/run_policy_profile_sync.py"
+    },
+    {
+      "type": "VendorDirectAttestation",
+      "ref": "conformance/vendor_direct_attestation.sample.json"
     }
   ],
   "approver": {
