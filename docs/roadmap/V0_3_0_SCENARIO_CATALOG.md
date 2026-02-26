@@ -97,7 +97,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S10: Trailer Size Match (`53'` vs `48'` Reefer)
 
 - Description: Load requires specific reefer trailer size.
-- RFC: `TBD (new RFC required)`
+- RFC: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-equipment-taxonomy-expansion.md`
 - Target: `v0.3.x`
 - Expected outcome:
   - Equipment matching distinguishes size-sensitive requirements.
@@ -106,7 +106,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S11: Specialty Trailer Match (Hopper / StepDeck)
 
 - Description: Load requires non-standard trailer class.
-- RFC: `TBD (new RFC required)`
+- RFC: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-equipment-taxonomy-expansion.md`
 - Target: `v0.3.x`
 - Expected outcome:
   - Specialty equipment taxonomy is structured and validated.

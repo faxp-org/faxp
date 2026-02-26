@@ -66,6 +66,14 @@ Scope policy: Booking-plane and certification governance only.
 - Notes: No mandatory A2A/MCP runtime dependency in FAXP core.
 - Draft file: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-a2a-mcp-interop-maturity.md`
 
+7. `RFC-v0.3-equipment-taxonomy-expansion`
+- Goal: Standardize specialty trailer taxonomy and dimensional compatibility semantics for booking-plane matching.
+- Scope class: `In-Scope`
+- Status: `Draft` (Deferred to v0.3.x)
+- Target: `v0.3.x`
+- Notes: Keep dispatch assignment and operations lifecycle out of scope.
+- Draft file: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-equipment-taxonomy-expansion.md`
+
 ## Deferred / Explicitly Out-of-Scope for v0.3.0 RFC Batch
 
 1. Dispatch operations model.
