@@ -27,7 +27,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `schedule_terms_profile.v1.json`: canonical booking-plane schedule commitment profile.
 - `driver_configuration_profile.v1.json`: canonical booking-plane driver configuration terms profile.
 - `load_reference_numbers_profile.v1.json`: canonical booking-plane external load reference metadata profile.
-- `equipment_profile.v1.json`: canonical booking-plane equipment taxonomy compatibility profile.
+- `equipment_profile.v1.json`: canonical booking-plane equipment taxonomy compatibility profile (includes alias normalization and subclass-driven tag inference constraints).
 - `registry_update.schema.json`: schema for registry operations request payloads.
 - `registry_update.sample.json`: sample registry operations request with upsert/revoke/rollback.
 - `registry_update.sample.audit.log`: sample audit log for registry operations.
