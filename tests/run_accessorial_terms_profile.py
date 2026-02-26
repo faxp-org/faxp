@@ -14,8 +14,6 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from faxp_mvp_simulation import (  # noqa: E402
-    VALID_DETENTION_LOCATION_EVIDENCE_TYPES,
-    VALID_DETENTION_RATE_UNITS,
     VALID_ACCESSORIAL_EVIDENCE_TYPES,
     VALID_ACCESSORIAL_PARTIES,
     VALID_ACCESSORIAL_PRICING_MODES,
@@ -24,6 +22,7 @@ from faxp_mvp_simulation import (  # noqa: E402
 
 
 PROFILE_PATH = PROJECT_ROOT / "conformance" / "accessorial_terms_profile.v1.json"
+DETENTION_PROFILE_PATH = PROJECT_ROOT / "conformance" / "detention_terms_profile.v1.json"
 SCOPE_PATH = PROJECT_ROOT / "docs" / "governance" / "SCOPE_GUARDRAILS.md"
 CONFORMANCE_SUITE_PATH = PROJECT_ROOT / "conformance" / "run_all_checks.py"
 
@@ -53,7 +52,7 @@ def main() -> int:
         "pricingModes",
         "partyRoles",
         "evidenceTypes",
-        "detentionTerms",
+        "detentionProfileRef",
         "entryStatuses",
         "normativeConstraints",
         "conformanceRequirements",
@@ -81,22 +80,11 @@ def main() -> int:
         "DetentionTerms" in {str(item) for item in term_fields.get("optional") or []},
         "termFields.optional must include DetentionTerms",
     )
-
-    detention_terms = profile.get("detentionTerms") or {}
     _assert(
-        {str(item) for item in detention_terms.get("required") or []}
-        == {"GracePeriodMinutes", "RateAmount", "RateUnit"},
-        "detentionTerms.required must be GracePeriodMinutes, RateAmount, and RateUnit",
+        str(profile.get("detentionProfileRef")) == "conformance/detention_terms_profile.v1.json",
+        "detentionProfileRef must point to conformance/detention_terms_profile.v1.json",
     )
-    _assert(
-        set(detention_terms.get("rateUnits") or []) == set(VALID_DETENTION_RATE_UNITS),
-        "detentionTerms.rateUnits must match VALID_DETENTION_RATE_UNITS",
-    )
-    _assert(
-        set(detention_terms.get("locationEvidenceTypes") or [])
-        == set(VALID_DETENTION_LOCATION_EVIDENCE_TYPES),
-        "detentionTerms.locationEvidenceTypes must match VALID_DETENTION_LOCATION_EVIDENCE_TYPES",
-    )
+    _assert(DETENTION_PROFILE_PATH.exists(), "detention profile reference target must exist")
 
     _assert(
         set(profile.get("pricingModes") or []) == set(VALID_ACCESSORIAL_PRICING_MODES),
@@ -122,9 +110,6 @@ def main() -> int:
         "reimbursableRequiresPayerPayee",
         "tbdRequiresPayerPayee",
         "evidenceTypeRequiredWhenEvidenceRequired",
-        "detentionTermsRequiredForDetentionType",
-        "detentionTermsOnlyAllowedForDetentionType",
-        "locationEvidenceTypeRequiredWhenLocationEvidenceRequired",
         "maxAmountNotRequired",
         "settlementExecutionOutOfScope",
     ]:
