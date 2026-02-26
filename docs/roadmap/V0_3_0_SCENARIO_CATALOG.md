@@ -50,11 +50,12 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S5: Multi-Pick / Multi-Drop
 
 - Description: Load includes multiple pickups and drops.
-- RFC: `TBD (new RFC required)`
-- Target: `v0.3.x`
+- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- Target: `v0.3.1`
 - Expected outcome:
   - Ordered stop list and constraints.
   - Single-stop compatibility retained.
+  - Stop-plan acceptance mismatch can trigger deterministic counter response.
 
 ### S6: Reefer Temperature Requirement
 

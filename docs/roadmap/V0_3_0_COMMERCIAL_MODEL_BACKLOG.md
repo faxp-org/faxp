@@ -56,11 +56,12 @@ Purpose: Central place to capture commercial model requirements before implement
 ### C) Multi-Stop and Service Requirements
 
 1. Multi-pick / multi-drop stop model
-- Target: `v0.3.x`
-- RFC: `TBD (new RFC required)`
+- Target: `v0.3.1`
+- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
 - Acceptance:
   - Ordered stop list with pickup/drop semantics.
   - Backward-compatible single-stop default.
+  - Conformance profile and runtime checks are release-gated.
 
 2. Service requirements (reefer temp bands, tarping, handling constraints)
 - Target: `v0.3.x`

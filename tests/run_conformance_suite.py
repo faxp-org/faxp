@@ -128,6 +128,14 @@ def main() -> int:
         "conformance suite must include accessorial_type_registry in default checks",
     )
     _assert(
+        "multi_stop_terms" in listed_checks.stdout.splitlines(),
+        "conformance suite must include multi_stop_terms in default checks",
+    )
+    _assert(
+        "multi_stop_terms_profile" in listed_checks.stdout.splitlines(),
+        "conformance suite must include multi_stop_terms_profile in default checks",
+    )
+    _assert(
         "protocol_compatibility_profile" in listed_checks.stdout.splitlines(),
         "conformance suite must include protocol_compatibility_profile in default checks",
     )

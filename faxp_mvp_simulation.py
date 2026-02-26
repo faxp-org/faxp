@@ -1370,6 +1370,133 @@ def _validate_location_obj(location, context):
     _validate_zip_code(location["zip"], f"{context}.zip")
 
 
+def _normalize_location_key(location):
+    return (
+        str(location.get("city") or "").strip().lower(),
+        str(location.get("state") or "").strip().upper(),
+        str(location.get("zip") or "").strip(),
+    )
+
+
+def _validate_stop_plan(stops, context, origin=None, destination=None):
+    if not isinstance(stops, list) or len(stops) < 2:
+        raise ValueError(f"{context} must be an array with at least two stops.")
+
+    sequences = []
+    stop_types = []
+    for idx, stop in enumerate(stops):
+        item_context = f"{context}[{idx}]"
+        if not isinstance(stop, dict):
+            raise ValueError(f"{item_context} must be an object.")
+        _require_fields(stop, ["StopSequence", "StopType", "Location"], item_context)
+        sequence = stop["StopSequence"]
+        if not isinstance(sequence, int) or sequence <= 0:
+            raise ValueError(f"{item_context}.StopSequence must be a positive integer.")
+        _bounded_string(stop["StopType"], f"{item_context}.StopType")
+        if stop["StopType"] not in VALID_STOP_TYPES:
+            raise ValueError(f"{item_context}.StopType must be one of {sorted(VALID_STOP_TYPES)}.")
+        _validate_location_obj(stop["Location"], f"{item_context}.Location")
+        if "WindowOpen" in stop:
+            _validate_iso_date(stop["WindowOpen"], f"{item_context}.WindowOpen")
+        if "WindowClose" in stop:
+            _validate_iso_date(stop["WindowClose"], f"{item_context}.WindowClose")
+        if "WindowOpen" in stop and "WindowClose" in stop and stop["WindowOpen"] > stop["WindowClose"]:
+            raise ValueError(f"{item_context}.WindowOpen must be <= WindowClose.")
+        if "Notes" in stop:
+            _bounded_string(stop["Notes"], f"{item_context}.Notes")
+        sequences.append(sequence)
+        stop_types.append(stop["StopType"])
+
+    ordered = sorted(sequences)
+    expected = list(range(1, len(stops) + 1))
+    if ordered != expected:
+        raise ValueError(f"{context}.StopSequence values must be contiguous starting at 1.")
+    if stop_types[0] != "Pickup":
+        raise ValueError(f"{context}[0].StopType must be 'Pickup'.")
+    if stop_types[-1] != "Drop":
+        raise ValueError(f"{context}[{len(stops) - 1}].StopType must be 'Drop'.")
+    if "Pickup" not in stop_types or "Drop" not in stop_types:
+        raise ValueError(f"{context} must include at least one Pickup and one Drop stop.")
+
+    if isinstance(origin, dict):
+        first_location = stops[0]["Location"]
+        if _normalize_location_key(first_location) != _normalize_location_key(origin):
+            raise ValueError(f"{context}[0].Location must match NewLoad.Origin.")
+    if isinstance(destination, dict):
+        last_location = stops[-1]["Location"]
+        if _normalize_location_key(last_location) != _normalize_location_key(destination):
+            raise ValueError(f"{context}[{len(stops) - 1}].Location must match NewLoad.Destination.")
+
+
+def _derive_stop_plan_summary(load_like):
+    stops = load_like.get("Stops")
+    if isinstance(stops, list) and stops:
+        stop_types = [str(item.get("StopType") or "").strip() for item in stops if isinstance(item, dict)]
+        return {
+            "stopCount": len(stops),
+            "stopTypes": sorted({item for item in stop_types if item}),
+            "isMultiStop": len(stops) > 2,
+        }
+    return {
+        "stopCount": 2,
+        "stopTypes": ["Drop", "Pickup"],
+        "isMultiStop": False,
+    }
+
+
+def _validate_stop_search_filters(filters, context):
+    if "RequireMultiStop" in filters and not isinstance(filters["RequireMultiStop"], bool):
+        raise ValueError(f"{context}.RequireMultiStop must be boolean.")
+    for field in ["StopCountMin", "StopCountMax"]:
+        if field in filters:
+            value = filters[field]
+            if not isinstance(value, int) or value < 2:
+                raise ValueError(f"{context}.{field} must be an integer >= 2.")
+    if "StopCountMin" in filters and "StopCountMax" in filters:
+        if filters["StopCountMin"] > filters["StopCountMax"]:
+            raise ValueError(f"{context}.StopCountMin must be <= StopCountMax.")
+    if "RequiredStopTypes" in filters:
+        required_types = filters["RequiredStopTypes"]
+        if not isinstance(required_types, list) or not required_types:
+            raise ValueError(f"{context}.RequiredStopTypes must be a non-empty array.")
+        seen = set()
+        for idx, value in enumerate(required_types):
+            _bounded_string(value, f"{context}.RequiredStopTypes[{idx}]")
+            if value not in VALID_STOP_TYPES:
+                raise ValueError(
+                    f"{context}.RequiredStopTypes[{idx}] must be one of {sorted(VALID_STOP_TYPES)}."
+                )
+            if value in seen:
+                raise ValueError(f"{context}.RequiredStopTypes must not contain duplicates.")
+            seen.add(value)
+
+
+def _validate_stop_plan_acceptance(acceptance, context):
+    if not isinstance(acceptance, dict):
+        raise ValueError(f"{context} must be an object.")
+    _require_fields(acceptance, ["Accepted"], context)
+    if not isinstance(acceptance["Accepted"], bool):
+        raise ValueError(f"{context}.Accepted must be boolean.")
+    if "StopCount" in acceptance:
+        value = acceptance["StopCount"]
+        if not isinstance(value, int) or value < 2:
+            raise ValueError(f"{context}.StopCount must be an integer >= 2.")
+    if "StopTypes" in acceptance:
+        stop_types = acceptance["StopTypes"]
+        if not isinstance(stop_types, list) or not stop_types:
+            raise ValueError(f"{context}.StopTypes must be a non-empty array.")
+        seen = set()
+        for idx, value in enumerate(stop_types):
+            _bounded_string(value, f"{context}.StopTypes[{idx}]")
+            if value not in VALID_STOP_TYPES:
+                raise ValueError(f"{context}.StopTypes[{idx}] must be one of {sorted(VALID_STOP_TYPES)}.")
+            if value in seen:
+                raise ValueError(f"{context}.StopTypes must not contain duplicates.")
+            seen.add(value)
+    if "Notes" in acceptance:
+        _bounded_string(acceptance["Notes"], f"{context}.Notes")
+
+
 def _validate_verifier_dependency_integrity():
     if not NON_LOCAL_MODE:
         return
@@ -1943,6 +2070,7 @@ VALID_ACCESSORIAL_EVIDENCE_TYPES = {"Receipt", "Permit", "EscortInvoice", "Other
 VALID_ACCESSORIAL_STATUSES = {"Pending", "Approved", "Rejected", "TBD"}
 VALID_DETENTION_RATE_UNITS = {"Hour"}
 VALID_DETENTION_LOCATION_EVIDENCE_TYPES = {"GPS", "ELDPosition", "GeofenceCheckIn", "Other"}
+VALID_STOP_TYPES = {"Pickup", "Drop"}
 FORBIDDEN_BIOMETRIC_FIELDS = {
     "faceimage",
     "selfieimage",
@@ -2899,6 +3027,13 @@ def validate_message_body(message_type, body):
             raise ValueError("NewLoad.RequireTracking must be boolean.")
         if "AccessorialPolicy" in body:
             _validate_accessorial_policy(body["AccessorialPolicy"], "NewLoad.AccessorialPolicy")
+        if "Stops" in body:
+            _validate_stop_plan(
+                body["Stops"],
+                "NewLoad.Stops",
+                origin=body.get("Origin"),
+                destination=body.get("Destination"),
+            )
         if "Accessorials" in body:
             allowed_types = []
             policy = body.get("AccessorialPolicy")
@@ -2920,6 +3055,7 @@ def validate_message_body(message_type, body):
         _validate_iso_date(body["PickupDate"], "LoadSearch.PickupDate")
         if not isinstance(body["MaxRate"], (int, float)) or body["MaxRate"] < 0:
             raise ValueError("LoadSearch.MaxRate must be a non-negative number.")
+        _validate_stop_search_filters(body, "LoadSearch")
         _validate_rate_search_requirements(body, "LoadSearch")
         return
 
@@ -2987,6 +3123,8 @@ def validate_message_body(message_type, body):
             _bounded_string(body["LoadID"], "BidRequest.LoadID")
         if has_truck_id:
             _bounded_string(body["TruckID"], "BidRequest.TruckID")
+        if "StopPlanAcceptance" in body:
+            _validate_stop_plan_acceptance(body["StopPlanAcceptance"], "BidRequest.StopPlanAcceptance")
         if "AccessorialPolicyAcceptance" in body:
             _validate_accessorial_policy_acceptance(
                 body["AccessorialPolicyAcceptance"],
@@ -3855,6 +3993,30 @@ class BrokerAgent:
             "Weight": 42000,
             "Commodity": "Frozen Poultry",
             "Rate": build_rate(rate_model, floor_amount),
+            "Stops": [
+                {
+                    "StopSequence": 1,
+                    "StopType": "Pickup",
+                    "Location": {"city": "Dallas", "state": "TX", "zip": "75201"},
+                    "WindowOpen": pickup_earliest.isoformat(),
+                    "WindowClose": pickup_latest.isoformat(),
+                },
+                {
+                    "StopSequence": 2,
+                    "StopType": "Pickup",
+                    "Location": {"city": "Little Rock", "state": "AR", "zip": "72201"},
+                    "WindowOpen": pickup_earliest.isoformat(),
+                    "WindowClose": pickup_latest.isoformat(),
+                    "Notes": "Secondary pallet pickup.",
+                },
+                {
+                    "StopSequence": 3,
+                    "StopType": "Drop",
+                    "Location": {"city": "Atlanta", "state": "GA", "zip": "30301"},
+                    "WindowOpen": (pickup_latest + timedelta(days=1)).isoformat(),
+                    "WindowClose": (pickup_latest + timedelta(days=2)).isoformat(),
+                },
+            ],
             "AccessorialPolicy": {
                 "AllowedTypes": list(ACTIVE_ACCESSORIAL_TYPES),
                 "RequiresApproval": True,
@@ -3923,11 +4085,23 @@ class BrokerAgent:
     def search_loads(self, filters):
         matches = []
         for load in self.loads.values():
+            stop_summary = _derive_stop_plan_summary(load)
             pickup_date = filters.get("PickupDate")
             in_pickup_window = (
                 load["PickupEarliest"] <= pickup_date <= load["PickupLatest"]
                 if pickup_date
                 else True
+            )
+            stop_count_min = int(filters.get("StopCountMin", 2))
+            stop_count_max = int(filters.get("StopCountMax", 9999))
+            required_stop_types = set(filters.get("RequiredStopTypes") or [])
+            stop_count_ok = stop_count_min <= stop_summary["stopCount"] <= stop_count_max
+            stop_type_ok = not required_stop_types or required_stop_types.issubset(
+                set(stop_summary["stopTypes"])
+            )
+            multi_stop_ok = (
+                not filters.get("RequireMultiStop", False)
+                or stop_summary["isMultiStop"]
             )
             if (
                 load["Origin"]["state"] == filters.get("OriginState")
@@ -3937,14 +4111,31 @@ class BrokerAgent:
                 and in_pickup_window
                 and load["Rate"]["Amount"] <= filters.get("MaxRate", 9999)
                 and (not filters.get("RequireTracking") or load["RequireTracking"] is True)
+                and stop_count_ok
+                and stop_type_ok
+                and multi_stop_ok
             ):
                 matches.append(load)
         return matches
 
     def respond_to_bid(self, bid_request, forced_response):
         load_id = bid_request["LoadID"]
-        load_rate = self.loads[load_id]["Rate"]
+        load = self.loads[load_id]
+        load_rate = load["Rate"]
         bid_rate = bid_request["Rate"]
+        stop_summary = _derive_stop_plan_summary(load)
+        stop_plan_acceptance = bid_request.get("StopPlanAcceptance") or {}
+        stop_plan_mismatch = False
+        if stop_plan_acceptance:
+            accepted = bool(stop_plan_acceptance.get("Accepted"))
+            accepted_stop_count = stop_plan_acceptance.get("StopCount")
+            accepted_stop_types = set(stop_plan_acceptance.get("StopTypes") or [])
+            if not accepted:
+                stop_plan_mismatch = True
+            if accepted_stop_count is not None and int(accepted_stop_count) != stop_summary["stopCount"]:
+                stop_plan_mismatch = True
+            if accepted_stop_types and accepted_stop_types != set(stop_summary["stopTypes"]):
+                stop_plan_mismatch = True
 
         if bid_rate["RateModel"] != load_rate["RateModel"]:
             return {
@@ -3989,6 +4180,24 @@ class BrokerAgent:
             return {
                 "LoadID": load_id,
                 "ResponseType": "Reject",
+                "VerifiedBadge": "None",
+            }
+
+        if stop_plan_mismatch:
+            counter_metadata = {}
+            if rate_model == "PerMile":
+                for field in ["AgreedMiles", "MilesSource", "MilesSourceVersion", "MilesCalculatedAt"]:
+                    if field in load_rate:
+                        counter_metadata[field] = load_rate[field]
+            return {
+                "LoadID": load_id,
+                "ResponseType": "Counter",
+                "ProposedRate": build_rate(
+                    rate_model,
+                    counter_amount(rate_model, rate_floor),
+                    **counter_metadata,
+                ),
+                "ReasonCode": "StopPlanDispute",
                 "VerifiedBadge": "None",
             }
 
@@ -4139,12 +4348,17 @@ class CarrierAgent:
             "RateModel": rate_model,
             "UnitBasis": default_unit_basis(rate_model),
             "MaxRate": default_search_max(rate_model),
+            "RequireMultiStop": True,
+            "StopCountMin": 3,
+            "StopCountMax": 6,
+            "RequiredStopTypes": ["Pickup", "Drop"],
             "RequireTracking": True,
         }
 
     def create_bid_request(self, load, bid_amount=None):
         rate_model = load["Rate"]["RateModel"]
         amount = default_bid_amount(rate_model) if bid_amount is None else bid_amount
+        stop_summary = _derive_stop_plan_summary(load)
         metadata = {}
         if rate_model == "PerMile":
             for field in ["AgreedMiles", "MilesSource", "MilesSourceVersion", "MilesCalculatedAt"]:
@@ -4156,6 +4370,11 @@ class CarrierAgent:
             "LoadID": load["LoadID"],
             "Rate": build_rate(rate_model, amount, **metadata),
             "AvailabilityDate": (date.today() + timedelta(days=2)).isoformat(),
+            "StopPlanAcceptance": {
+                "Accepted": True,
+                "StopCount": stop_summary["stopCount"],
+                "StopTypes": list(stop_summary["stopTypes"]),
+            },
             "AccessorialPolicyAcceptance": {
                 "Accepted": True,
                 "AllowedTypes": list(ACTIVE_ACCESSORIAL_TYPES),

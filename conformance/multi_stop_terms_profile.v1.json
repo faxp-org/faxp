@@ -1,0 +1,63 @@
+{
+  "profileVersion": "1.0.0",
+  "profileId": "multi-stop-commercial-terms.v1",
+  "protocol": "FAXP",
+  "scope": "booking-plane-commercial-terms",
+  "description": "Canonical booking-time multi-stop contract profile for ordered pickup/drop terms and stop-plan acceptance. Dispatch execution and stop-level operational tracking remain out of scope.",
+  "stopTypes": [
+    "Pickup",
+    "Drop"
+  ],
+  "newLoadTerms": {
+    "field": "Stops",
+    "requiredStopFields": [
+      "StopSequence",
+      "StopType",
+      "Location"
+    ],
+    "optionalStopFields": [
+      "WindowOpen",
+      "WindowClose",
+      "Notes"
+    ],
+    "minStops": 2
+  },
+  "loadSearchTerms": {
+    "optionalFields": [
+      "RequireMultiStop",
+      "StopCountMin",
+      "StopCountMax",
+      "RequiredStopTypes"
+    ]
+  },
+  "bidRequestTerms": {
+    "field": "StopPlanAcceptance",
+    "requiredFields": [
+      "Accepted"
+    ],
+    "optionalFields": [
+      "StopCount",
+      "StopTypes",
+      "Notes"
+    ]
+  },
+  "normativeConstraints": {
+    "orderedStopsRequiredWhenProvided": true,
+    "firstStopMustMatchOrigin": true,
+    "lastStopMustMatchDestination": true,
+    "pickupAndDropRequired": true,
+    "singleStopCompatibilityRetained": true,
+    "stopPlanMismatchMayCounter": true,
+    "dispatchTrackingOutOfScope": true
+  },
+  "conformanceRequirements": {
+    "requiredTests": [
+      "tests/run_multi_stop_terms.py",
+      "tests/run_multi_stop_terms_profile.py"
+    ],
+    "requiredSuiteChecks": [
+      "multi_stop_terms",
+      "multi_stop_terms_profile"
+    ]
+  }
+}
