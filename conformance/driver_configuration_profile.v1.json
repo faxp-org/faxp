@@ -1,0 +1,38 @@
+{
+  "profileVersion": "1.0.0",
+  "profileId": "driver-configuration-terms.v1",
+  "protocol": "FAXP",
+  "scope": "booking-plane-commercial-terms",
+  "description": "Canonical booking-time driver configuration profile for Single/Team commitments with explicit acceptance/counter semantics.",
+  "newLoadField": "DriverConfiguration",
+  "newTruckField": "DriverConfiguration",
+  "searchFilterField": "RequiredDriverConfiguration",
+  "bidRequestAcceptanceField": "DriverConfigurationAcceptance",
+  "bidRequestAcceptance": {
+    "requiredFields": [
+      "Accepted"
+    ],
+    "optionalFields": [
+      "DriverConfiguration",
+      "Notes"
+    ]
+  },
+  "executionReportField": "DriverTerms",
+  "normativeConstraints": {
+    "driverConfigurationEnumLocked": true,
+    "explicitAcceptanceRequiredWhenPresent": true,
+    "configurationMismatchMayCounter": true,
+    "counterReasonCode": "DriverConfigurationDispute",
+    "driverAssignmentExecutionOutOfScope": true
+  },
+  "conformanceRequirements": {
+    "requiredTests": [
+      "tests/run_driver_configuration_terms.py",
+      "tests/run_driver_configuration_profile.py"
+    ],
+    "requiredSuiteChecks": [
+      "driver_configuration_terms",
+      "driver_configuration_profile"
+    ]
+  }
+}

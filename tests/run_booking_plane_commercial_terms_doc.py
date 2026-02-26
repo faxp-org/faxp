@@ -42,6 +42,8 @@ def main() -> int:
             "EquipmentClass",
             "EquipmentAcceptance",
             "TrailerLengthMin",
+            "DriverConfiguration",
+            "DriverConfigurationAcceptance",
             "PassThrough",
             "Reimbursable",
             "Settlement and payment execution",

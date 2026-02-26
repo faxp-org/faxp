@@ -1908,6 +1908,74 @@ def _equipment_acceptance_mismatch(reference_terms, acceptance):
     return False
 
 
+def _canonical_driver_configuration(value):
+    token = _normalize_equipment_token(value)
+    if not token:
+        return ""
+    return DRIVER_CONFIGURATION_ALIASES.get(token, "")
+
+
+def _validate_driver_configuration_terms(payload, context):
+    if "DriverConfiguration" not in payload:
+        return
+    canonical = _canonical_driver_configuration(payload.get("DriverConfiguration"))
+    if not canonical:
+        raise ValueError(
+            f"{context}.DriverConfiguration must be one of {sorted(VALID_DRIVER_CONFIGURATIONS)}."
+        )
+    payload["DriverConfiguration"] = canonical
+
+
+def _validate_driver_configuration_filters(payload, context):
+    if "RequiredDriverConfiguration" not in payload:
+        return
+    canonical = _canonical_driver_configuration(payload.get("RequiredDriverConfiguration"))
+    if not canonical:
+        raise ValueError(
+            f"{context}.RequiredDriverConfiguration must be one of {sorted(VALID_DRIVER_CONFIGURATIONS)}."
+        )
+    payload["RequiredDriverConfiguration"] = canonical
+
+
+def _validate_driver_configuration_acceptance(acceptance, context):
+    if not isinstance(acceptance, dict):
+        raise ValueError(f"{context} must be an object.")
+    _require_fields(acceptance, ["Accepted"], context)
+    if not isinstance(acceptance["Accepted"], bool):
+        raise ValueError(f"{context}.Accepted must be boolean.")
+    if "DriverConfiguration" in acceptance:
+        canonical = _canonical_driver_configuration(acceptance.get("DriverConfiguration"))
+        if not canonical:
+            raise ValueError(
+                f"{context}.DriverConfiguration must be one of {sorted(VALID_DRIVER_CONFIGURATIONS)}."
+            )
+        acceptance["DriverConfiguration"] = canonical
+    if "Notes" in acceptance:
+        _bounded_string(acceptance["Notes"], f"{context}.Notes")
+
+
+def _driver_configuration_matches(resource_payload, filters):
+    required = _canonical_driver_configuration(filters.get("RequiredDriverConfiguration"))
+    if not required:
+        return True
+    resource = _canonical_driver_configuration(resource_payload.get("DriverConfiguration"))
+    return bool(resource) and resource == required
+
+
+def _driver_configuration_acceptance_mismatch(reference_configuration, acceptance):
+    canonical_reference = _canonical_driver_configuration(reference_configuration)
+    if not canonical_reference:
+        return False
+    if not acceptance:
+        return True
+    if acceptance.get("Accepted") is not True:
+        return True
+    accepted_configuration = _canonical_driver_configuration(acceptance.get("DriverConfiguration"))
+    if not accepted_configuration:
+        return True
+    return accepted_configuration != canonical_reference
+
+
 def _validate_schedule_time_window(window, context):
     if not isinstance(window, dict):
         raise ValueError(f"{context} must be an object.")
@@ -2600,6 +2668,16 @@ VALID_EQUIPMENT_TAGS = {
     "OverDimensionCapable",
     "DoubleTrailer",
     "TripleTrailer",
+}
+VALID_DRIVER_CONFIGURATIONS = {"Single", "Team"}
+DRIVER_CONFIGURATION_ALIASES = {
+    "single": "Single",
+    "singledriver": "Single",
+    "solo": "Single",
+    "team": "Team",
+    "teamdriver": "Team",
+    "teamdrivers": "Team",
+    "dual": "Team",
 }
 EQUIPMENT_CLASS_ALIASES = {
     "dryvan": "Van",
@@ -3608,6 +3686,7 @@ def validate_message_body(message_type, body):
         _bounded_string(body["LoadType"], "NewLoad.LoadType")
         _bounded_string(body["EquipmentType"], "NewLoad.EquipmentType")
         _validate_equipment_contract(body, "NewLoad")
+        _validate_driver_configuration_terms(body, "NewLoad")
         _bounded_string(body["Commodity"], "NewLoad.Commodity")
         if not isinstance(body["TrailerLength"], (int, float)) or body["TrailerLength"] <= 0:
             raise ValueError("NewLoad.TrailerLength must be a positive number.")
@@ -3645,6 +3724,7 @@ def validate_message_body(message_type, body):
         _validate_state_code(body["DestinationState"], "LoadSearch.DestinationState")
         _bounded_string(body["EquipmentType"], "LoadSearch.EquipmentType")
         _validate_equipment_search_filters(body, "LoadSearch")
+        _validate_driver_configuration_filters(body, "LoadSearch")
         _validate_iso_date(body["PickupDate"], "LoadSearch.PickupDate")
         if not isinstance(body["MaxRate"], (int, float)) or body["MaxRate"] < 0:
             raise ValueError("LoadSearch.MaxRate must be a non-negative number.")
@@ -3673,6 +3753,7 @@ def validate_message_body(message_type, body):
         _validate_iso_date(body["AvailabilityDate"], "NewTruck.AvailabilityDate")
         _bounded_string(body["EquipmentType"], "NewTruck.EquipmentType")
         _validate_equipment_contract(body, "NewTruck")
+        _validate_driver_configuration_terms(body, "NewTruck")
         _bounded_string(body["Notes"], "NewTruck.Notes")
         if not isinstance(body["TrailerLength"], (int, float)) or body["TrailerLength"] <= 0:
             raise ValueError("NewTruck.TrailerLength must be a positive number.")
@@ -3699,6 +3780,7 @@ def validate_message_body(message_type, body):
         _validate_state_code(body["OriginState"], "TruckSearch.OriginState")
         _bounded_string(body["EquipmentType"], "TruckSearch.EquipmentType")
         _validate_equipment_search_filters(body, "TruckSearch")
+        _validate_driver_configuration_filters(body, "TruckSearch")
         _validate_iso_date(body["AvailableFrom"], "TruckSearch.AvailableFrom")
         _validate_iso_date(body["AvailableTo"], "TruckSearch.AvailableTo")
         for field in ["LocationRadiusMiles", "MinRate", "MaxRate"]:
@@ -3729,6 +3811,11 @@ def validate_message_body(message_type, body):
             )
         if "ScheduleAcceptance" in body:
             _validate_schedule_acceptance(body["ScheduleAcceptance"], "BidRequest.ScheduleAcceptance")
+        if "DriverConfigurationAcceptance" in body:
+            _validate_driver_configuration_acceptance(
+                body["DriverConfigurationAcceptance"],
+                "BidRequest.DriverConfigurationAcceptance",
+            )
         if "AccessorialPolicyAcceptance" in body:
             _validate_accessorial_policy_acceptance(
                 body["AccessorialPolicyAcceptance"],
@@ -3797,6 +3884,11 @@ def validate_message_body(message_type, body):
             _validate_special_instructions(body["SpecialInstructions"], "ExecutionReport.SpecialInstructions")
         if "ScheduleTerms" in body:
             _validate_schedule_terms_fields(body["ScheduleTerms"], "ExecutionReport.ScheduleTerms")
+        if "DriverTerms" in body:
+            if not isinstance(body["DriverTerms"], dict):
+                raise ValueError("ExecutionReport.DriverTerms must be an object.")
+            _require_fields(body["DriverTerms"], ["DriverConfiguration"], "ExecutionReport.DriverTerms")
+            _validate_driver_configuration_terms(body["DriverTerms"], "ExecutionReport.DriverTerms")
         if "EquipmentTerms" in body:
             equipment_terms = dict(body["EquipmentTerms"])
             if "EquipmentType" not in equipment_terms:
@@ -4619,6 +4711,7 @@ class BrokerAgent:
             "EquipmentClass": "Reefer",
             "EquipmentSubClass": "AirRide",
             "EquipmentTags": ["AirRide"],
+            "DriverConfiguration": "Single",
             "TrailerLength": 53,
             "Weight": 42000,
             "Commodity": "Frozen Poultry",
@@ -4742,6 +4835,7 @@ class BrokerAgent:
                 and load["Destination"]["state"] == filters.get("DestinationState")
                 and load["EquipmentType"] == filters.get("EquipmentType")
                 and _equipment_matches_search_terms(load, filters)
+                and _driver_configuration_matches(load, filters)
                 and load["Rate"]["RateModel"] == filters.get("RateModel")
                 and in_pickup_window
                 and load["Rate"]["Amount"] <= filters.get("MaxRate", 9999)
@@ -4760,6 +4854,7 @@ class BrokerAgent:
         bid_rate = bid_request["Rate"]
         load_equipment_terms = _extract_equipment_terms(load)
         equipment_acceptance = bid_request.get("EquipmentAcceptance") or {}
+        driver_acceptance = bid_request.get("DriverConfigurationAcceptance") or {}
         stop_summary = _derive_stop_plan_summary(load)
         stop_plan_acceptance = bid_request.get("StopPlanAcceptance") or {}
         special_instructions = list(load.get("SpecialInstructions") or [])
@@ -4862,6 +4957,24 @@ class BrokerAgent:
                     **counter_metadata,
                 ),
                 "ReasonCode": "EquipmentCompatibilityDispute",
+                "VerifiedBadge": "None",
+            }
+
+        if _driver_configuration_acceptance_mismatch(load.get("DriverConfiguration"), driver_acceptance):
+            counter_metadata = {}
+            if rate_model == "PerMile":
+                for field in ["AgreedMiles", "MilesSource", "MilesSourceVersion", "MilesCalculatedAt"]:
+                    if field in load_rate:
+                        counter_metadata[field] = load_rate[field]
+            return {
+                "LoadID": load_id,
+                "ResponseType": "Counter",
+                "ProposedRate": build_rate(
+                    rate_model,
+                    counter_amount(rate_model, rate_floor),
+                    **counter_metadata,
+                ),
+                "ReasonCode": "DriverConfigurationDispute",
                 "VerifiedBadge": "None",
             }
 
@@ -4998,6 +5111,8 @@ class BrokerAgent:
             "ReverifyBy": policy_decision["ReverifyBy"],
             "EvidenceRefs": policy_decision.get("EvidenceRefs", []),
         }
+        if load.get("DriverConfiguration"):
+            report["DriverTerms"] = {"DriverConfiguration": load.get("DriverConfiguration")}
         if policy_decision.get("ExceptionApprovalRef"):
             report["ExceptionApprovalRef"] = policy_decision["ExceptionApprovalRef"]
         self.completed_bookings[load_id] = report
@@ -5012,6 +5127,7 @@ class BrokerAgent:
             "EquipmentClass": "Reefer",
             "EquipmentSubClass": "AirRide",
             "RequiredEquipmentTags": ["AirRide"],
+            "RequiredDriverConfiguration": "Team",
             "TrailerLengthMin": 53,
             "TrailerLengthMax": 53,
             "AvailableFrom": target_date,
@@ -5046,6 +5162,10 @@ class BrokerAgent:
                 "TrailerLengthMin": truck.get("TrailerLength"),
                 "TrailerLengthMax": truck.get("TrailerLength"),
                 "TrailerCount": truck.get("TrailerCount", 1),
+            },
+            "DriverConfigurationAcceptance": {
+                "Accepted": True,
+                "DriverConfiguration": truck.get("DriverConfiguration"),
             },
             "MatchType": "TruckCapacity",
         }
@@ -5094,6 +5214,8 @@ class BrokerAgent:
             "ReverifyBy": policy_decision["ReverifyBy"],
             "EvidenceRefs": policy_decision.get("EvidenceRefs", []),
         }
+        if truck.get("DriverConfiguration"):
+            report["DriverTerms"] = {"DriverConfiguration": truck.get("DriverConfiguration")}
         if policy_decision.get("ExceptionApprovalRef"):
             report["ExceptionApprovalRef"] = policy_decision["ExceptionApprovalRef"]
         self.completed_bookings[truck_id] = report
@@ -5117,6 +5239,7 @@ class CarrierAgent:
             "EquipmentClass": "Reefer",
             "EquipmentSubClass": "AirRide",
             "RequiredEquipmentTags": ["AirRide"],
+            "RequiredDriverConfiguration": "Single",
             "TrailerLengthMin": 53,
             "TrailerLengthMax": 53,
             "PickupDate": target_pickup,
@@ -5160,6 +5283,10 @@ class CarrierAgent:
                 "TrailerLengthMax": load.get("TrailerLength"),
                 "TrailerCount": load.get("TrailerCount", 1),
             },
+            "DriverConfigurationAcceptance": {
+                "Accepted": True,
+                "DriverConfiguration": load.get("DriverConfiguration"),
+            },
             "SpecialInstructionsAcceptance": {
                 "Accepted": True,
                 "Exceptions": [],
@@ -5190,6 +5317,7 @@ class CarrierAgent:
             "EquipmentClass": "Reefer",
             "EquipmentSubClass": "AirRide",
             "EquipmentTags": ["AirRide"],
+            "DriverConfiguration": "Team",
             "TrailerLength": 53,
             "TrailerCount": 1,
             "MaxWeight": 44000,
@@ -5223,6 +5351,7 @@ class CarrierAgent:
                 and rate_ok
                 and truck["EquipmentType"] == filters.get("EquipmentType")
                 and _equipment_matches_search_terms(truck, filters)
+                and _driver_configuration_matches(truck, filters)
             ):
                 matches.append(truck)
         return matches
@@ -5234,6 +5363,7 @@ class CarrierAgent:
         bid_rate = bid_request["Rate"]
         truck_equipment_terms = _extract_equipment_terms(truck)
         equipment_acceptance = bid_request.get("EquipmentAcceptance") or {}
+        driver_acceptance = bid_request.get("DriverConfigurationAcceptance") or {}
 
         if bid_rate["RateModel"] != min_rate["RateModel"]:
             return {
@@ -5296,6 +5426,24 @@ class CarrierAgent:
                 "VerifiedBadge": "None",
             }
 
+        if _driver_configuration_acceptance_mismatch(truck.get("DriverConfiguration"), driver_acceptance):
+            counter_metadata = {}
+            if min_rate["RateModel"] == "PerMile":
+                for field in ["AgreedMiles", "MilesSource", "MilesSourceVersion", "MilesCalculatedAt"]:
+                    if field in min_rate:
+                        counter_metadata[field] = min_rate[field]
+            return {
+                "TruckID": truck_id,
+                "ResponseType": "Counter",
+                "ProposedRate": build_rate(
+                    min_rate["RateModel"],
+                    counter_amount(min_rate["RateModel"], min_rate["Amount"]),
+                    **counter_metadata,
+                ),
+                "ReasonCode": "DriverConfigurationDispute",
+                "VerifiedBadge": "None",
+            }
+
         if mileage_decision["requiresCounter"]:
             counter_metadata = {}
             for field in ["AgreedMiles", "MilesSource", "MilesSourceVersion", "MilesCalculatedAt"]:
@@ -5341,6 +5489,7 @@ class ShipperAgent:
             "LoadType": "Full",
             "EquipmentType": "DryVan",
             "EquipmentClass": "Van",
+            "DriverConfiguration": "Single",
             "TrailerLength": 53,
             "Weight": 38000,
             "Commodity": "Packaged Foods",
