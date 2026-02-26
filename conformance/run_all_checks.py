@@ -71,6 +71,11 @@ def _suite_commands() -> list[tuple[str, list[str]]]:
             "driver_configuration_profile",
             [python, str(TESTS_DIR / "run_driver_configuration_profile.py")],
         ),
+        ("load_reference_numbers_terms", [python, str(TESTS_DIR / "run_load_reference_numbers_terms.py")]),
+        (
+            "load_reference_numbers_profile",
+            [python, str(TESTS_DIR / "run_load_reference_numbers_profile.py")],
+        ),
         ("equipment_terms", [python, str(TESTS_DIR / "run_equipment_terms.py")]),
         ("equipment_profile", [python, str(TESTS_DIR / "run_equipment_profile.py")]),
         ("protocol_compatibility_profile", [python, str(TESTS_DIR / "run_protocol_compatibility_profile.py")]),

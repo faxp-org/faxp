@@ -26,6 +26,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `special_instructions_profile.v1.json`: canonical booking-plane special-instructions commercial-term profile.
 - `schedule_terms_profile.v1.json`: canonical booking-plane schedule commitment profile.
 - `driver_configuration_profile.v1.json`: canonical booking-plane driver configuration terms profile.
+- `load_reference_numbers_profile.v1.json`: canonical booking-plane external load reference metadata profile.
 - `equipment_profile.v1.json`: canonical booking-plane equipment taxonomy compatibility profile.
 - `registry_update.schema.json`: schema for registry operations request payloads.
 - `registry_update.sample.json`: sample registry operations request with upsert/revoke/rollback.
@@ -269,6 +270,18 @@ Driver configuration profile check:
 
 ```bash
 python3 tests/run_driver_configuration_profile.py
+```
+
+Load reference number terms check:
+
+```bash
+python3 tests/run_load_reference_numbers_terms.py
+```
+
+Load reference number profile check:
+
+```bash
+python3 tests/run_load_reference_numbers_profile.py
 ```
 
 Equipment taxonomy compatibility check:

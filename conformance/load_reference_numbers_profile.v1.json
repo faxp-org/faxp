@@ -1,0 +1,37 @@
+{
+  "profileVersion": "1.0.0",
+  "profileId": "load-reference-numbers-terms.v1",
+  "protocol": "FAXP",
+  "scope": "booking-plane-commercial-terms",
+  "description": "Canonical booking-time load reference metadata profile for neutral cross-system correlation separate from LoadID.",
+  "newLoadField": "LoadReferenceNumbers",
+  "executionReportField": "LoadReferenceNumbers",
+  "loadReferenceNumbers": {
+    "optionalFields": [
+      "PrimaryReferenceNumber",
+      "SecondaryReferenceNumber",
+      "Additional"
+    ],
+    "additionalReferenceFields": [
+      "ReferenceType",
+      "ReferenceValue",
+      "IssuerParty"
+    ]
+  },
+  "normativeConstraints": {
+    "loadIdRemainsCanonicalProtocolIdentifier": true,
+    "referenceNumbersAreExternalCorrelationMetadata": true,
+    "atLeastOneReferenceRequiredWhenObjectPresent": true,
+    "documentSettlementWorkflowsOutOfScope": true
+  },
+  "conformanceRequirements": {
+    "requiredTests": [
+      "tests/run_load_reference_numbers_terms.py",
+      "tests/run_load_reference_numbers_profile.py"
+    ],
+    "requiredSuiteChecks": [
+      "load_reference_numbers_terms",
+      "load_reference_numbers_profile"
+    ]
+  }
+}
