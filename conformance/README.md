@@ -20,6 +20,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `trust_profile.v1.json`: canonical protocol trust baseline for signed envelopes, attestation, and source classes.
 - `verification_policy_profile.v1.json`: canonical lock for verification policy profiles and normative risk-tier decision matrix.
 - `accessorial_terms_profile.v1.json`: canonical booking-plane accessorial commercial-term profile.
+- `detention_terms_profile.v1.json`: canonical booking-plane detention commercial-term profile.
 - `accessorial_type_registry.v1.json`: canonical registry of active/planned booking-plane accessorial type IDs.
 - `registry_update.schema.json`: schema for registry operations request payloads.
 - `registry_update.sample.json`: sample registry operations request with upsert/revoke/rollback.
@@ -203,6 +204,12 @@ Accessorial commercial-term profile check:
 
 ```bash
 python3 tests/run_accessorial_terms_profile.py
+```
+
+Detention terms profile check:
+
+```bash
+python3 tests/run_detention_terms_profile.py
 ```
 
 Accessorial type registry check:

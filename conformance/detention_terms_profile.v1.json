@@ -1,0 +1,45 @@
+{
+  "profileVersion": "1.0.0",
+  "profileId": "detention-commercial-terms.v1",
+  "protocol": "FAXP",
+  "scope": "booking-plane-commercial-terms",
+  "description": "Canonical booking-time detention commercial terms profile. Defines detention policy metadata only and keeps evidence adjudication/settlement out of protocol core scope.",
+  "detentionTermFields": {
+    "required": [
+      "GracePeriodMinutes",
+      "RateAmount",
+      "RateUnit"
+    ],
+    "optional": [
+      "BillingIncrementMinutes",
+      "RequiresDelayNotice",
+      "RequiresLocationEvidence",
+      "LocationEvidenceType",
+      "Notes"
+    ]
+  },
+  "rateUnits": [
+    "Hour"
+  ],
+  "locationEvidenceTypes": [
+    "GPS",
+    "ELDPosition",
+    "GeofenceCheckIn",
+    "Other"
+  ],
+  "normativeConstraints": {
+    "detentionTermsRequiredForDetentionType": true,
+    "detentionTermsOnlyAllowedForDetentionType": true,
+    "locationEvidenceTypeRequiredWhenLocationEvidenceRequired": true,
+    "bookingPlaneOnly": true,
+    "settlementExecutionOutOfScope": true
+  },
+  "conformanceRequirements": {
+    "requiredTests": [
+      "tests/run_detention_terms_profile.py"
+    ],
+    "requiredSuiteChecks": [
+      "detention_terms_profile"
+    ]
+  }
+}

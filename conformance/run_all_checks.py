@@ -58,6 +58,7 @@ def _suite_commands() -> list[tuple[str, list[str]]]:
         ("rate_search_requirements", [python, str(TESTS_DIR / "run_rate_search_requirements.py")]),
         ("accessorial_terms", [python, str(TESTS_DIR / "run_accessorial_terms.py")]),
         ("accessorial_terms_profile", [python, str(TESTS_DIR / "run_accessorial_terms_profile.py")]),
+        ("detention_terms_profile", [python, str(TESTS_DIR / "run_detention_terms_profile.py")]),
         ("accessorial_type_registry", [python, str(TESTS_DIR / "run_accessorial_type_registry.py")]),
         ("protocol_compatibility_profile", [python, str(TESTS_DIR / "run_protocol_compatibility_profile.py")]),
         ("protocol_compatibility_signature", [python, str(TESTS_DIR / "run_protocol_compatibility_signature.py")]),
