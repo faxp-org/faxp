@@ -3,7 +3,7 @@
   "profileId": "equipment-taxonomy-compatibility.v1",
   "protocol": "FAXP",
   "scope": "booking-plane-commercial-terms",
-  "description": "Canonical equipment taxonomy profile with primary class, optional secondary subclass, and optional tags for booking compatibility checks.",
+  "description": "Canonical equipment taxonomy profile with primary class, optional secondary subclass, and optional tags for booking compatibility checks, including normalized type-alias handling and subclass-driven tag inference.",
   "equipmentFields": {
     "required": [
       "EquipmentType"
@@ -44,6 +44,8 @@
     "primaryClassSupported": true,
     "secondarySubclassSupported": true,
     "tagBasedCapabilitySupported": true,
+    "typeAliasNormalizationSupported": true,
+    "tagInferenceFromSubclassSupported": true,
     "specialClassRequiresDescription": true,
     "equipmentMismatchMayCounter": true,
     "counterReasonCode": "EquipmentCompatibilityDispute",

@@ -50,15 +50,17 @@ Current equipment support covers common classes and core matching behavior, but 
    - primary class (`EquipmentClass`)
    - optional subclass (`EquipmentSubClass`)
    - optional tags (`EquipmentTags`)
-2. Keep `EquipmentType` as a user-facing label while requiring deterministic class/subclass/tag normalization.
-3. Standardize dimensional compatibility semantics:
+2. Normalize `EquipmentType` aliases (including compact and typo-variant forms) into canonical class/subclass values before compatibility checks.
+3. Allow deterministic `EquipmentTags` inference from canonical subclass signals when tags are omitted.
+4. Keep `EquipmentType` as a user-facing label while requiring deterministic class/subclass/tag normalization.
+5. Standardize dimensional compatibility semantics:
    - `TrailerLengthMin` and `TrailerLengthMax` express a required range when size flexibility exists.
    - a single `TrailerLength` with no range remains valid and is treated as strict length.
-4. Keep mismatch behavior deterministic:
+6. Keep mismatch behavior deterministic:
    - incompatibility may trigger `BidResponse.Counter` with `ReasonCode=EquipmentCompatibilityDispute`.
-5. Keep `Special` class support:
+7. Keep `Special` class support:
    - `EquipmentSpecialDescription` is required for non-canonical/special requests.
-6. No new message types are introduced.
+8. No new message types are introduced.
 
 ## Security Considerations
 1. Canonical normalization reduces spoofing/ambiguity via inconsistent free-text equipment labels.

@@ -122,6 +122,8 @@ def main() -> int:
         "primaryClassSupported",
         "secondarySubclassSupported",
         "tagBasedCapabilitySupported",
+        "typeAliasNormalizationSupported",
+        "tagInferenceFromSubclassSupported",
         "specialClassRequiresDescription",
         "equipmentMismatchMayCounter",
         "dispatchAssetAssignmentOutOfScope",
