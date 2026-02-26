@@ -1568,6 +1568,10 @@ def _infer_equipment_class_from_type(equipment_type):
     source = str(equipment_type or "").strip().lower()
     if not source:
         return ""
+    normalized_source = _normalize_equipment_token(source)
+    aliased_class = EQUIPMENT_TYPE_CLASS_ALIASES.get(normalized_source, "")
+    if aliased_class:
+        return aliased_class
     direct_alias = _canonical_equipment_class(equipment_type)
     if direct_alias:
         return direct_alias
@@ -1589,6 +1593,8 @@ def _infer_equipment_class_from_type(equipment_type):
         return "Lowboy"
     if "removeable gooseneck" in source or "removable gooseneck" in source or " rgn" in source:
         return "RGN"
+    if "flabtbed" in source:
+        return "Flatbed"
     if "flatbed" in source:
         return "Flatbed"
     if "reefer" in source:
@@ -1614,6 +1620,10 @@ def _infer_equipment_class_from_type(equipment_type):
 
 def _infer_equipment_subclass_from_type(equipment_type):
     source = str(equipment_type or "").strip().lower()
+    normalized_source = _normalize_equipment_token(source)
+    aliased_subclass = EQUIPMENT_TYPE_SUBCLASS_ALIASES.get(normalized_source, "")
+    if aliased_subclass:
+        return aliased_subclass
     candidates = [
         ("conestoga", "Conestoga"),
         ("contestoga", "Conestoga"),
@@ -1626,6 +1636,7 @@ def _infer_equipment_subclass_from_type(equipment_type):
         ("roller bed", "RollerBed"),
         ("vented", "Vented"),
         ("insulated", "Insulated"),
+        ("insultated", "Insulated"),
         ("intermodal", "Intermodal"),
         ("air ride", "AirRide"),
         ("hazmat", "Hazmat"),
@@ -2778,6 +2789,101 @@ EQUIPMENT_TAG_ALIASES = {
     "doubletrailer": "DoubleTrailer",
     "triple": "TripleTrailer",
     "tripletrailer": "TripleTrailer",
+}
+EQUIPMENT_TYPE_CLASS_ALIASES = {
+    "dryvan": "Van",
+    "reefer": "Reefer",
+    "flatbed": "Flatbed",
+    "autocarrier": "AutoCarrier",
+    "btrain": "BTrain",
+    "conestoga": "Flatbed",
+    "container": "Container",
+    "containerinsulated": "Container",
+    "containerinsultated": "Container",
+    "containerrefrigerated": "Container",
+    "conveyor": "Conveyor",
+    "doubledrop": "DoubleDrop",
+    "dropdecklandoll": "StepDeck",
+    "dumptrailer": "DumpTrailer",
+    "flatbedairride": "Flatbed",
+    "flatbedconestoga": "Flatbed",
+    "flatbedcontestoga": "Flatbed",
+    "flatbeddouble": "Flatbed",
+    "flatbedhazmat": "Flatbed",
+    "flatbedhotshot": "Flatbed",
+    "flatbedmaxi": "Flatbed",
+    "flatbedoverdimension": "Flatbed",
+    "flabtbedoverdimension": "Flatbed",
+    "hopperbottom": "HopperBottom",
+    "lowboy": "Lowboy",
+    "lowboyoverdimension": "Lowboy",
+    "movingvan": "MovingVan",
+    "pneumatic": "Pneumatic",
+    "poweronly": "PowerOnly",
+    "reeferairride": "Reefer",
+    "reeferdouble": "Reefer",
+    "reeferhazmat": "Reefer",
+    "reeferintermodal": "Reefer",
+    "removeablegooseneck": "RGN",
+    "removablegooseneck": "RGN",
+    "stepdeck": "StepDeck",
+    "stepdeckconestoga": "StepDeck",
+    "straightboxtruck": "StraightBoxTruck",
+    "stretchtrailer": "Flatbed",
+    "tankeraluminum": "Tanker",
+    "tankerintermodal": "Tanker",
+    "tankersteel": "Tanker",
+    "vanairride": "Van",
+    "vanconestoga": "Van",
+    "vanhazmat": "Van",
+    "vanhotshot": "Van",
+    "vaninsulated": "Van",
+    "vanintermodal": "Van",
+    "vanliftgate": "Van",
+    "vanopentop": "Van",
+    "vanrollerbed": "Van",
+    "vantriple": "Van",
+    "vanvented": "Van",
+    "sprintervan": "SprinterVan",
+    "sprintervanhazmat": "SprinterVan",
+}
+EQUIPMENT_TYPE_SUBCLASS_ALIASES = {
+    "conestoga": "Conestoga",
+    "containerinsulated": "Insulated",
+    "containerinsultated": "Insulated",
+    "containerrefrigerated": "Insulated",
+    "dropdecklandoll": "Landoll",
+    "flatbedairride": "AirRide",
+    "flatbedconestoga": "Conestoga",
+    "flatbedcontestoga": "Conestoga",
+    "flatbeddouble": "Double",
+    "flatbedhazmat": "Hazmat",
+    "flatbedhotshot": "Hotshot",
+    "flatbedmaxi": "Maxi",
+    "flatbedoverdimension": "OverDimension",
+    "flabtbedoverdimension": "OverDimension",
+    "lowboyoverdimension": "OverDimension",
+    "reeferairride": "AirRide",
+    "reeferdouble": "Double",
+    "reeferhazmat": "Hazmat",
+    "reeferintermodal": "Intermodal",
+    "stepdeckconestoga": "Conestoga",
+    "stretchtrailer": "Stretch",
+    "tankeraluminum": "Aluminum",
+    "tankerintermodal": "Intermodal",
+    "tankersteel": "Steel",
+    "vanairride": "AirRide",
+    "vanconestoga": "Conestoga",
+    "vanhazmat": "Hazmat",
+    "vanhotshot": "Hotshot",
+    "vaninsulated": "Insulated",
+    "vanintermodal": "Intermodal",
+    "vanliftgate": "LiftGate",
+    "vanopentop": "OpenTop",
+    "vanrollerbed": "RollerBed",
+    "vantriple": "Triple",
+    "vanvented": "Vented",
+    "sprintervanhazmat": "Hazmat",
 }
 FORBIDDEN_BIOMETRIC_FIELDS = {
     "faceimage",
