@@ -103,6 +103,12 @@
     "flatbedcontestoga",
     "flabtbedoverdimension"
   ],
+  "changePolicy": {
+    "requireProfileUpdateBeforeRuntimeUse": true,
+    "requireVersionBumpOnAliasMapChange": true,
+    "lockedProfileMajor": 1,
+    "scopeNote": "EquipmentType alias map changes require profile revision + conformance updates under booking-plane scope guardrails."
+  },
   "conformanceRequirements": {
     "requiredTests": [
       "tests/run_equipment_type_alias_coverage.py"
