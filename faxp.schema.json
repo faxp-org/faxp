@@ -47,7 +47,7 @@
       "properties": {
         "RateModel": {
           "type": "string",
-          "enum": ["PerMile", "Flat", "PerPallet", "CWT"],
+          "enum": ["PerMile", "Flat", "PerPallet", "CWT", "PerHour", "LaneMinimum"],
           "description": "Executable models in v0.3 booking plane. Deferred models are tracked in conformance artifacts."
         },
         "Amount": { "type": "number", "minimum": 0 },
@@ -116,7 +116,7 @@
         "DestinationState": { "type": "string" },
         "EquipmentType": { "type": "string" },
         "PickupDate": { "type": "string" },
-        "RateModel": { "type": "string", "enum": ["PerMile", "Flat", "PerPallet", "CWT"] },
+        "RateModel": { "type": "string", "enum": ["PerMile", "Flat", "PerPallet", "CWT", "PerHour", "LaneMinimum"] },
         "UnitBasis": { "type": "string" },
         "MaxRate": { "type": "number", "minimum": 0 }
       },
@@ -164,7 +164,7 @@
         "EquipmentType": { "type": "string" },
         "AvailableFrom": { "type": "string" },
         "AvailableTo": { "type": "string" },
-        "RateModel": { "type": "string", "enum": ["PerMile", "Flat", "PerPallet", "CWT"] },
+        "RateModel": { "type": "string", "enum": ["PerMile", "Flat", "PerPallet", "CWT", "PerHour", "LaneMinimum"] },
         "UnitBasis": { "type": "string" },
         "MinRate": { "type": "number", "minimum": 0 },
         "MaxRate": { "type": "number", "minimum": 0 }

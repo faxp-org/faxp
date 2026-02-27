@@ -49,6 +49,12 @@ def main() -> int:
     valid_cwt_truck_search = broker.create_truck_search(rate_model="CWT")
     validate_message_body("TruckSearch", valid_cwt_truck_search)
 
+    valid_per_hour_search = carrier.create_load_search(force_no_match=False, rate_model="PerHour")
+    validate_message_body("LoadSearch", valid_per_hour_search)
+
+    valid_lane_min_truck_search = broker.create_truck_search(rate_model="LaneMinimum")
+    validate_message_body("TruckSearch", valid_lane_min_truck_search)
+
     missing_basis_load = {
         "OriginState": "TX",
         "DestinationState": "GA",
@@ -124,6 +130,38 @@ def main() -> int:
         "TruckSearch",
         invalid_basis_cwt_truck,
         "TruckSearch.UnitBasis must be one of ['cwt']",
+    )
+
+    invalid_basis_per_hour_load = {
+        "OriginState": "TX",
+        "DestinationState": "GA",
+        "EquipmentType": "Reefer",
+        "PickupDate": "2026-03-01",
+        "RateModel": "PerHour",
+        "UnitBasis": "mile",
+        "MaxRate": default_search_max("PerHour"),
+    }
+    _expect_validation_error(
+        "LoadSearch",
+        invalid_basis_per_hour_load,
+        "LoadSearch.UnitBasis must be one of ['hour']",
+    )
+
+    invalid_basis_lane_min_truck = {
+        "LocationRadiusMiles": 120,
+        "OriginState": "TX",
+        "EquipmentType": "Reefer",
+        "AvailableFrom": "2026-03-01",
+        "AvailableTo": "2026-03-02",
+        "RateModel": "LaneMinimum",
+        "UnitBasis": "load",
+        "MinRate": 1800.0,
+        "MaxRate": 2200.0,
+    }
+    _expect_validation_error(
+        "TruckSearch",
+        invalid_basis_lane_min_truck,
+        "TruckSearch.UnitBasis must be one of ['lane']",
     )
 
     print("Rate search requirement checks passed.")

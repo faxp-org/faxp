@@ -40,16 +40,21 @@ def main() -> int:
     flat_req = RATE_MODEL_REQUIREMENTS.get("Flat") or {}
     per_pallet_req = RATE_MODEL_REQUIREMENTS.get("PerPallet") or {}
     cwt_req = RATE_MODEL_REQUIREMENTS.get("CWT") or {}
+    per_hour_req = RATE_MODEL_REQUIREMENTS.get("PerHour") or {}
+    lane_min_req = RATE_MODEL_REQUIREMENTS.get("LaneMinimum") or {}
     _assert(per_mile_req.get("status") == "active", "PerMile requirements must be active.")
     _assert(flat_req.get("status") == "active", "Flat requirements must be active.")
     _assert(per_pallet_req.get("status") == "active", "PerPallet requirements must be active.")
     _assert(cwt_req.get("status") == "active", "CWT requirements must be active.")
+    _assert(per_hour_req.get("status") == "active", "PerHour requirements must be active.")
+    _assert(lane_min_req.get("status") == "active", "LaneMinimum requirements must be active.")
     _assert("UnitBasis" in (per_mile_req.get("requiredFields") or []), "PerMile must require UnitBasis.")
     _assert("AgreedMiles" in (per_mile_req.get("requiredFields") or []), "PerMile must require AgreedMiles.")
     _assert("MilesSource" in (per_mile_req.get("requiredFields") or []), "PerMile must require MilesSource.")
     _assert("UnitBasis" in (flat_req.get("requiredFields") or []), "Flat must require UnitBasis.")
     _assert("Quantity" in (per_pallet_req.get("requiredFields") or []), "PerPallet must require Quantity.")
     _assert("Quantity" in (cwt_req.get("requiredFields") or []), "CWT must require Quantity.")
+    _assert("Quantity" in (per_hour_req.get("requiredFields") or []), "PerHour must require Quantity.")
 
     valid_per_mile = build_rate("PerMile", 2.62)
     validate_message_body("BidRequest", {"LoadID": "load-permile-ok", "Rate": valid_per_mile})
@@ -62,6 +67,12 @@ def main() -> int:
 
     valid_cwt = build_rate("CWT", 5.1)
     validate_message_body("BidRequest", {"LoadID": "load-cwt-ok", "Rate": valid_cwt})
+
+    valid_per_hour = build_rate("PerHour", 110.0)
+    validate_message_body("BidRequest", {"LoadID": "load-perhour-ok", "Rate": valid_per_hour})
+
+    valid_lane_min = build_rate("LaneMinimum", 1950.0)
+    validate_message_body("BidRequest", {"LoadID": "load-lanemin-ok", "Rate": valid_lane_min})
 
     missing_unit_basis = {"RateModel": "PerMile", "Amount": 2.62, "Currency": "USD"}
     _expect_validation_error(
@@ -111,6 +122,27 @@ def main() -> int:
         "BidRequest",
         {"LoadID": "load-cwt-bad-basis", "Rate": invalid_cwt_basis},
         "UnitBasis must be one of ['cwt']",
+    )
+
+    invalid_per_hour_basis = build_rate("PerHour", 110.0, UnitBasis="mile")
+    _expect_validation_error(
+        "BidRequest",
+        {"LoadID": "load-perhour-bad-basis", "Rate": invalid_per_hour_basis},
+        "UnitBasis must be one of ['hour']",
+    )
+
+    invalid_per_hour_quantity = build_rate("PerHour", 110.0, Quantity=0)
+    _expect_validation_error(
+        "BidRequest",
+        {"LoadID": "load-perhour-bad-quantity", "Rate": invalid_per_hour_quantity},
+        "Quantity must be a positive number for RateModel 'PerHour'",
+    )
+
+    invalid_lane_min_basis = build_rate("LaneMinimum", 1950.0, UnitBasis="load")
+    _expect_validation_error(
+        "BidRequest",
+        {"LoadID": "load-lanemin-bad-basis", "Rate": invalid_lane_min_basis},
+        "UnitBasis must be one of ['lane']",
     )
 
     broker = BrokerAgent("Broker Agent")

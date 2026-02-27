@@ -5,11 +5,12 @@
     "PerMile",
     "Flat",
     "PerPallet",
-    "CWT"
+    "CWT",
+    "PerHour",
+    "LaneMinimum"
   ],
   "plannedRateModels": [
-    "Hourly",
-    "LaneMinimum"
+    "Tiered"
   ],
   "rateModelCatalog": {
     "PerMile": {
@@ -28,11 +29,15 @@
       "status": "active",
       "unitBasis": "cwt"
     },
-    "Hourly": {
-      "status": "planned",
+    "PerHour": {
+      "status": "active",
       "unitBasis": "hour"
     },
     "LaneMinimum": {
+      "status": "active",
+      "unitBasis": "lane"
+    },
+    "Tiered": {
       "status": "planned",
       "unitBasis": "lane"
     }
@@ -78,7 +83,7 @@
       ],
       "status": "active"
     },
-    "Hourly": {
+    "PerHour": {
       "requiredFields": [
         "UnitBasis",
         "Quantity"
@@ -86,9 +91,18 @@
       "allowedUnitBasis": [
         "hour"
       ],
-      "status": "planned"
+      "status": "active"
     },
     "LaneMinimum": {
+      "requiredFields": [
+        "UnitBasis"
+      ],
+      "allowedUnitBasis": [
+        "lane"
+      ],
+      "status": "active"
+    },
+    "Tiered": {
       "requiredFields": [
         "UnitBasis"
       ],
@@ -109,8 +123,8 @@
   "profileSignature": {
     "alg": "HMAC_SHA256",
     "kid": "faxp-governance-rate-profile-2026q1",
-    "payloadDigestSha256": "sha256:3f01a40fd40c233f5bea2d0cf6f79cb0128cec87f5b4dd8fca209f2ddf153326",
-    "sig": "722013907f10464e0c7b2d48625100ca7a86317d5df7fedd749771bd52382d25",
-    "signedAt": "2026-02-25T22:40:14Z"
+    "payloadDigestSha256": "sha256:6b305731b5811a45479aa01d55d8156b5d305f91f5ad2d6678498d9c1e882570",
+    "sig": "ab208ad80773f304db60135b9b39a7b85d01afa58612ab2d4d61622a8518dd60",
+    "signedAt": "2026-02-27T11:47:33Z"
   }
 }
