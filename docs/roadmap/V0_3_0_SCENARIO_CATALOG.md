@@ -152,6 +152,26 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
   - Final agreed-rate normalization remains auditable and deterministic in `ExecutionReport`.
   - Backward compatibility is preserved for existing rate models and profiles.
 
+### S16: Detention Terms Agreed at Booking
+
+- Description: Broker and carrier agree detention commercial terms at booking time, including rate basis and responsibility.
+- RFC: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-accessorial-lifecycle-booking-plane.md`
+- Target: `v0.3.x`
+- Expected outcome:
+  - Accessorial terms are explicit (type, pricing mode, payer/payee, pre-approval/evidence requirements).
+  - Bid accept/counter paths preserve deterministic reason codes for accessorial disputes.
+  - `ExecutionReport` snapshots agreed booking-plane accessorial framework.
+
+### S17: Post-Booking Accessorial Claim with External Evidence Reference
+
+- Description: Carrier proposes a post-booking accessorial claim and references external proof metadata (not raw documents) for review.
+- RFC: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-accessorial-lifecycle-booking-plane.md`
+- Target: `v0.3.x`
+- Expected outcome:
+  - Claim state follows booking-plane contract (`Proposed -> Approved|Rejected`).
+  - Evidence is represented as references/metadata only (ID/hash/URI), not custody workflow.
+  - Settlement/payment execution remains outside FAXP scope.
+
 ## Scenario Expansion Policy
 
 1. New scenario proposals must be added here first.
