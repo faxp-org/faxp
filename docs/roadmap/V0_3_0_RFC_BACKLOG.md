@@ -21,9 +21,9 @@ Scope policy: Booking-plane and certification governance only.
 1. `RFC-v0.3-rate-model-extensibility`
 - Goal: Extend booking-plane rate model taxonomy beyond `PerMile` and `Flat` while preserving backward compatibility.
 - Scope class: `In-Scope`
-- Status: `Draft` (Must-Have for v0.3.0)
+- Status: `Accepted (Implemented)`
 - Target: `v0.3.0`
-- Notes: Keep accessorial lifecycle consistent with current post-booking policy semantics.
+- Notes: Implemented with active model set (`PerMile`, `Flat`, `PerPallet`, `CWT`, `PerHour`, `LaneMinimum`) and fail-closed validation/profile gates.
 - Draft file: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-rate-model-extensibility.md`
 
 2. `RFC-v0.3-shipper-orchestration-minimal`
