@@ -4,7 +4,7 @@
 - RFC ID: `rfc-v0.3-accessorial-lifecycle-booking-plane`
 - Title: `Standardize booking-plane accessorial lifecycle terms and decision states`
 - Author(s): `FAXP Governance Working Group`
-- Status: `Draft`
+- Status: `Accepted (Implemented)`
 - Target Version: `v0.3.x`
 - Created: `2026-02-27`
 - Last Updated: `2026-02-27`
@@ -85,23 +85,37 @@ This RFC closes that gap while preserving the scope boundary: FAXP standardizes 
 5. Conformance profile checks and governance readiness checks updated.
 
 ## Rollout Plan
-1. Approve RFC.
-2. Land conformance profile artifact/tests first.
-3. Land runtime/schema updates behind strict validation.
-4. Update Streamlit examples to reflect booking-plane lifecycle semantics.
-5. Include in next RC and run soak checks.
+1. RFC accepted.
+2. Conformance profile artifact/tests landed and release-gated.
+3. Runtime/schema updates landed with strict validation.
+4. Streamlit examples updated for booking-plane lifecycle semantics.
+5. Included in RC soak cycle.
 
 ## Alternatives Considered
 1. Keep free-form notes only: rejected due to high ambiguity and interoperability risk.
 2. Model full settlement lifecycle in FAXP: rejected as out of scope.
 3. Defer all accessorial lifecycle standardization to external systems: rejected due to persistent booking-plane negotiation friction.
 
-## Open Questions
-1. Final canonical claim-state names (`Proposed/Approved/Rejected` vs expanded state vocabulary).
-2. Whether any accessorial types require mandatory external verifier evidence references.
-3. Whether profile-level policy should permit auto-approval thresholds by accessorial type.
+## Resolved Questions
+1. Canonical claim-state vocabulary: `Proposed`, `Approved`, `Rejected`.
+2. External verifier evidence references are optional and policy-driven; evidence adjudication remains external.
+3. Profile-level policy may define approval thresholds by accessorial type; protocol core remains neutral.
+
+## Implementation Evidence
+- Runtime:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp_mvp_simulation.py`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/streamlit_app.py`
+- Conformance/Profile:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/accessorial_terms_profile.v1.json`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/accessorial_type_registry.v1.json`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/detention_terms_profile.v1.json`
+- Tests:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_accessorial_terms.py`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_accessorial_terms_profile.py`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_accessorial_type_registry.py`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_detention_terms_profile.py`
 
 ## Approval
-- Maintainer Approval:
-- Governance Approval (if required):
-- Date:
+- Maintainer Approval: Approved
+- Governance Approval (if required): Recorded in governance index + release readiness gates
+- Date: 2026-02-27
