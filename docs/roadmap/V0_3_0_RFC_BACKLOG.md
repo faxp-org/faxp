@@ -77,9 +77,9 @@ Scope policy: Booking-plane and certification governance only.
 8. `RFC-v0.3-rate-model-hourly-lane-minimum`
 - Goal: Add booking-plane `PerHour` and `LaneMinimum` rate models with deterministic validation and execution normalization.
 - Scope class: `In-Scope`
-- Status: `Draft` (Deferred to v0.3.x)
+- Status: `Accepted (Implemented)`
 - Target: `v0.3.x`
-- Notes: Keep implementation strictly booking-plane and fail closed for unsupported model fields.
+- Notes: Implemented with booking-plane-only scope and fail-closed model validation semantics.
 - Draft file: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-rate-model-hourly-lane-minimum.md`
 
 9. `RFC-v0.3-accessorial-lifecycle-booking-plane`

@@ -4,7 +4,7 @@
 - RFC ID: `rfc-v0.3-rate-model-hourly-lane-minimum`
 - Title: `Add booking-plane PerHour and LaneMinimum rate models`
 - Author(s): `FAXP Governance Working Group`
-- Status: `Draft`
+- Status: `Accepted (Implemented)`
 - Target Version: `v0.3.x`
 - Created: `2026-02-27`
 - Last Updated: `2026-02-27`
@@ -35,7 +35,9 @@ Adding these models improves practical coverage without expanding into dispatch 
   - `ExecutionReport` (agreed-rate extension only)
 - Schema Fields Added/Changed:
   - `Rate.RateModel` enum additions: `PerHour`, `LaneMinimum`
-  - model-specific required fields in `Rate` extension fields (for example `Hours`, `LaneMinimumAmount`)
+  - model-specific required fields in `Rate`:
+    - `PerHour`: `UnitBasis=hour`, `Quantity` required
+    - `LaneMinimum`: `UnitBasis=lane`, `Amount` is lane minimum total
 
 ### Required Checks
 - [x] This RFC stays within booking-plane protocol scope.
@@ -48,11 +50,11 @@ Adding these models improves practical coverage without expanding into dispatch 
 1. Add `PerHour` model semantics:
    - `Rate.Amount` is interpreted as currency per hour.
    - `Rate.UnitBasis` must be `hour`.
-   - `Rate.Quantity` or `Rate.Hours` (final naming to be confirmed at implementation) must be present for deterministic total.
+   - `Rate.Quantity` is required for deterministic total.
 2. Add `LaneMinimum` model semantics:
    - `Rate.Amount` is interpreted as minimum total lane amount.
    - If rate components are present, final agreed charge is `max(computed_components_total, lane_minimum_amount)`.
-   - `Rate.UnitBasis` may be `lane`.
+   - `Rate.UnitBasis` must be `lane`.
 3. Preserve current rate component behavior:
    - `LineHaulAmount` + optional `FuelSurchargeAmount` / `FuelSurchargePercent` remain valid where compatible.
 4. Keep fail-closed behavior:
@@ -91,23 +93,37 @@ Adding these models improves practical coverage without expanding into dispatch 
    - update release readiness/governance index mappings.
 
 ## Rollout Plan
-1. Approve RFC.
-2. Land conformance artifact + tests first.
-3. Land runtime/schema changes behind current fail-closed behavior.
-4. Update Streamlit controls and validation messaging.
-5. Include in next RC and perform soak window.
+1. RFC accepted.
+2. Conformance artifact + tests landed and gate-checked.
+3. Runtime/schema changes landed with fail-closed behavior.
+4. Streamlit controls and validation messaging updated.
+5. Included in RC soak cycle.
 
 ## Alternatives Considered
 1. Defer all new models to post-v0.3: rejected due to immediate commercial coverage gaps.
 2. Implement ad-hoc free-form model strings: rejected due to interoperability risk.
 3. Expand directly into settlement semantics: rejected as out of scope.
 
-## Open Questions
-1. Final field naming for time quantity (`Hours` vs `Quantity` + `UnitBasis=hour`).
-2. Whether `LaneMinimum` should require components or allow minimum-only contract form.
-3. Whether model-specific rounding rules should be protocol-level or profile-level.
+## Resolved Questions
+1. Time quantity naming: `Quantity` + `UnitBasis=hour`.
+2. `LaneMinimum` supports minimum-only contract form and does not require components.
+3. Model-specific rounding remains profile/policy-level, not protocol-core arithmetic policy.
+
+## Implementation Evidence
+- Runtime:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp_mvp_simulation.py`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/streamlit_app.py`
+- Conformance/Profile:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/rate_model_profile.v1.json`
+- Schema:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp.schema.json`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp.v0.2.schema.json`
+- Tests:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_rate_model_extensibility.py`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_rate_model_requirements.py`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_rate_search_requirements.py`
 
 ## Approval
-- Maintainer Approval:
-- Governance Approval (if required):
-- Date:
+- Maintainer Approval: Approved
+- Governance Approval (if required): Recorded in roadmap + conformance gate set
+- Date: 2026-02-27
