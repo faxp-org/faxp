@@ -228,6 +228,65 @@ def main() -> int:
         }
         validate_message_body("ExecutionReport", execution_report)
 
+        proposed_claim_report = {
+            **execution_report,
+            "Accessorials": [
+                {
+                    "Type": "UnloadingFee",
+                    "ClaimID": "CLM-2026-0001",
+                    "Amount": 85.0,
+                    "Currency": "USD",
+                    "Status": "Proposed",
+                    "ProposedAt": now_utc(),
+                    "PricingMode": "Reimbursable",
+                    "PayerParty": "Broker",
+                    "PayeeParty": "Carrier",
+                    "EvidenceRequired": True,
+                    "EvidenceType": "Receipt",
+                    "EvidenceRefs": ["receipt-2026-0001"],
+                }
+            ],
+        }
+        validate_message_body("ExecutionReport", proposed_claim_report)
+
+        missing_claim_id_report = {
+            **proposed_claim_report,
+            "Accessorials": [
+                {
+                    "Type": "UnloadingFee",
+                    "Amount": 85.0,
+                    "Currency": "USD",
+                    "Status": "Proposed",
+                    "ProposedAt": now_utc(),
+                }
+            ],
+        }
+        _expect_validation_error(
+            "ExecutionReport",
+            missing_claim_id_report,
+            "missing required fields",
+        )
+
+        rejected_claim_report = {
+            **execution_report,
+            "Accessorials": [
+                {
+                    "Type": "EscortVehicle",
+                    "ClaimID": "CLM-2026-0002",
+                    "Amount": 250.0,
+                    "Currency": "USD",
+                    "Status": "Rejected",
+                    "RejectedAt": now_utc(),
+                    "PricingMode": "TBD",
+                    "PayerParty": "Broker",
+                    "PayeeParty": "Vendor",
+                    "EvidenceRequired": True,
+                    "EvidenceType": "EscortInvoice",
+                }
+            ],
+        }
+        validate_message_body("ExecutionReport", rejected_claim_report)
+
         bad_execution = {
             **execution_report,
             "Accessorials": [

@@ -48,10 +48,9 @@
     "Other"
   ],
   "entryStatuses": [
-    "Pending",
+    "Proposed",
     "Approved",
-    "Rejected",
-    "TBD"
+    "Rejected"
   ],
   "normativeConstraints": {
     "nonUsdNotSupportedInV011": true,

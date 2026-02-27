@@ -2702,7 +2702,7 @@ PLANNED_ACCESSORIAL_TYPES = tuple(
 )
 VALID_ACCESSORIAL_PARTIES = {"Broker", "Carrier", "Shipper", "Vendor", "Unknown"}
 VALID_ACCESSORIAL_EVIDENCE_TYPES = {"Receipt", "Permit", "EscortInvoice", "Other"}
-VALID_ACCESSORIAL_STATUSES = {"Pending", "Approved", "Rejected", "TBD"}
+VALID_ACCESSORIAL_STATUSES = {"Proposed", "Approved", "Rejected"}
 VALID_DETENTION_RATE_UNITS = {"Hour"}
 VALID_DETENTION_LOCATION_EVIDENCE_TYPES = {"GPS", "ELDPosition", "GeofenceCheckIn", "Other"}
 VALID_STOP_TYPES = {"Pickup", "Drop"}
@@ -3382,10 +3382,28 @@ def _validate_accessorial_entries(accessorials, context, allowed_types=None):
                 raise ValueError(
                     f"{item_context}.Status must be one of {sorted(VALID_ACCESSORIAL_STATUSES)}."
                 )
+        status = item.get("Status")
+        if status == "Proposed":
+            _require_fields(item, ["ClaimID"], item_context)
+            _bounded_string(item["ClaimID"], f"{item_context}.ClaimID")
+            if "ProposedAt" in item:
+                _validate_iso_datetime(item["ProposedAt"], f"{item_context}.ProposedAt")
+            if "ApprovedAt" in item:
+                raise ValueError(f"{item_context}.ApprovedAt is not allowed for Status 'Proposed'.")
+            if "RejectedAt" in item:
+                raise ValueError(f"{item_context}.RejectedAt is not allowed for Status 'Proposed'.")
+        elif status == "Approved":
+            _require_fields(item, ["ApprovedAt"], item_context)
+        elif status == "Rejected":
+            _require_fields(item, ["RejectedAt"], item_context)
         if "ApprovedAt" in item:
             _validate_iso_datetime(item["ApprovedAt"], f"{item_context}.ApprovedAt")
+        if "RejectedAt" in item:
+            _validate_iso_datetime(item["RejectedAt"], f"{item_context}.RejectedAt")
         if "EvidenceRef" in item:
             _bounded_string(item["EvidenceRef"], f"{item_context}.EvidenceRef")
+        if "EvidenceRefs" in item:
+            _validate_string_array(item["EvidenceRefs"], f"{item_context}.EvidenceRefs")
         if "SettlementReference" in item:
             _bounded_string(item["SettlementReference"], f"{item_context}.SettlementReference")
         if "Note" in item:
