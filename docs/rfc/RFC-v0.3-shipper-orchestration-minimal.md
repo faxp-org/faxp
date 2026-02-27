@@ -4,7 +4,7 @@
 - RFC ID: `rfc-v0.3-shipper-orchestration-minimal`
 - Title: `Activate minimal shipper -> broker -> carrier booking orchestration`
 - Author(s): `FAXP Governance Working Group`
-- Status: `Draft`
+- Status: `Accepted (Implemented)`
 - Target Version: `v0.3.0`
 - Created: `2026-02-23`
 - Last Updated: `2026-02-23`
@@ -73,22 +73,32 @@ FAXP already demonstrates broker-carrier and load/truck happy paths. A minimal s
    - Existing conformance suite remains green.
 
 ## Rollout Plan
-1. RFC review and governance approval.
-2. Implement optional shipper orchestration path in simulation.
-3. Add focused tests and docs updates.
-4. Promote to v0.3.0 only after regression evidence.
+1. RFC reviewed and accepted.
+2. Optional shipper orchestration path implemented in simulation.
+3. Focused tests/profile/docs landed and release-gated.
+4. Included in v0.3.x governance baseline with regression evidence.
 
 ## Alternatives Considered
 1. Introduce new shipper-specific message type immediately: rejected for minimal-scope phase.
 2. Full multi-party orchestration state machine: rejected as too broad for v0.3.0.
 3. Keep shipper stub permanently unused: rejected due to adoption/value gap.
 
-## Open Questions
-1. Should shipper-origin metadata be standardized in protocol envelope or body extensions?
-2. Is a streamlit UI mode toggle sufficient, or should shipper flow remain CLI-only initially?
-3. What is the minimum required audit field set for tender provenance?
+## Resolved Questions
+1. Shipper path uses existing message contracts with optional body metadata; no envelope expansion required.
+2. Initial entry point is CLI opt-in (`--shipper-flow`) to preserve baseline demo stability.
+3. Tender provenance is captured through existing message envelope/audit fields plus tender-origin mapping in broker normalization.
+
+## Implementation Evidence
+- Runtime:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp_mvp_simulation.py` (`--shipper-flow`)
+- Conformance/Profile:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/shipper_orchestration_profile.v1.json`
+- Tests:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_shipper_orchestration_minimal.py`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_shipper_orchestration_profile.py`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_role_capability_policy.py`
 
 ## Approval
-- Maintainer Approval:
-- Governance Approval (if required):
-- Date:
+- Maintainer Approval: Approved
+- Governance Approval (if required): Recorded in governance index + release readiness gates
+- Date: 2026-02-27

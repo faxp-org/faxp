@@ -29,9 +29,9 @@ Scope policy: Booking-plane and certification governance only.
 2. `RFC-v0.3-shipper-orchestration-minimal`
 - Goal: Wire existing ShipperAgent stub into an optional shipper -> broker -> carrier booking path.
 - Scope class: `In-Scope`
-- Status: `Draft` (Deferred to v0.3.x)
+- Status: `Accepted (Implemented)`
 - Target: `v0.3.x`
-- Notes: Preserve current broker-carrier happy path unchanged.
+- Notes: Implemented as optional shipper entry flow with role-capability policy and conformance gates; broker-carrier path remains unchanged.
 - Draft file: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-shipper-orchestration-minimal.md`
 
 3. `RFC-v0.3-schema-version-negotiation`
