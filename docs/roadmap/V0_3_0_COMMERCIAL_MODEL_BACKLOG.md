@@ -106,8 +106,8 @@ Purpose: Central place to capture commercial model requirements before implement
 ### D) Future Commercial Scenarios
 
 1. Additional rate structures (hourly, lane-minimums, tiered pricing)
-- Target: `deferred`
-- RFC: `TBD`
+- Target: `v0.3.x`
+- RFC: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-rate-model-hourly-lane-minimum.md`
 - Acceptance:
   - Added only via RFC with compatibility plan.
 

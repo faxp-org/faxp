@@ -132,6 +132,26 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
   - Additional typed references support partner-specific identifiers without schema churn.
   - `ExecutionReport` preserves references for downstream TMS/document handoff.
 
+### S14: PerHour Negotiation for Dwell/Local Service
+
+- Description: Broker and carrier negotiate a `PerHour` booking-plane rate with explicit hours basis for a local or delay-sensitive load.
+- RFC: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-rate-model-hourly-lane-minimum.md`
+- Target: `v0.3.x`
+- Expected outcome:
+  - `RateModel=PerHour` validates model-specific fields and unit basis deterministically.
+  - Counter path preserves reason codes and does not break existing `PerMile`/`Flat` behavior.
+  - `ExecutionReport` preserves time-based agreed-rate semantics for downstream handoff.
+
+### S15: LaneMinimum Commercial Floor Contract
+
+- Description: Carrier and broker negotiate a lane floor where `LaneMinimum` applies when computed components fall below a minimum total.
+- RFC: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-rate-model-hourly-lane-minimum.md`
+- Target: `v0.3.x`
+- Expected outcome:
+  - `RateModel=LaneMinimum` validates required minimum semantics and fails closed when incomplete.
+  - Final agreed-rate normalization remains auditable and deterministic in `ExecutionReport`.
+  - Backward compatibility is preserved for existing rate models and profiles.
+
 ## Scenario Expansion Policy
 
 1. New scenario proposals must be added here first.

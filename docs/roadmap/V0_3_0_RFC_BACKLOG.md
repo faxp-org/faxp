@@ -74,6 +74,14 @@ Scope policy: Booking-plane and certification governance only.
 - Notes: Keep dispatch assignment and operations lifecycle out of scope.
 - Draft file: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-equipment-taxonomy-expansion.md`
 
+8. `RFC-v0.3-rate-model-hourly-lane-minimum`
+- Goal: Add booking-plane `PerHour` and `LaneMinimum` rate models with deterministic validation and execution normalization.
+- Scope class: `In-Scope`
+- Status: `Draft` (Deferred to v0.3.x)
+- Target: `v0.3.x`
+- Notes: Keep implementation strictly booking-plane and fail closed for unsupported model fields.
+- Draft file: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-rate-model-hourly-lane-minimum.md`
+
 ## Deferred / Explicitly Out-of-Scope for v0.3.0 RFC Batch
 
 1. Dispatch operations model.
