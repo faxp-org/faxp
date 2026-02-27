@@ -39,12 +39,17 @@ def main() -> int:
         "Identity verifier (mock success)" in presets,
         "identity mock success preset should be available",
     )
+    _assert(
+        "Shipper-origin flow (identity mock)" in presets,
+        "shipper-origin preset should be available",
+    )
 
     ensure_state_defaults(state, defaults)
     _assert(
         state["quick_preset_select"] == "Identity verifier (mock success)",
         "default preset mismatch",
     )
+    _assert(state["shipper_flow_checkbox"] is False, "default shipper-flow toggle mismatch")
     _assert(
         state["provider_cloud_select"] == "ComplianceVerifier (Trusted Adapter)",
         "default provider mismatch",
@@ -97,6 +102,15 @@ def main() -> int:
     apply_preset_to_state(
         state,
         presets,
+        "Shipper-origin flow (identity mock)",
+        hosted_fmcsa_configured=True,
+    )
+    _assert(state["shipper_flow_checkbox"] is True, "shipper preset should enable shipper flow")
+    _assert(state["provider_local_select"] == "MockBiometricProvider", "shipper preset provider mismatch")
+
+    apply_preset_to_state(
+        state,
+        presets,
         "Forced fail demo",
         hosted_fmcsa_configured=True,
     )
@@ -130,6 +144,10 @@ def main() -> int:
     _assert(
         'if "access_key_input" not in st.session_state:' in source,
         "reset_state guard for access_key_input is missing",
+    )
+    _assert(
+        '"shipper_flow_checkbox"' in source,
+        "streamlit app should include shipper flow sidebar toggle key",
     )
 
     print("Streamlit state helper regression checks passed.")

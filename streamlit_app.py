@@ -15,6 +15,7 @@ import streamlit.components.v1 as components
 from faxp_mvp_simulation import (
     BrokerAgent,
     CarrierAgent,
+    ShipperAgent,
     DEFAULT_RISK_TIER,
     FaxpProtocol,
     VERIFICATION_POLICY_PROFILE_ID,
@@ -150,8 +151,10 @@ def reset_state():
     reset_protocol_runtime_state()
     st.session_state.broker = BrokerAgent("Broker Agent")
     st.session_state.carrier = CarrierAgent("Carrier Agent")
+    st.session_state.shipper = ShipperAgent("Shipper Agent")
     st.session_state.broker_agent_id = resolve_agent_id(st.session_state.broker.name)
     st.session_state.carrier_agent_id = resolve_agent_id(st.session_state.carrier.name)
+    st.session_state.shipper_agent_id = resolve_agent_id(st.session_state.shipper.name)
     st.session_state.messages = []
     st.session_state.summary = ""
     st.session_state.execution_report = None
@@ -187,15 +190,19 @@ def append_message(sender, receiver, message_type, body):
         st.session_state.validated_messages += 1
     except ValueError as exc:
         msg["Validation"] = "Fail"
-        msg["ValidationError"] = str(exc)
+        error_text = str(exc)
+        msg["ValidationError"] = error_text
         st.session_state.validation_errors.append(
             {
                 "MessageType": message_type,
-                "Error": str(exc),
+                "Error": error_text,
                 "Timestamp": msg["Timestamp"],
             }
         )
-        st.session_state.status_line = f"Validation failed: {message_type}"
+        if "not allowed to" in error_text or "Unknown sender role inferred" in error_text or "Unknown receiver role inferred" in error_text:
+            st.session_state.status_line = f"Role capability denied: {error_text}"
+        else:
+            st.session_state.status_line = f"Validation failed: {message_type}"
     except Exception as exc:
         # Keep the demo fail-closed and user-visible instead of crashing the Streamlit process.
         msg["Validation"] = "Fail"
@@ -398,6 +405,7 @@ def run_flow(
     mileage_rel_tolerance_ratio,
     exception_approved,
     exception_approval_ref,
+    shipper_flow,
 ):
     reset_state()
     run_id = set_protocol_run_id()
@@ -408,9 +416,11 @@ def run_flow(
     )
     broker = st.session_state.broker
     carrier = st.session_state.carrier
+    shipper = st.session_state.shipper
     st.session_state.last_verifier_diagnostics = {
         "run_id": run_id,
         "provider": provider,
+        "flow_mode": "ShipperOrigin" if shipper_flow else "BrokerOrigin",
         "fmcsa_source": fmcsa_source if provider == "FMCSA" else "n/a",
         "mc_number": (mc_number or "").strip() if provider == "FMCSA" else "",
         "policy_profile_id": policy_profile_id,
@@ -433,12 +443,26 @@ def run_flow(
     st.session_state.amend_example = FaxpProtocol.amend_request_example("example-load-id")
 
     # 1) NewLoad
-    new_load = broker.post_new_load(rate_model=rate_model)
-    if not append_message(broker.name, carrier.name, "NewLoad", new_load):
-        return
+    if shipper_flow:
+        new_load = shipper.post_tender()
+        if not append_message(shipper.name, broker.name, "NewLoad", new_load):
+            return
+        try:
+            broker_load = broker.ingest_shipper_tender(new_load)
+        except ValueError as exc:
+            st.session_state.status_line = f"Shipper tender rejected: {exc}"
+            return
+        load_search = carrier.create_load_search_for_load(
+            broker_load,
+            force_no_match=no_match,
+        )
+    else:
+        new_load = broker.post_new_load(rate_model=rate_model)
+        if not append_message(broker.name, carrier.name, "NewLoad", new_load):
+            return
+        load_search = carrier.create_load_search(force_no_match=no_match, rate_model=rate_model)
 
     # 2) LoadSearch
-    load_search = carrier.create_load_search(force_no_match=no_match, rate_model=rate_model)
     if not append_message(carrier.name, broker.name, "LoadSearch", load_search):
         return
     matched_loads = broker.search_loads(load_search)
@@ -449,7 +473,13 @@ def run_flow(
         return
 
     # 3) BidRequest
-    selected_load = matched_loads[0]
+    if shipper_flow:
+        selected_load = next(
+            (item for item in matched_loads if item.get("LoadID") == broker_load.get("LoadID")),
+            matched_loads[0],
+        )
+    else:
+        selected_load = matched_loads[0]
     bid_request = carrier.create_bid_request(selected_load, bid_amount=bid_amount)
     if not append_message(carrier.name, broker.name, "BidRequest", bid_request):
         return
@@ -543,7 +573,11 @@ def run_flow(
     if execution_report.get("DispatchAuthorization") == "Hold":
         st.session_state.status_line = "Booking provisionally completed. Dispatch is on hold."
     else:
-        st.session_state.status_line = "Booking completed."
+        st.session_state.status_line = (
+            "Shipper-origin booking completed."
+            if shipper_flow
+            else "Booking completed."
+        )
     update_summary_from_report()
 
 
@@ -589,7 +623,8 @@ with st.sidebar:
     )
     st.caption(
         f"Agent IDs: Broker={st.session_state.get('broker_agent_id', 'n/a')} | "
-        f"Carrier={st.session_state.get('carrier_agent_id', 'n/a')}"
+        f"Carrier={st.session_state.get('carrier_agent_id', 'n/a')} | "
+        f"Shipper={st.session_state.get('shipper_agent_id', 'n/a')}"
     )
     preset_name = st.selectbox(
         "Quick Preset",
@@ -600,6 +635,11 @@ with st.sidebar:
         apply_quick_preset(preset_name)
     if ACCESS_KEY:
         st.text_input("Access Key", type="password", key="access_key_input")
+    shipper_flow = st.checkbox(
+        "Run Shipper-Origin Flow (optional)",
+        key="shipper_flow_checkbox",
+        help="Uses Shipper -> Broker -> Carrier path while preserving existing default broker-origin flow.",
+    )
     rate_model = st.selectbox(
         "Rate Model",
         ["PerMile", "Flat", "PerPallet", "CWT", "PerHour", "LaneMinimum"],
@@ -806,6 +846,7 @@ if run_clicked:
             mileage_rel_tolerance_ratio=float(mileage_rel_tolerance_ratio),
             exception_approved=bool(exception_approved),
             exception_approval_ref=exception_approval_ref,
+            shipper_flow=bool(shipper_flow),
         )
 
 if reset_clicked:
@@ -848,6 +889,8 @@ st.json(
         "BrokerAgentID": st.session_state.get("broker_agent_id", "n/a"),
         "CarrierName": getattr(st.session_state.carrier, "name", "n/a"),
         "CarrierAgentID": st.session_state.get("carrier_agent_id", "n/a"),
+        "ShipperName": getattr(st.session_state.shipper, "name", "n/a"),
+        "ShipperAgentID": st.session_state.get("shipper_agent_id", "n/a"),
         "IdentityBinding": "Envelope.FromAgentID/ToAgentID are signed and validated against key mapping.",
     }
 )
@@ -861,6 +904,7 @@ else:
         {
             "runId": diag.get("run_id", "n/a"),
             "provider": diag.get("provider", "n/a"),
+            "flowMode": diag.get("flow_mode", "n/a"),
             "complianceSource": diag.get("fmcsa_source", "n/a"),
             "fmcsaSource": diag.get("fmcsa_source", "n/a"),
             "hostedFmcsaConfigured": diag.get("hosted_fmcsa_configured"),
