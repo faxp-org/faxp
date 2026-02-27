@@ -4,7 +4,7 @@
 - RFC ID: `rfc-v0.3-rate-model-extensibility`
 - Title: `Extend booking-plane rate model taxonomy beyond PerMile/Flat`
 - Author(s): `FAXP Governance Working Group`
-- Status: `Draft`
+- Status: `Accepted (Implemented)`
 - Target Version: `v0.3.0`
 - Created: `2026-02-23`
 - Last Updated: `2026-02-23`
@@ -13,7 +13,7 @@
 Add a versioned, extensible rate model taxonomy for booking-plane negotiation so FAXP can represent additional commercial pricing structures while preserving compatibility with existing `PerMile` and `Flat` flows.
 
 ## Motivation
-Current v0.2 behavior supports `PerMile` and `Flat` only. This is sufficient for MVP demos but too narrow for broader adoption. A structured extension path enables implementers to add common pricing patterns without forking protocol semantics.
+Initial behavior supported `PerMile` and `Flat` only. This was too narrow for broader adoption. A structured extension path enabled common pricing patterns without forking protocol semantics.
 
 ## Scope Gate (Required)
 - Scope Classification: `In-Scope`
@@ -45,11 +45,13 @@ Current v0.2 behavior supports `PerMile` and `Flat` only. This is sufficient for
 2. Preserve required behavior for legacy models:
    - `PerMile`: `Amount` interpreted as USD/mile (or currency/mile).
    - `Flat`: `Amount` interpreted as total trip price.
-3. Add v0.3-compatible model identifiers (initial draft set for discussion):
+3. Add v0.3-compatible model identifiers:
    - `PerMile`
    - `Flat`
-   - `PerHour` (optional in v0.3 pending approval)
-   - `PerWeightUnit` (optional in v0.3 pending approval)
+   - `PerPallet`
+   - `CWT`
+   - `PerHour`
+   - `LaneMinimum`
 4. Validation behavior:
    - Unknown `RateModel` fails closed unless explicitly listed in negotiated compatibility profile.
    - `RateTerms` keys must be schema-validated per model.
@@ -85,22 +87,37 @@ Current v0.2 behavior supports `PerMile` and `Flat` only. This is sufficient for
    - compatibility mismatch rejection (broker/carrier model support mismatch).
 
 ## Rollout Plan
-1. RFC review and governance approval.
-2. Implement schema + simulation support behind explicit v0.3 compatibility guard.
-3. Add conformance checks and Streamlit scenario toggles for approved models only.
-4. Release as part of `v0.3.0` after regression and compatibility suite passes.
+1. RFC reviewed and accepted.
+2. Schema + simulation support implemented with strict fail-closed validation.
+3. Conformance checks and Streamlit scenario controls added for active models.
+4. Released as part of v0.3.x with regression and compatibility evidence.
 
 ## Alternatives Considered
 1. Keep fixed enum forever (`PerMile`, `Flat` only): rejected due to adoption limits.
 2. Free-form string models with no schema constraints: rejected due to interoperability risk.
 3. Separate message types per model: rejected due to unnecessary protocol complexity.
 
-## Open Questions
-1. Which additional models are in `v0.3.0` minimum set vs deferred to `v0.3.x`?
-2. Should unit normalization rules be protocol-level or profile-level?
-3. Should model support be declared in `VerificationCapabilities`-style commercial capabilities metadata?
+## Resolved Questions
+1. Active set includes `PerMile`, `Flat`, `PerPallet`, `CWT`, `PerHour`, and `LaneMinimum`.
+2. Unit normalization and required field semantics are enforced via runtime validation plus conformance profiles.
+3. Unsupported models fail closed unless explicitly activated by protocol/runtime profile.
+
+## Implementation Evidence
+- Runtime:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp_mvp_simulation.py`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/streamlit_app.py`
+- Schema:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp.schema.json`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp.v0.2.schema.json`
+- Conformance/Profile:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/rate_model_profile.v1.json`
+- Tests:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_rate_model_extensibility.py`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_rate_model_requirements.py`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_rate_search_requirements.py`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_rate_model_profile.py`
 
 ## Approval
-- Maintainer Approval:
-- Governance Approval (if required):
-- Date:
+- Maintainer Approval: Approved
+- Governance Approval (if required): Recorded in governance index + release readiness gates
+- Date: 2026-02-27
