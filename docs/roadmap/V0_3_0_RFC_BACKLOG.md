@@ -53,9 +53,9 @@ Scope policy: Booking-plane and certification governance only.
 5. `RFC-v0.3-provisional-booking-policy-contract`
 - Goal: Standardize policy semantics for `HardBlock`, `SoftHold`, and `GraceCache` outcomes.
 - Scope class: `In-Scope`
-- Status: `Draft` (Must-Have for v0.3.0)
+- Status: `Accepted (Implemented)`
 - Target: `v0.3.0`
-- Notes: Keep as policy/decision contract, not dispatch-state expansion.
+- Notes: Implemented with normalized decision metadata, risk-tier matrix semantics, and release-gated conformance checks.
 - Draft file: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-provisional-booking-policy-contract.md`
 
 6. `RFC-v0.3-a2a-mcp-interop-maturity`

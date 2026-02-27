@@ -4,7 +4,7 @@
 - RFC ID: `rfc-v0.3-provisional-booking-policy-contract`
 - Title: `Standardize HardBlock, SoftHold, and GraceCache policy semantics`
 - Author(s): `FAXP Governance Working Group`
-- Status: `Draft`
+- Status: `Accepted (Implemented)`
 - Target Version: `v0.3.0`
 - Created: `2026-02-23`
 - Last Updated: `2026-02-23`
@@ -80,22 +80,33 @@ Current behavior includes the policy concepts (`HardBlock`, `SoftHold`, `GraceCa
    - existing happy paths remain unchanged where policy is not degraded.
 
 ## Rollout Plan
-1. RFC review and acceptance.
-2. Update policy profile docs and conformance checks.
-3. Implement normalized decision mapping in simulation/runtime checks.
-4. Require policy decision evidence for v0.3 certification profiles.
+1. RFC reviewed and accepted.
+2. Policy profile docs and conformance checks updated and release-gated.
+3. Normalized decision mapping implemented in simulation/runtime checks.
+4. Policy decision evidence required in v0.3 certification profiles.
 
 ## Alternatives Considered
 1. Leave policy semantics implementation-defined: rejected (interoperability risk).
 2. Add new protocol message types for policy events: rejected for minimal-scope phase.
 3. Collapse to single fail-open/fail-closed toggle: rejected as too coarse.
 
-## Open Questions
-1. Should exception approvals require dual-control at higher risk tiers by policy?
-2. What maximum cache age is acceptable for `GraceCache` by tier?
-3. Should policy decision metadata be required in all `ExecutionReport` outcomes or only degraded paths?
+## Resolved Questions
+1. Exception approvals are policy-profile driven and explicitly traceable when used.
+2. `GraceCache` cache-age and outage behavior are controlled by normative policy profile matrix.
+3. Policy decision metadata is normalized and validated for degraded decision paths and surfaced for auditability.
+
+## Implementation Evidence
+- Runtime:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp_mvp_simulation.py`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/streamlit_state_logic.py`
+- Conformance/Profile:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/verification_policy_profile.v1.json`
+- Tests:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_verification_policy_profile.py`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_policy_decisions.py`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_policy_profile_sync.py`
 
 ## Approval
-- Maintainer Approval:
-- Governance Approval (if required):
-- Date:
+- Maintainer Approval: Approved
+- Governance Approval (if required): Recorded in governance index + release readiness gates
+- Date: 2026-02-27
