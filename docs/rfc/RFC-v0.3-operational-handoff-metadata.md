@@ -10,12 +10,20 @@
 - Last Updated: `2026-02-27`
 
 ## Summary
-Define an optional, neutral metadata contract that allows a receiving system to route a completed booking into the correct downstream operational workflow after `ExecutionReport`, without expanding FAXP into dispatch, document custody, or settlement workflows.
+Define a neutral post-booking handoff model that separates:
+1. mandatory booking counterparty identity/reference data, and
+2. optional downstream operational routing metadata
+
+This allows a receiving system to route a completed booking into the correct downstream operational workflow after `ExecutionReport`, without expanding FAXP into dispatch, document custody, or settlement workflows.
 
 ## Motivation
 FAXP intentionally ends at booking confirmation. In practice, the parties still need a clean handoff into their own TMS, portal, operations agent, or human workflow to complete dispatch, rate confirmation, onboarding/setup exceptions, and other downstream actions.
 
 Without a standard handoff shape, each implementation must invent its own post-booking routing conventions. This creates unnecessary integration friction even when the booking itself is already standardized.
+
+This RFC also clarifies an important boundary:
+- a valid booking must always identify the counterparty and the booking reference,
+- but downstream operational routing details do not need to be universally mandatory in protocol core.
 
 ## Scope Gate (Required)
 - Scope Classification: `In-Scope`
@@ -37,8 +45,20 @@ Without a standard handoff shape, each implementation must invent its own post-b
 
 ## Detailed Design
 1. Keep `ExecutionReport` as the booking confirmation boundary.
-2. Define optional neutral handoff metadata for downstream routing only.
-3. Candidate field set:
+2. Separate handoff data into two layers:
+   - required booking identity/reference layer
+   - optional operational routing layer
+3. Required booking identity/reference data (or equivalent already-declared fields/profile references) must allow both sides to know:
+   - who the counterparty is,
+   - which agent/system represented them,
+   - which booking/operational reference identifies the deal.
+4. Candidate required identity/reference field set:
+   - `CounterpartyID`
+   - `CounterpartyRole`
+   - `AgentID`
+   - `BookingReference`
+   - `OperationalReference`
+5. Candidate optional operational routing field set:
    - `OperationalReference`
    - `SystemOfRecordType`
    - `SystemOfRecordRef`
@@ -46,11 +66,15 @@ Without a standard handoff shape, each implementation must invent its own post-b
    - `HandoffEndpointRef`
    - `SupportedHandoffActions`
    - `SetupStatus`
-4. Intended use:
+6. Intended use:
    - tell the receiving side which internal/external workflow to invoke next,
    - identify the correct system-of-record reference,
    - surface whether setup/onboarding is already complete or still required.
-5. Strict non-goals:
+7. Required/optional distinction:
+   - booking identity/reference data is required for a meaningful booked relationship,
+   - routing metadata remains optional in protocol core,
+   - profiles/policies may require routing metadata for straight-through automation.
+8. Strict non-goals:
    - no dispatch packet payloads,
    - no appointment details lifecycle,
    - no rate confirmation document transport,
@@ -61,6 +85,7 @@ Without a standard handoff shape, each implementation must invent its own post-b
 2. Metadata should be opaque/neutral where possible to avoid overexposing internal operational details.
 3. Unsupported or malformed handoff metadata must fail closed or be ignored by local policy without altering booking validity.
 4. Handoff routing references must not be treated as proof of operational execution.
+5. Counterparty identity/reference data must be sufficient to prevent ambiguous or anonymous “bookings” that cannot be operationally attributed.
 
 ## Compliance and Governance Considerations
 1. Preserve vendor neutrality and transport neutrality.
@@ -69,9 +94,10 @@ Without a standard handoff shape, each implementation must invent its own post-b
 4. If later implemented, require conformance profile/tests proving handoff metadata does not mutate booking-plane scope.
 
 ## Backward Compatibility
-1. Metadata must be optional and additive.
-2. Existing `ExecutionReport` payloads must remain valid without handoff fields.
-3. Implementations not using handoff metadata must remain fully conformant.
+1. Operational routing metadata must remain optional and additive in protocol core.
+2. Existing `ExecutionReport` payloads must remain valid without operational routing fields.
+3. If mandatory booking counterparty/reference data is already satisfied elsewhere in existing envelope/body semantics, no breaking change is required.
+4. Implementations not using structured operational routing metadata must remain conformant, though local policy may still require manual fallback handling.
 
 ## Test Plan (If Implemented Later)
 1. Schema tests for optional handoff object shape and allowed values.
@@ -90,9 +116,10 @@ Without a standard handoff shape, each implementation must invent its own post-b
 3. Use vendor-specific portal/TMS conventions only: rejected due to lock-in and inconsistent automation behavior.
 
 ## Open Questions
-1. Should handoff metadata live only in `ExecutionReport`, or also in party capability/profile artifacts?
-2. Should `SetupStatus` be fully standardized or left implementation-defined?
-3. Should `SupportedHandoffActions` use a canonical small enum or remain profile-driven?
+1. Should mandatory counterparty identity/reference data be formalized in `ExecutionReport`, party profiles, or existing envelope/body references?
+2. Should routing metadata live only in `ExecutionReport`, or also in party capability/profile artifacts?
+3. Should `SetupStatus` be fully standardized or left implementation-defined?
+4. Should `SupportedHandoffActions` use a canonical small enum or remain profile-driven?
 
 ## Approval
 - Maintainer Approval:
