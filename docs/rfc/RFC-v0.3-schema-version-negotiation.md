@@ -4,7 +4,7 @@
 - RFC ID: `rfc-v0.3-schema-version-negotiation`
 - Title: `Define schema/version negotiation for mixed v0.2 and v0.3 agents`
 - Author(s): `FAXP Governance Working Group`
-- Status: `Draft`
+- Status: `Accepted (Implemented)`
 - Target Version: `v0.3.0`
 - Created: `2026-02-23`
 - Last Updated: `2026-02-23`
@@ -79,23 +79,33 @@ As FAXP evolves, agents will run mixed versions in production. Without explicit 
    - forced downgrade mismatch.
 
 ## Rollout Plan
-1. RFC review and acceptance.
-2. Add formal compatibility matrix artifact.
-3. Implement parser/validator logic and compatibility reason codes.
-4. Expand schema compatibility tests and conformance suite assertions.
-5. Ship in `v0.3.0` after green CI and conformance reports.
+1. RFC reviewed and accepted.
+2. Formal compatibility profile artifact added.
+3. Parser/validator logic and compatibility checks implemented.
+4. Schema compatibility and conformance suite assertions expanded and release-gated.
+5. Shipped in v0.3.x with green CI evidence.
 
 ## Alternatives Considered
 1. Strict exact-version-only processing: rejected (too brittle for rollout).
 2. Implicit best-effort fallback: rejected (non-deterministic and unsafe).
 3. Out-of-band negotiation only: rejected (weak auditability in protocol flow).
 
-## Open Questions
-1. Should supported-version advertisement live in envelope extensions or capability metadata?
-2. Do we use semantic versioning strict parsing or constrained protocol version format?
-3. What is the minimum compatibility matrix retained for `v0.4.0` planning?
+## Resolved Questions
+1. Supported-version compatibility is governed by profile artifacts and validator behavior, not a required new envelope field.
+2. Protocol version parsing/compatibility uses constrained protocol profile logic and explicit fail-closed behavior.
+3. Compatibility retention policy is controlled via governance profiles and release-readiness checks.
+
+## Implementation Evidence
+- Runtime:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp_mvp_simulation.py`
+- Conformance/Profile:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/protocol_compatibility_profile.v1.json`
+- Tests:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_protocol_version_negotiation.py`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_protocol_compatibility_profile.py`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_cross_version_fixtures.py`
 
 ## Approval
-- Maintainer Approval:
-- Governance Approval (if required):
-- Date:
+- Maintainer Approval: Approved
+- Governance Approval (if required): Recorded in governance index + release readiness gates
+- Date: 2026-02-27
