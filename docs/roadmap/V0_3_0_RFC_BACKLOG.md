@@ -69,9 +69,9 @@ Scope policy: Booking-plane and certification governance only.
 7. `RFC-v0.3-equipment-taxonomy-expansion`
 - Goal: Standardize specialty trailer taxonomy and dimensional compatibility semantics for booking-plane matching.
 - Scope class: `In-Scope`
-- Status: `Draft` (Deferred to v0.3.x)
+- Status: `Accepted (Implemented)`
 - Target: `v0.3.x`
-- Notes: Keep dispatch assignment and operations lifecycle out of scope.
+- Notes: Implemented with canonical class/subclass/tag normalization, alias coverage, and trailer length range compatibility semantics.
 - Draft file: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-equipment-taxonomy-expansion.md`
 
 8. `RFC-v0.3-rate-model-hourly-lane-minimum`

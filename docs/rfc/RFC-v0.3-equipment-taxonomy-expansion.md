@@ -4,7 +4,7 @@
 - RFC ID: `rfc-v0.3-equipment-taxonomy-expansion`
 - Title: `Expand booking-plane equipment taxonomy for specialty trailers and dimensional compatibility`
 - Author(s): `FAXP Governance Working Group`
-- Status: `Draft`
+- Status: `Accepted (Implemented)`
 - Target Version: `v0.3.x`
 - Created: `2026-02-26`
 - Last Updated: `2026-02-26`
@@ -88,21 +88,32 @@ Current equipment support covers common classes and core matching behavior, but 
    - load and truck flows preserve compatibility behavior in happy-path and mismatch-path scenarios
 
 ## Rollout Plan
-1. Approve this RFC.
-2. Land incremental profile/runtime/schema updates with conformance gates.
-3. Keep release gating on equipment runtime + profile tests in CI.
-4. Publish compatibility notes in release notes for builders.
+1. RFC accepted.
+2. Profile/runtime/schema updates landed with conformance gates.
+3. Equipment runtime + profile tests are release-gated in CI.
+4. Compatibility behavior documented for builders.
 
 ## Alternatives Considered
 1. Leave equipment as free-text only: rejected due to interoperability drift.
 2. Add operations-plane dispatch asset model now: rejected as scope expansion.
 3. Split into per-equipment message types: rejected as unnecessary complexity.
 
-## Open Questions
-1. Should canonical equipment vocabulary be maintained as one profile artifact or split by region/market profile?
-2. Should future dimensional constraints include width/height in booking plane or remain deferred?
+## Resolved Questions
+1. Canonical equipment vocabulary is maintained as a single profile artifact in v0.3.x.
+2. Width/height dimensional constraints remain deferred; current booking-plane scope covers trailer length range semantics.
+
+## Implementation Evidence
+- Runtime:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp_mvp_simulation.py`
+- Conformance/Profile:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/equipment_profile.v1.json`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/equipment_type_alias_coverage.v1.json`
+- Tests:
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_equipment_terms.py`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_equipment_profile.py`
+  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_equipment_type_alias_coverage.py`
 
 ## Approval
-- Maintainer Approval:
-- Governance Approval (if required):
-- Date:
+- Maintainer Approval: Approved
+- Governance Approval (if required): Recorded in governance index + release readiness gates
+- Date: 2026-02-27
