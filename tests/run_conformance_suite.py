@@ -211,6 +211,14 @@ def main() -> int:
         "trust_profile" in listed_checks.stdout.splitlines(),
         "conformance suite must include trust_profile in default checks",
     )
+    _assert(
+        "role_capability_policy" in listed_checks.stdout.splitlines(),
+        "conformance suite must include role_capability_policy in default checks",
+    )
+    _assert(
+        "shipper_orchestration_minimal" in listed_checks.stdout.splitlines(),
+        "conformance suite must include shipper_orchestration_minimal in default checks",
+    )
 
     with tempfile.TemporaryDirectory(prefix="faxp-conformance-suite-") as temp_dir:
         output_path = Path(temp_dir) / "suite_report.json"
