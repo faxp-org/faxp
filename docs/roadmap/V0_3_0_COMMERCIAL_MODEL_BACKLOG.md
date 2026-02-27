@@ -112,10 +112,12 @@ Purpose: Central place to capture commercial model requirements before implement
   - Added only via RFC with compatibility plan.
 
 2. Advanced accessorial lifecycle scenarios
-- Target: `deferred`
-- RFC: `TBD`
+- Target: `v0.3.x`
+- RFC: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-accessorial-lifecycle-booking-plane.md`
 - Acceptance:
-  - Clear pre-booking vs post-booking state boundaries.
+  - Clear pre-booking vs post-booking claim-state boundaries.
+  - Explicit booking-time payer/payee responsibility semantics.
+  - Evidence handled as references/metadata only; settlement remains out of scope.
 
 ### E) Scope-Lock Baseline (Commercial Terms)
 

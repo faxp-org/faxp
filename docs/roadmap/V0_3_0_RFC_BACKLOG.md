@@ -82,6 +82,14 @@ Scope policy: Booking-plane and certification governance only.
 - Notes: Keep implementation strictly booking-plane and fail closed for unsupported model fields.
 - Draft file: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-rate-model-hourly-lane-minimum.md`
 
+9. `RFC-v0.3-accessorial-lifecycle-booking-plane`
+- Goal: Standardize accessorial booking-time terms, payer/payee responsibility, and post-booking claim states without entering settlement workflows.
+- Scope class: `In-Scope`
+- Status: `Draft` (Deferred to v0.3.x)
+- Target: `v0.3.x`
+- Notes: Evidence modeled as external references only; no document custody or payment rails in core protocol.
+- Draft file: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-accessorial-lifecycle-booking-plane.md`
+
 ## Deferred / Explicitly Out-of-Scope for v0.3.0 RFC Batch
 
 1. Dispatch operations model.
