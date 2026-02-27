@@ -65,6 +65,23 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
         "Compliance implementer-adapter (balanced)": dict(implementer_adapter_preset),
         "Compliance authority-mock (balanced)": dict(authority_mock_balanced),
         "Compliance strict mileage policy": dict(strict_mileage_policy),
+        "Shipper-origin flow (identity mock)": {
+            "shipper_flow": True,
+            "provider": "MockBiometricProvider",
+            "policy_profile_id": "US_FMCSA_BALANCED_V1",
+            "risk_tier": 1,
+            "mileage_dispute_policy": "balanced",
+            "mileage_abs_tolerance_miles": 25.0,
+            "mileage_rel_tolerance_ratio": 0.02,
+            "exception_approved": False,
+            "exception_approval_ref": "",
+            "rate_model": "PerMile",
+            "bid_amount": float(default_per_mile_bid),
+            "response_type": "Accept",
+            "verification_status": "Success",
+            "no_match": False,
+            "mc_number": "",
+        },
         "Identity verifier (mock success)": {
             "provider": "MockBiometricProvider",
             "policy_profile_id": "US_FMCSA_BALANCED_V1",
@@ -121,6 +138,7 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
 def default_sidebar_state(default_per_mile_bid: float) -> dict[str, Any]:
     return {
         "quick_preset_select": "Identity verifier (mock success)",
+        "shipper_flow_checkbox": False,
         "policy_profile_select": "US_FMCSA_BALANCED_V1",
         "risk_tier_select": 1,
         "mileage_policy_select": "balanced",
@@ -161,6 +179,9 @@ def apply_preset_to_state(
         return
 
     state["rate_model_select"] = preset["rate_model"]
+    state["shipper_flow_checkbox"] = bool(
+        preset.get("shipper_flow", state.get("shipper_flow_checkbox", False))
+    )
     state["bid_amount_input"] = float(preset["bid_amount"])
     state["response_type_select"] = preset["response_type"]
     state["verification_status_select"] = preset["verification_status"]
