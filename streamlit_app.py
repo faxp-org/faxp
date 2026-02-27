@@ -280,15 +280,21 @@ def update_summary_from_report():
         )
 
 
-def approve_accessorial(accessorial_type, amount, note):
+def _accessorial_term_metadata(policy, accessorial_type):
+    for term in policy.get("Terms", []):
+        if isinstance(term, dict) and term.get("Type") == accessorial_type:
+            return term
+    return {}
+
+
+def submit_accessorial_claim(accessorial_type, amount, note, evidence_ref):
     report = st.session_state.execution_report
     if report is None:
-        st.session_state.status_line = "No booked load available for accessorial approval."
+        st.session_state.status_line = "No booked load available for accessorial claim."
         return
 
     policy = report.get("AccessorialPolicy", {})
     allowed_types = policy.get("AllowedTypes", [])
-    max_total = float(policy.get("MaxTotal", 0.0))
 
     if accessorial_type not in allowed_types:
         st.session_state.status_line = f"Accessorial '{accessorial_type}' is not allowed by policy."
@@ -298,33 +304,81 @@ def approve_accessorial(accessorial_type, amount, note):
         st.session_state.status_line = "Accessorial amount must be greater than zero."
         return
 
-    new_total = accessorial_total(report) + float(amount)
-    if max_total > 0 and new_total > max_total:
-        st.session_state.status_line = f"Accessorial exceeds policy max (${max_total:.2f})."
-        return
-
-    term_metadata = {}
-    for term in policy.get("Terms", []):
-        if isinstance(term, dict) and term.get("Type") == accessorial_type:
-            term_metadata = term
-            break
+    term_metadata = _accessorial_term_metadata(policy, accessorial_type)
+    claim_id = f"CLM-{int(time.time() * 1000)}"
+    entry = {
+        "Type": accessorial_type,
+        "ClaimID": claim_id,
+        "Amount": round(float(amount), 2),
+        "Currency": policy.get("Currency", "USD"),
+        "Status": "Proposed",
+        "ProposedAt": now_utc(),
+        "PricingMode": term_metadata.get("PricingMode", "Reimbursable"),
+        "PayerParty": term_metadata.get("PayerParty", "Broker"),
+        "PayeeParty": term_metadata.get("PayeeParty", "Carrier"),
+        "EvidenceRequired": bool(term_metadata.get("EvidenceRequired", False)),
+        "EvidenceType": term_metadata.get("EvidenceType", "Other"),
+        "Note": note.strip(),
+    }
+    evidence_ref_value = str(evidence_ref or "").strip()
+    if evidence_ref_value:
+        entry["EvidenceRefs"] = [evidence_ref_value]
+        entry["EvidenceRef"] = evidence_ref_value
 
     report["Accessorials"].append(
-        {
-            "Type": accessorial_type,
-            "Amount": round(float(amount), 2),
-            "Currency": policy.get("Currency", "USD"),
-            "Status": "Approved",
-            "ApprovedAt": now_utc(),
-            "PricingMode": term_metadata.get("PricingMode", "Reimbursable"),
-            "PayerParty": term_metadata.get("PayerParty", "Broker"),
-            "PayeeParty": term_metadata.get("PayeeParty", "Carrier"),
-            "EvidenceRequired": bool(term_metadata.get("EvidenceRequired", False)),
-            "EvidenceType": term_metadata.get("EvidenceType", "Other"),
-            "Note": note.strip(),
-        }
+        entry
     )
-    st.session_state.status_line = f"Accessorial approved: {accessorial_type} ${float(amount):.2f}"
+    st.session_state.status_line = f"Accessorial claim proposed: {accessorial_type} ${float(amount):.2f}"
+    update_summary_from_report()
+
+
+def resolve_accessorial_claim(claim_id, decision, resolution_note):
+    report = st.session_state.execution_report
+    if report is None:
+        st.session_state.status_line = "No booked load available for accessorial claim resolution."
+        return
+    if decision not in {"Approved", "Rejected"}:
+        st.session_state.status_line = "Resolution decision must be Approved or Rejected."
+        return
+    claim_id_value = str(claim_id or "").strip()
+    if not claim_id_value:
+        st.session_state.status_line = "Select a claim to resolve."
+        return
+
+    target_entry = None
+    for entry in report.get("Accessorials", []):
+        if entry.get("ClaimID") == claim_id_value:
+            target_entry = entry
+            break
+
+    if target_entry is None:
+        st.session_state.status_line = f"Claim not found: {claim_id_value}"
+        return
+
+    if target_entry.get("Status") != "Proposed":
+        st.session_state.status_line = f"Claim {claim_id_value} is already resolved."
+        return
+
+    policy = report.get("AccessorialPolicy", {})
+    max_total = float(policy.get("MaxTotal", 0.0))
+    if decision == "Approved":
+        proposed_amount = float(target_entry.get("Amount", 0.0))
+        new_total = accessorial_total(report) + proposed_amount
+        if max_total > 0 and new_total > max_total:
+            st.session_state.status_line = f"Accessorial exceeds policy max (${max_total:.2f})."
+            return
+        target_entry["Status"] = "Approved"
+        target_entry["ApprovedAt"] = now_utc()
+        target_entry.pop("RejectedAt", None)
+    else:
+        target_entry["Status"] = "Rejected"
+        target_entry["RejectedAt"] = now_utc()
+        target_entry.pop("ApprovedAt", None)
+
+    note_value = str(resolution_note or "").strip()
+    if note_value:
+        target_entry["ResolutionNote"] = note_value
+    st.session_state.status_line = f"Accessorial claim {decision.lower()}: {claim_id_value}"
     update_summary_from_report()
 
 
@@ -991,9 +1045,50 @@ if st.session_state.execution_report is not None:
         key="accessorial_note",
         placeholder="Example: Receiver required hand-unload",
     )
-    approve_clicked = st.button("Approve Accessorial", use_container_width=False)
-    if approve_clicked:
-        approve_accessorial(accessorial_type, accessorial_amount, accessorial_note)
+    accessorial_evidence_ref = st.text_input(
+        "Evidence Ref (optional)",
+        key="accessorial_evidence_ref",
+        placeholder="Example: receipt-2026-0001",
+    )
+    submit_claim_clicked = st.button("Submit Accessorial Claim (Proposed)", use_container_width=False)
+    if submit_claim_clicked:
+        submit_accessorial_claim(
+            accessorial_type,
+            accessorial_amount,
+            accessorial_note,
+            accessorial_evidence_ref,
+        )
+
+    proposed_claims = [
+        item
+        for item in st.session_state.execution_report.get("Accessorials", [])
+        if item.get("Status") == "Proposed" and item.get("ClaimID")
+    ]
+    if proposed_claims:
+        selected_claim_id = st.selectbox(
+            "Proposed Claim",
+            options=[item["ClaimID"] for item in proposed_claims],
+            key="accessorial_claim_id",
+            format_func=lambda cid: (
+                f"{cid} | "
+                f"{next((entry.get('Type') for entry in proposed_claims if entry.get('ClaimID') == cid), 'Unknown')} | "
+                f"${float(next((entry.get('Amount') for entry in proposed_claims if entry.get('ClaimID') == cid), 0.0)):.2f}"
+            ),
+        )
+        resolution_note = st.text_input(
+            "Resolution Note (optional)",
+            key="accessorial_resolution_note",
+            placeholder="Example: Approved with receiver delay proof",
+        )
+        col_approve, col_reject = st.columns(2)
+        with col_approve:
+            approve_claim_clicked = st.button("Approve Selected Claim", use_container_width=True)
+        with col_reject:
+            reject_claim_clicked = st.button("Reject Selected Claim", use_container_width=True)
+        if approve_claim_clicked:
+            resolve_accessorial_claim(selected_claim_id, "Approved", resolution_note)
+        if reject_claim_clicked:
+            resolve_accessorial_claim(selected_claim_id, "Rejected", resolution_note)
 
     st.subheader("Execution Report")
     st.json(redact_sensitive(st.session_state.execution_report))
