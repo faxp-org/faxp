@@ -36,6 +36,7 @@ These guardrails prevent scope creep into dispatch operations, tracking operatio
 ## Clarification
 - `DispatchAuthorization` in `ExecutionReport` is currently treated as a booking-time policy gate only.
 - It must not expand into dispatch orchestration message types or downstream dispatch lifecycle state in protocol core.
+- Optional post-booking operational handoff metadata may describe neutral routing intent only; it must not carry dispatch packet content or operational execution state.
 - FAXP may enforce trusted-attestation policy and verifier admission criteria, but verifier execution remains implementer-hosted.
 - FAXP does not determine regulatory eligibility; it authenticates protocol messages and can transport optional verifier evidence.
 - Verification ownership boundaries are documented in `docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md`.
