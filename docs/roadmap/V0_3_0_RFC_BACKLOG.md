@@ -107,3 +107,11 @@ These remain scope expansions and require separate governance track beyond curre
 - Target: `v0.3.x`
 - Notes: Optional metadata only; no FAXP-hosted oracle services and no mandatory vendor coupling.
 - Draft file: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-rate-oracle-extension.md`
+
+11. `RFC-v0.3-operational-handoff-metadata`
+- Goal: Define optional neutral post-booking handoff metadata so systems can route completed bookings into the correct downstream ops workflow without moving dispatch into protocol core.
+- Scope class: `In-Scope`
+- Status: `Draft` (Deferred to v0.3.x)
+- Target: `v0.3.x`
+- Notes: Routing intent only; no dispatch packet content, appointment lifecycle, document custody, or settlement workflow state.
+- Draft file: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-operational-handoff-metadata.md`
