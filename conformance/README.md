@@ -30,6 +30,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `equipment_profile.v1.json`: canonical booking-plane equipment taxonomy compatibility profile (includes alias normalization and subclass-driven tag inference constraints).
 - `equipment_type_alias_coverage.v1.json`: canonical booking-plane EquipmentType alias coverage map for class/subclass normalization.
   - Includes `changePolicy` guardrails requiring profile revision + version bump when alias maps change.
+- `shipper_orchestration_profile.v1.json`: canonical minimal shipper -> broker -> carrier orchestration profile and role-capability matrix for optional shipper-origin booking flow.
 - `registry_update.schema.json`: schema for registry operations request payloads.
 - `registry_update.sample.json`: sample registry operations request with upsert/revoke/rollback.
 - `registry_update.sample.audit.log`: sample audit log for registry operations.
@@ -302,6 +303,12 @@ Equipment type alias coverage check:
 
 ```bash
 python3 tests/run_equipment_type_alias_coverage.py
+```
+
+Shipper orchestration profile check:
+
+```bash
+python3 tests/run_shipper_orchestration_profile.py
 ```
 
 Booking-plane commercial terms governance check:

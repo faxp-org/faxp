@@ -1,0 +1,64 @@
+{
+  "profileVersion": "1.0.0",
+  "profileId": "shipper-orchestration-minimal.v1",
+  "protocol": "FAXP",
+  "scope": "booking-plane-orchestration",
+  "description": "Canonical minimal shipper -> broker -> carrier booking orchestration profile. Uses existing booking-plane message types and preserves default broker-origin flow.",
+  "actors": [
+    "Shipper",
+    "Broker",
+    "Carrier"
+  ],
+  "capabilityMatrix": {
+    "Shipper": {
+      "postLoad": true,
+      "postTruck": false,
+      "bookLoad": false,
+      "bookTruck": true
+    },
+    "Broker": {
+      "postLoad": true,
+      "postTruck": true,
+      "bookLoad": true,
+      "bookTruck": true
+    },
+    "Carrier": {
+      "postLoad": false,
+      "postTruck": true,
+      "bookLoad": true,
+      "bookTruck": false
+    }
+  },
+  "messageFlow": {
+    "requiredMessageTypes": [
+      "NewLoad",
+      "LoadSearch",
+      "BidRequest",
+      "BidResponse",
+      "ExecutionReport",
+      "AmendRequest"
+    ],
+    "noNewMessageTypesRequired": true,
+    "defaultFlowRetained": true,
+    "optionalEntryPointFlag": "--shipper-flow"
+  },
+  "normativeConstraints": {
+    "senderAndReceiverCapabilityChecksRequired": true,
+    "shipperFlowMustBeOptional": true,
+    "defaultBrokerOriginFlowMustRemain": true,
+    "verificationPolicyPathUnchanged": true,
+    "operationsAndSettlementOutOfScope": true
+  },
+  "conformanceRequirements": {
+    "requiredTests": [
+      "tests/run_role_capability_policy.py",
+      "tests/run_shipper_orchestration_minimal.py",
+      "tests/run_shipper_orchestration_profile.py"
+    ],
+    "requiredSuiteChecks": [
+      "role_capability_policy",
+      "shipper_orchestration_minimal",
+      "shipper_orchestration_profile"
+    ]
+  }
+}

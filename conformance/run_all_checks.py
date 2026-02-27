@@ -98,6 +98,10 @@ def _suite_commands() -> list[tuple[str, list[str]]]:
             "shipper_orchestration_minimal",
             [python, str(TESTS_DIR / "run_shipper_orchestration_minimal.py")],
         ),
+        (
+            "shipper_orchestration_profile",
+            [python, str(TESTS_DIR / "run_shipper_orchestration_profile.py")],
+        ),
         ("registry_apply", [python, str(TESTS_DIR / "run_apply_registry_update.py")]),
         ("certification_artifacts", [python, str(TESTS_DIR / "run_certification_artifacts.py")]),
         ("policy_profile_sync", [python, str(TESTS_DIR / "run_policy_profile_sync.py")]),
