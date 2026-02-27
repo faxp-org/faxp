@@ -36,12 +36,12 @@ def _expect_validation_error(message_type: str, body: dict, text: str) -> None:
 
 def main() -> int:
     _assert(
-        VALID_RATE_MODELS == {"PerMile", "Flat", "PerPallet", "CWT"},
-        "active executable rate models must include PerMile, Flat, PerPallet, and CWT.",
+        VALID_RATE_MODELS == {"PerMile", "Flat", "PerPallet", "CWT", "PerHour", "LaneMinimum"},
+        "active executable rate models must include PerMile, Flat, PerPallet, CWT, PerHour, and LaneMinimum.",
     )
     _assert(
-        {"Hourly", "LaneMinimum"}.issubset(PLANNED_RATE_MODELS),
-        "planned future rate models should include Hourly and LaneMinimum.",
+        {"Tiered"}.issubset(PLANNED_RATE_MODELS),
+        "planned future rate models should include Tiered.",
     )
     _assert(
         RATE_MODEL_CATALOG.get("PerPallet", {}).get("status") == "active",
@@ -50,6 +50,14 @@ def main() -> int:
     _assert(
         RATE_MODEL_CATALOG.get("CWT", {}).get("status") == "active",
         "CWT should be marked as active.",
+    )
+    _assert(
+        RATE_MODEL_CATALOG.get("PerHour", {}).get("status") == "active",
+        "PerHour should be marked as active.",
+    )
+    _assert(
+        RATE_MODEL_CATALOG.get("LaneMinimum", {}).get("status") == "active",
+        "LaneMinimum should be marked as active.",
     )
 
     # Backward-compatible active model with optional extension fields.
@@ -95,6 +103,23 @@ def main() -> int:
     )
     validate_message_body("BidRequest", {"LoadID": "load-cwt-123", "Rate": cwt_rate})
 
+    per_hour_rate = build_rate(
+        "PerHour",
+        110.0,
+        UnitBasis="hour",
+        Quantity=6,
+        Notes="Local dwell-sensitive lane.",
+    )
+    validate_message_body("BidRequest", {"LoadID": "load-hour-123", "Rate": per_hour_rate})
+
+    lane_min_rate = build_rate(
+        "LaneMinimum",
+        1950.0,
+        UnitBasis="lane",
+        Notes="Lane floor contract.",
+    )
+    validate_message_body("BidRequest", {"LoadID": "load-lane-123", "Rate": lane_min_rate})
+
     invalid_distance = dict(per_mile_rate)
     invalid_distance["DistanceMiles"] = -1
     _expect_validation_error("BidRequest", {"LoadID": "load-123", "Rate": invalid_distance}, "DistanceMiles")
@@ -126,10 +151,9 @@ def main() -> int:
     )
 
     planned_model_rate = build_rate(
-        "Hourly",
+        "Tiered",
         180.0,
-        UnitBasis="hour",
-        Quantity=6,
+        UnitBasis="lane",
     )
     _expect_validation_error(
         "BidRequest",
@@ -143,7 +167,7 @@ def main() -> int:
             "DestinationState": "GA",
             "EquipmentType": "Reefer",
             "PickupDate": "2026-03-01",
-            "RateModel": "Hourly",
+            "RateModel": "Tiered",
             "MaxRate": 2500.0,
         },
         "RateModel",

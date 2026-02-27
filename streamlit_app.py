@@ -548,7 +548,7 @@ with st.sidebar:
         st.text_input("Access Key", type="password", key="access_key_input")
     rate_model = st.selectbox(
         "Rate Model",
-        ["PerMile", "Flat", "PerPallet", "CWT"],
+        ["PerMile", "Flat", "PerPallet", "CWT", "PerHour", "LaneMinimum"],
         key="rate_model_select",
     )
     bid_amount = st.number_input(
@@ -556,7 +556,10 @@ with st.sidebar:
         min_value=0.0,
         step=0.01,
         format="%.2f",
-        help="PerMile uses $/mile. Flat uses total trip amount. PerPallet uses $/pallet. CWT uses $/cwt.",
+        help=(
+            "PerMile uses $/mile. Flat uses total trip amount. PerPallet uses $/pallet. "
+            "CWT uses $/cwt. PerHour uses $/hour. LaneMinimum uses a minimum total lane amount."
+        ),
         key="bid_amount_input",
     )
     response_type = st.selectbox(

@@ -2247,7 +2247,7 @@ def parse_args():
     )
     parser.add_argument(
         "--rate-model",
-        choices=["PerMile", "Flat", "PerPallet", "CWT"],
+        choices=["PerMile", "Flat", "PerPallet", "CWT", "PerHour", "LaneMinimum"],
         default="PerMile",
         help="Base pricing method for this simulation run.",
     )
@@ -2478,6 +2478,10 @@ def now_utc():
 def default_floor_amount(rate_model):
     if rate_model == "Flat":
         return 1850.0
+    if rate_model == "LaneMinimum":
+        return 1850.0
+    if rate_model == "PerHour":
+        return 95.0
     if rate_model == "PerPallet":
         return 74.0
     if rate_model == "CWT":
@@ -2488,6 +2492,10 @@ def default_floor_amount(rate_model):
 def default_bid_amount(rate_model):
     if rate_model == "Flat":
         return 1950.0
+    if rate_model == "LaneMinimum":
+        return 1950.0
+    if rate_model == "PerHour":
+        return 110.0
     if rate_model == "PerPallet":
         return 79.0
     if rate_model == "CWT":
@@ -2498,6 +2506,10 @@ def default_bid_amount(rate_model):
 def default_search_max(rate_model):
     if rate_model == "Flat":
         return 2200.0
+    if rate_model == "LaneMinimum":
+        return 2200.0
+    if rate_model == "PerHour":
+        return 140.0
     if rate_model == "PerPallet":
         return 90.0
     if rate_model == "CWT":
@@ -2508,6 +2520,10 @@ def default_search_max(rate_model):
 def counter_amount(rate_model, floor_amount):
     if rate_model == "Flat":
         return round(floor_amount + 150.0, 2)
+    if rate_model == "LaneMinimum":
+        return round(floor_amount + 150.0, 2)
+    if rate_model == "PerHour":
+        return round(floor_amount + 8.0, 2)
     if rate_model == "PerPallet":
         return round(floor_amount + 4.0, 2)
     if rate_model == "CWT":
@@ -2520,6 +2536,8 @@ def default_rate_quantity(rate_model):
         return 26
     if rate_model == "CWT":
         return 420
+    if rate_model == "PerHour":
+        return 6
     return 1
 
 
@@ -2562,7 +2580,7 @@ def build_rate(rate_model, amount, **metadata):
             rate["AgreedMiles"] = default_agreed_miles()
         if "MilesSource" not in metadata:
             rate["MilesSource"] = "BrokerRouteGuide"
-    if rate_model in {"PerPallet", "CWT"} and "Quantity" not in metadata:
+    if rate_model in {"PerPallet", "CWT", "PerHour"} and "Quantity" not in metadata:
         rate["Quantity"] = default_rate_quantity(rate_model)
     for key, value in metadata.items():
         if value is not None:
@@ -2574,6 +2592,10 @@ def build_rate(rate_model, amount, **metadata):
 def format_rate(rate):
     if rate["RateModel"] == "Flat":
         return f"${rate['Amount']:.2f} flat"
+    if rate["RateModel"] == "LaneMinimum":
+        return f"${rate['Amount']:.2f} lane minimum"
+    if rate["RateModel"] == "PerHour":
+        return f"${rate['Amount']:.2f}/hour"
     if rate["RateModel"] == "PerPallet":
         return f"${rate['Amount']:.2f}/pallet"
     if rate["RateModel"] == "CWT":
@@ -2601,9 +2623,10 @@ RATE_MODEL_CATALOG = {
     "Flat": {"status": "active", "unitBasis": "load"},
     "PerPallet": {"status": "active", "unitBasis": "pallet"},
     "CWT": {"status": "active", "unitBasis": "cwt"},
+    "PerHour": {"status": "active", "unitBasis": "hour"},
+    "LaneMinimum": {"status": "active", "unitBasis": "lane"},
     # Planned models for post-v0.3 profile expansion.
-    "Hourly": {"status": "planned", "unitBasis": "hour"},
-    "LaneMinimum": {"status": "planned", "unitBasis": "lane"},
+    "Tiered": {"status": "planned", "unitBasis": "lane"},
 }
 VALID_RATE_MODELS = {
     name for name, details in RATE_MODEL_CATALOG.items() if details.get("status") == "active"
@@ -2623,7 +2646,6 @@ RATE_MODEL_REQUIREMENTS = {
         "allowedUnitBasis": ["load"],
         "status": "active",
     },
-    # Planned models are declared for roadmap visibility, not executable yet.
     "PerPallet": {
         "requiredFields": ["UnitBasis", "Quantity"],
         "allowedUnitBasis": ["pallet"],
@@ -2634,12 +2656,17 @@ RATE_MODEL_REQUIREMENTS = {
         "allowedUnitBasis": ["cwt"],
         "status": "active",
     },
-    "Hourly": {
+    "PerHour": {
         "requiredFields": ["UnitBasis", "Quantity"],
         "allowedUnitBasis": ["hour"],
-        "status": "planned",
+        "status": "active",
     },
     "LaneMinimum": {
+        "requiredFields": ["UnitBasis"],
+        "allowedUnitBasis": ["lane"],
+        "status": "active",
+    },
+    "Tiered": {
         "requiredFields": ["UnitBasis"],
         "allowedUnitBasis": ["lane"],
         "status": "planned",
@@ -3058,7 +3085,7 @@ def _validate_rate_model_requirements(rate, context):
             distance = float(rate["DistanceMiles"])
             if abs(distance - float(agreed_miles)) > 0.01:
                 raise ValueError(f"{context}.DistanceMiles must equal AgreedMiles for RateModel '{model}'.")
-    elif model in {"PerPallet", "CWT"}:
+    elif model in {"PerPallet", "CWT", "PerHour"}:
         quantity = rate.get("Quantity")
         if not isinstance(quantity, (int, float)) or quantity <= 0:
             raise ValueError(f"{context}.Quantity must be a positive number for RateModel '{model}'.")
@@ -3073,7 +3100,7 @@ def _validate_rate_search_requirements(search_body, context):
     if model == "PerMile":
         rate_stub.setdefault("AgreedMiles", default_agreed_miles())
         rate_stub.setdefault("MilesSource", "SearchRouteBasis")
-    if model in {"PerPallet", "CWT", "Hourly"}:
+    if model in {"PerPallet", "CWT", "PerHour"}:
         rate_stub.setdefault("Quantity", 1)
     _validate_rate_model_requirements(
         rate_stub,
@@ -5329,7 +5356,7 @@ class BrokerAgent:
             for field in ["AgreedMiles", "MilesSource", "MilesSourceVersion", "MilesCalculatedAt"]:
                 if field in truck["RateMin"]:
                     metadata[field] = truck["RateMin"][field]
-        if rate_model in {"PerPallet", "CWT"} and "Quantity" in truck["RateMin"]:
+        if rate_model in {"PerPallet", "CWT", "PerHour"} and "Quantity" in truck["RateMin"]:
             metadata["Quantity"] = truck["RateMin"]["Quantity"]
         truck_equipment_terms = _extract_equipment_terms(truck)
         return {
@@ -5446,7 +5473,7 @@ class CarrierAgent:
             for field in ["AgreedMiles", "MilesSource", "MilesSourceVersion", "MilesCalculatedAt"]:
                 if field in load["Rate"]:
                     metadata[field] = load["Rate"][field]
-        if rate_model in {"PerPallet", "CWT"} and "Quantity" in load["Rate"]:
+        if rate_model in {"PerPallet", "CWT", "PerHour"} and "Quantity" in load["Rate"]:
             metadata["Quantity"] = load["Rate"]["Quantity"]
         schedule_acceptance = {"Accepted": True, "Exceptions": []}
         for field in ["PickupTimeWindow", "DeliveryTimeWindow"]:
