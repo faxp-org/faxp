@@ -37,9 +37,9 @@ Scope policy: Booking-plane and certification governance only.
 3. `RFC-v0.3-schema-version-negotiation`
 - Goal: Formalize version negotiation and compatibility behavior for mixed v0.2/v0.3 agents.
 - Scope class: `In-Scope`
-- Status: `Draft` (Must-Have for v0.3.0)
+- Status: `Accepted (Implemented)`
 - Target: `v0.3.0`
-- Notes: No transport lock-in; conformance tests required.
+- Notes: Implemented with protocol compatibility profile, cross-version fixtures, and fail-closed negotiation checks.
 - Draft file: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-schema-version-negotiation.md`
 
 4. `RFC-v0.3-adapter-certification-profile-v2`
