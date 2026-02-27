@@ -99,3 +99,11 @@ Scope policy: Booking-plane and certification governance only.
 5. Operations-plane agent messaging profile (`FAXP-OPS`) until separate scope-expansion RFC is approved.
 
 These remain scope expansions and require separate governance track beyond current protocol boundary.
+
+10. `RFC-v0.3-rate-oracle-extension`
+- Goal: Define optional provider-agnostic benchmark/reference rate evidence extension for booking-plane negotiations.
+- Scope class: `In-Scope`
+- Status: `Draft` (Deferred to v0.3.x)
+- Target: `v0.3.x`
+- Notes: Optional metadata only; no FAXP-hosted oracle services and no mandatory vendor coupling.
+- Draft file: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-rate-oracle-extension.md`
