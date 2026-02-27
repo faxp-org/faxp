@@ -184,15 +184,11 @@ ALLOWED_EXTERNAL_SECRET_KEYS = {
     "FAXP_FMCSA_ADAPTER_REQUEST_SIGNING_KEYS",
     "FAXP_FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID",
 }
-ROUTE_POLICY = {
-    "NewLoad": {("Broker", "Carrier")},
-    "LoadSearch": {("Carrier", "Broker")},
-    "NewTruck": {("Carrier", "Broker")},
-    "TruckSearch": {("Broker", "Carrier")},
-    "BidRequest": {("Carrier", "Broker"), ("Broker", "Carrier")},
-    "BidResponse": {("Broker", "Carrier"), ("Carrier", "Broker")},
-    "ExecutionReport": {("Broker", "Carrier")},
-    "AmendRequest": {("Broker", "Carrier")},
+ROLE_CAPABILITIES = {
+    # User-facing posting/booking capability policy.
+    "Shipper": {"post_load": True, "post_truck": False, "book_load": False, "book_truck": True},
+    "Broker": {"post_load": True, "post_truck": True, "book_load": True, "book_truck": True},
+    "Carrier": {"post_load": False, "post_truck": True, "book_load": True, "book_truck": False},
 }
 
 
@@ -1209,11 +1205,71 @@ def _message_domain(message_type, body):
 def _validate_route_policy(envelope):
     sender_role = _infer_role(envelope.get("From"))
     receiver_role = _infer_role(envelope.get("To"))
-    allowed = ROUTE_POLICY.get(envelope.get("MessageType"), set())
-    if (sender_role, receiver_role) not in allowed:
-        raise ValueError(
-            f"Unauthorized route for {envelope.get('MessageType')}: {sender_role} -> {receiver_role}"
-        )
+    if sender_role not in ROLE_CAPABILITIES:
+        raise ValueError(f"Unknown sender role inferred from envelope From: {sender_role}")
+    if receiver_role not in ROLE_CAPABILITIES:
+        raise ValueError(f"Unknown receiver role inferred from envelope To: {receiver_role}")
+    _validate_role_capability_policy(envelope, sender_role)
+    _validate_receiver_capability_policy(envelope, receiver_role)
+
+
+def _validate_role_capability_policy(envelope, sender_role):
+    capabilities = ROLE_CAPABILITIES.get(sender_role) or {}
+    message_type = envelope.get("MessageType")
+    body = envelope.get("Body") or {}
+
+    if message_type == "NewLoad" and not capabilities.get("post_load", False):
+        raise ValueError(f"Sender role '{sender_role}' is not allowed to post loads.")
+    if message_type == "NewTruck" and not capabilities.get("post_truck", False):
+        raise ValueError(f"Sender role '{sender_role}' is not allowed to post trucks.")
+
+    if message_type == "LoadSearch" and not capabilities.get("book_load", False):
+        raise ValueError(f"Sender role '{sender_role}' is not allowed to search/book loads.")
+    if message_type == "TruckSearch" and not capabilities.get("book_truck", False):
+        raise ValueError(f"Sender role '{sender_role}' is not allowed to search/book trucks.")
+
+    if message_type == "BidRequest":
+        if isinstance(body, dict) and "LoadID" in body and not capabilities.get("book_load", False):
+            raise ValueError(f"Sender role '{sender_role}' is not allowed to book loads.")
+        if isinstance(body, dict) and "TruckID" in body and not capabilities.get("book_truck", False):
+            raise ValueError(f"Sender role '{sender_role}' is not allowed to book trucks.")
+
+
+def _validate_receiver_capability_policy(envelope, receiver_role):
+    receiver_capabilities = ROLE_CAPABILITIES.get(receiver_role) or {}
+    message_type = envelope.get("MessageType")
+    body = envelope.get("Body") or {}
+
+    if message_type == "NewLoad" and not receiver_capabilities.get("book_load", False):
+        raise ValueError(f"Receiver role '{receiver_role}' is not allowed to receive posted loads.")
+    if message_type == "NewTruck" and not receiver_capabilities.get("book_truck", False):
+        raise ValueError(f"Receiver role '{receiver_role}' is not allowed to receive posted trucks.")
+
+    if message_type == "LoadSearch" and not receiver_capabilities.get("post_load", False):
+        raise ValueError(f"Receiver role '{receiver_role}' is not allowed to respond to load searches.")
+    if message_type == "TruckSearch" and not receiver_capabilities.get("post_truck", False):
+        raise ValueError(f"Receiver role '{receiver_role}' is not allowed to respond to truck searches.")
+
+    if message_type == "BidRequest":
+        if isinstance(body, dict) and "LoadID" in body and not receiver_capabilities.get("post_load", False):
+            raise ValueError(f"Receiver role '{receiver_role}' is not allowed to receive load bids.")
+        if isinstance(body, dict) and "TruckID" in body and not receiver_capabilities.get("post_truck", False):
+            raise ValueError(f"Receiver role '{receiver_role}' is not allowed to receive truck bids.")
+
+    if message_type == "BidResponse":
+        if isinstance(body, dict) and "LoadID" in body and not receiver_capabilities.get("book_load", False):
+            raise ValueError(f"Receiver role '{receiver_role}' is not allowed to receive load bid responses.")
+        if isinstance(body, dict) and "TruckID" in body and not receiver_capabilities.get("book_truck", False):
+            raise ValueError(f"Receiver role '{receiver_role}' is not allowed to receive truck bid responses.")
+
+    if message_type == "ExecutionReport":
+        if isinstance(body, dict) and "LoadID" in body and not receiver_capabilities.get("book_load", False):
+            raise ValueError(f"Receiver role '{receiver_role}' is not allowed to receive load execution reports.")
+        if isinstance(body, dict) and "TruckID" in body and not receiver_capabilities.get("book_truck", False):
+            raise ValueError(f"Receiver role '{receiver_role}' is not allowed to receive truck execution reports.")
+
+    if message_type == "AmendRequest" and not receiver_capabilities.get("book_load", False):
+        raise ValueError(f"Receiver role '{receiver_role}' is not allowed to receive load amendments.")
 
 
 def _trim_flow_state():
@@ -2230,6 +2286,14 @@ def parse_args():
         "--no-match",
         action="store_true",
         help="Force a no-load-match search branch.",
+    )
+    parser.add_argument(
+        "--shipper-flow",
+        action="store_true",
+        help=(
+            "Run optional shipper -> broker -> carrier load orchestration path "
+            "(existing broker-originated load flow remains default)."
+        ),
     )
     parser.add_argument(
         "--mc-number",
@@ -5035,6 +5099,19 @@ class BrokerAgent:
         self.loads[load_id] = new_load
         return new_load
 
+    def ingest_shipper_tender(self, tender):
+        if not isinstance(tender, dict):
+            raise ValueError("Shipper tender must be an object.")
+        normalized = json.loads(json.dumps(tender))
+        validate_message_body("NewLoad", normalized)
+        load_id = normalized.get("LoadID")
+        if load_id in self.loads:
+            raise ValueError(f"LoadID already exists in broker load book: {load_id}")
+        normalized.setdefault("TenderSource", "Shipper")
+        normalized.setdefault("InitiatorRole", "Shipper")
+        self.loads[load_id] = normalized
+        return normalized
+
     def search_loads(self, filters):
         matches = []
         for load in self.loads.values():
@@ -5480,6 +5557,33 @@ class CarrierAgent:
             "RequiredStopTypes": ["Pickup", "Drop"],
             "RequireTracking": True,
         }
+
+    def create_load_search_for_load(self, load, force_no_match=False):
+        rate_model = str((load.get("Rate") or {}).get("RateModel") or "PerMile")
+        equipment_terms = _extract_equipment_terms(load)
+        stop_summary = _derive_stop_plan_summary(load)
+        destination_state = "FL" if force_no_match else load["Destination"]["state"]
+        search = {
+            "OriginState": load["Origin"]["state"],
+            "DestinationState": destination_state,
+            "EquipmentType": load["EquipmentType"],
+            "EquipmentClass": equipment_terms["EquipmentClass"],
+            "EquipmentSubClass": equipment_terms["EquipmentSubClass"],
+            "RequiredEquipmentTags": list(equipment_terms["EquipmentTags"]),
+            "RequiredDriverConfiguration": load.get("DriverConfiguration", "Single"),
+            "TrailerLengthMin": int(load.get("TrailerLength", 53)),
+            "TrailerLengthMax": int(load.get("TrailerLength", 53)),
+            "PickupDate": load.get("PickupEarliest"),
+            "RateModel": rate_model,
+            "UnitBasis": default_unit_basis(rate_model),
+            "MaxRate": default_search_max(rate_model),
+            "RequireMultiStop": bool(stop_summary["isMultiStop"]),
+            "StopCountMin": int(stop_summary["stopCount"]),
+            "StopCountMax": int(stop_summary["stopCount"]),
+            "RequiredStopTypes": list(stop_summary["stopTypes"]),
+            "RequireTracking": bool(load.get("RequireTracking", True)),
+        }
+        return search
 
     def create_bid_request(self, load, bid_amount=None):
         rate_model = load["Rate"]["RateModel"]
@@ -5977,6 +6081,133 @@ def run_load_flow(args, broker, carrier):
         )
 
 
+def run_shipper_load_flow(args, shipper, broker, carrier):
+    """Optional shipper-origin load orchestration using existing booking message types."""
+    print("\n=== Shipper-Orchestrated Load Flow ===")
+
+    # 1) Shipper posts a tender as NewLoad to broker.
+    shipper_tender = shipper.post_tender()
+    log_message(shipper.name, broker.name, "NewLoad", shipper_tender)
+
+    # 2) Broker normalizes and ingests tender into its load book.
+    try:
+        broker_load = broker.ingest_shipper_tender(shipper_tender)
+    except ValueError as exc:
+        print(f"\n[System] Shipper tender normalization failed: {exc}")
+        return
+
+    # 3) Carrier searches and discovers shipper-origin load via broker.
+    load_search = carrier.create_load_search_for_load(
+        broker_load,
+        force_no_match=args.no_match,
+    )
+    log_message(carrier.name, broker.name, "LoadSearch", load_search)
+    matched_loads = broker.search_loads(load_search)
+    print("\n[System] Shipper flow load search results:")
+    print(json.dumps(matched_loads, indent=2))
+
+    if not matched_loads:
+        print("\n[System] No matching shipper-origin loads found. Ending shipper flow.")
+        return
+
+    selected_load = next(
+        (load for load in matched_loads if load.get("LoadID") == broker_load.get("LoadID")),
+        matched_loads[0],
+    )
+
+    # 4) Carrier bids on shipper-origin load, broker responds.
+    bid_request = carrier.create_bid_request(
+        selected_load,
+        bid_amount=args.bid_amount,
+    )
+    log_message(carrier.name, broker.name, "BidRequest", bid_request)
+
+    bid_response = broker.respond_to_bid(bid_request, forced_response=args.response)
+    log_message(broker.name, carrier.name, "BidResponse", bid_response)
+
+    if bid_response["ResponseType"] == "Counter":
+        print(
+            "\n[System] Counter received in shipper flow. Negotiation pending; booking not complete in this run."
+        )
+        return
+
+    if bid_response["ResponseType"] == "Reject":
+        print("\n[System] Bid rejected in shipper flow. Booking not complete in this run.")
+        return
+
+    capabilities_ok, capability_reason = negotiate_verification_capability(
+        args.provider, broker, carrier
+    )
+    if not capabilities_ok:
+        print(f"\n[System] {capability_reason}")
+        print("[System] Verification not attempted in shipper flow due to capability mismatch.")
+        return
+
+    # 5) Verification and policy decision.
+    print(f"\n[System] Shipper flow verification requested via provider: {args.provider}")
+    verification_result, verified_badge = run_verification(
+        provider=args.provider,
+        status=args.verification_status,
+        mc_number=args.mc_number,
+        fmcsa_source=args.fmcsa_source,
+    )
+    print("[System] Shipper flow verification result:")
+    print(json.dumps(redact_sensitive(verification_result), indent=2))
+    print(f"[System] Shipper flow VerifiedBadge assigned: {verified_badge}")
+
+    policy_decision = evaluate_verification_policy_decision(
+        verification_result,
+        profile_id=args.policy_profile_id,
+        risk_tier=args.risk_tier,
+        exception_approved=args.exception_approved,
+        exception_approval_ref=args.exception_approval_ref,
+    )
+    print("[System] Shipper flow policy decision:")
+    print(
+        json.dumps(
+            {
+                "profile": policy_decision["VerificationPolicyProfileID"],
+                "riskTier": policy_decision["RiskTier"],
+                "dispatchAuthorization": policy_decision["DispatchAuthorization"],
+                "decisionReasonCode": policy_decision["DecisionReasonCode"],
+                "policyRuleID": policy_decision["PolicyRuleID"],
+                "shouldBook": policy_decision["ShouldBook"],
+                "exceptionApprovalRef": policy_decision.get("ExceptionApprovalRef", ""),
+            },
+            indent=2,
+        )
+    )
+
+    if not policy_decision["ShouldBook"]:
+        print("\n[System] Policy blocked booking in shipper flow.")
+        return
+
+    # 6) Broker confirms booking with ExecutionReport to carrier.
+    execution_report = broker.create_execution_report(
+        load_id=bid_request["LoadID"],
+        bid_request=bid_request,
+        verified_badge=verified_badge,
+        verification_result=verification_result,
+        policy_decision=policy_decision,
+    )
+    log_message(broker.name, carrier.name, "ExecutionReport", execution_report)
+
+    # 7) Mark complete for booking principals in this flow (broker and carrier).
+    carrier.mark_booking_complete(execution_report)
+    broker_complete = bid_request["LoadID"] in broker.completed_bookings
+    carrier_complete = bid_request["LoadID"] in carrier.completed_bookings
+    print(
+        f"\n[System] Shipper flow booking completion state -> Broker: {broker_complete}, Carrier: {carrier_complete}"
+    )
+    print(
+        "Shipper-origin booking completed successfully - "
+        f"RunID: {get_protocol_run_id()}, "
+        f"LoadID: {bid_request['LoadID']}, "
+        f"Verified: {verified_badge}, "
+        f"Rate: {format_rate(bid_request['Rate'])}"
+    )
+
+
 def run_truck_flow(args, broker, carrier):
     """
     Alternative happy path:
@@ -6160,6 +6391,11 @@ def main():
 
     # Existing load-centric flow.
     run_load_flow(args, broker, carrier)
+
+    # Optional shipper-origin orchestration flow.
+    if args.shipper_flow:
+        shipper = ShipperAgent("Shipper Agent")
+        run_shipper_load_flow(args, shipper, broker, carrier)
 
     # Additional reverse flow: carrier truck posting -> broker truck search.
     run_truck_flow(args, broker, carrier)
