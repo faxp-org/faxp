@@ -84,12 +84,20 @@ def main() -> int:
         "conformance suite must include a2a_roundtrip in default checks",
     )
     _assert(
+        "a2a_watch_artifacts" in listed_checks.stdout.splitlines(),
+        "conformance suite must include a2a_watch_artifacts in default checks",
+    )
+    _assert(
         "mcp_profile" in listed_checks.stdout.splitlines(),
         "conformance suite must include mcp_profile in default checks",
     )
     _assert(
         "mcp_watch_artifacts" in listed_checks.stdout.splitlines(),
         "conformance suite must include mcp_watch_artifacts in default checks",
+    )
+    _assert(
+        "interop_maturity_profile" in listed_checks.stdout.splitlines(),
+        "conformance suite must include interop_maturity_profile in default checks",
     )
     _assert(
         "rate_model_profile" in listed_checks.stdout.splitlines(),

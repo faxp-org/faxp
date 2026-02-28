@@ -1,0 +1,108 @@
+{
+  "profileVersion": "1.0.0",
+  "profileId": "FAXP_INTEROP_MATURITY_PROFILE_V1",
+  "protocol": "FAXP",
+  "scope": "booking-plane-interop-governance",
+  "description": "Canonical maturity criteria for optional A2A translator and MCP tool-layer interoperability claims. Defines evidence thresholds without introducing mandatory A2A/MCP dependencies in FAXP core.",
+  "tracks": {
+    "A2A": {
+      "mode": "TranslatorOnly",
+      "coreProtocolChangesRequired": false,
+      "hostingModel": "BuilderHosted",
+      "requiredArtifacts": [
+        "docs/interop/A2A_COMPATIBILITY_PROFILE.md",
+        "conformance/a2a_translator_contract.json",
+        "conformance/a2a_roundtrip_fixtures.json",
+        "docs/interop/A2A_UPSTREAM_TRACKING.json",
+        ".github/workflows/a2a-watch.yml"
+      ],
+      "requiredTests": [
+        "tests/run_a2a_profile_check.py",
+        "tests/run_a2a_roundtrip_translation.py",
+        "tests/run_a2a_watch_artifacts.py"
+      ],
+      "requiredSuiteChecks": [
+        "a2a_profile",
+        "a2a_roundtrip",
+        "a2a_watch_artifacts"
+      ]
+    },
+    "MCP": {
+      "mode": "LooseCoupledInterop",
+      "coreProtocolChangesRequired": false,
+      "hostingModel": "BuilderHosted",
+      "requiredArtifacts": [
+        "docs/interop/MCP_COMPATIBILITY_PROFILE.md",
+        "conformance/mcp_tooling_contract.json",
+        "docs/interop/MCP_UPSTREAM_TRACKING.json",
+        ".github/workflows/mcp-watch.yml"
+      ],
+      "requiredTests": [
+        "tests/run_mcp_profile_check.py",
+        "tests/run_mcp_watch_artifacts.py"
+      ],
+      "requiredSuiteChecks": [
+        "mcp_profile",
+        "mcp_watch_artifacts"
+      ]
+    }
+  },
+  "maturityLevels": {
+    "L1-Declared": {
+      "description": "Profile and contract artifacts are present and internally coherent.",
+      "requiredEvidence": [
+        "profile",
+        "contract"
+      ]
+    },
+    "L2-Tested": {
+      "description": "Named local conformance tests pass for the claimed interop track.",
+      "requiredEvidence": [
+        "profile",
+        "contract",
+        "conformance-tests"
+      ]
+    },
+    "L3-Watched": {
+      "description": "Upstream drift tracking artifacts and governance watch workflows are active.",
+      "requiredEvidence": [
+        "profile",
+        "contract",
+        "conformance-tests",
+        "upstream-tracking",
+        "watch-workflow"
+      ]
+    },
+    "L4-Certifiable": {
+      "description": "Claim can be evaluated inside FAXP certification/governance workflows with explicit evidence mapping.",
+      "requiredEvidence": [
+        "profile",
+        "contract",
+        "conformance-tests",
+        "upstream-tracking",
+        "watch-workflow",
+        "certification-playbook"
+      ]
+    }
+  },
+  "governanceRules": {
+    "optionalInteropOnly": true,
+    "noMandatoryA2AMcpDependencyInCore": true,
+    "maturityClaimsMustBeEvidenceBacked": true,
+    "watchFailuresRequireGovernanceFollowup": true
+  },
+  "certificationMapping": {
+    "representedInRegistryEntries": false,
+    "inferredFromEvidenceBundle": true,
+    "minimumReviewCadenceDaysForL3Watched": 30,
+    "l4RequiresInteropIncidentDrillEvidence": false
+  },
+  "conformanceRequirements": {
+    "requiredTests": [
+      "tests/run_interop_maturity_profile.py"
+    ],
+    "requiredSuiteChecks": [
+      "interop_maturity_profile"
+    ]
+  }
+}

@@ -199,3 +199,34 @@ Required local checks before submission:
 2. `python3 tests/run_policy_decisions.py`
 3. `python3 tests/run_policy_profile_sync.py`
 4. `python3 conformance/run_all_checks.py --output /tmp/faxp_conformance_suite_report.json`
+
+## 9) Optional Interop Maturity Claims
+
+Implementers that claim A2A and/or MCP interoperability maturity must back that claim with objective evidence.
+
+Reference artifact:
+- `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/interop_maturity_profile.v1.json`
+
+Rules:
+1. Interop maturity claims are optional and must not imply mandatory FAXP core dependencies on A2A or MCP.
+2. Maturity is inferred from evidence, not asserted as a free-form badge.
+3. A2A claims require:
+- compatibility profile,
+- translator contract,
+- round-trip fixtures,
+- upstream tracking artifact,
+- active watch workflow,
+- passing local conformance checks.
+4. MCP claims require:
+- compatibility profile,
+- tooling contract,
+- upstream tracking artifact,
+- active watch workflow,
+- passing local conformance checks.
+5. `L4-Certifiable` for v0.3 means the evidence package is sufficient for certification review; it does not require interop-specific production incident drills.
+
+Required local checks before claiming interop maturity:
+1. `./scripts/run_a2a_conformance.sh`
+2. `./scripts/run_mcp_conformance.sh`
+3. `python3 tests/run_interop_maturity_profile.py`
+4. `python3 conformance/run_all_checks.py --output /tmp/faxp_conformance_suite_report.json`
