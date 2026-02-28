@@ -80,6 +80,10 @@ def main() -> int:
         "conformance suite must include a2a_profile in default checks",
     )
     _assert(
+        "adapter_certification_profile_v2" in listed_checks.stdout.splitlines(),
+        "conformance suite must include adapter_certification_profile_v2 in default checks",
+    )
+    _assert(
         "a2a_roundtrip" in listed_checks.stdout.splitlines(),
         "conformance suite must include a2a_roundtrip in default checks",
     )

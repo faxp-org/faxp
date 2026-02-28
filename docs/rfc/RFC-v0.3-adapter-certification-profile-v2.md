@@ -4,10 +4,10 @@
 - RFC ID: `rfc-v0.3-adapter-certification-profile-v2`
 - Title: `Advance builder-hosted adapter certification profile and registry policy`
 - Author(s): `FAXP Governance Working Group`
-- Status: `Draft`
+- Status: `Accepted (Implemented)`
 - Target Version: `v0.3.0`
 - Created: `2026-02-23`
-- Last Updated: `2026-02-23`
+- Last Updated: `2026-02-28`
 
 ## Summary
 Define version 2 of FAXP adapter certification profile requirements to strengthen consistency, auditability, and trust signals for builder-hosted adapters while preserving provider neutrality and no mandatory core coupling.
@@ -94,10 +94,24 @@ Current certification artifacts establish baseline conformance and governance co
 2. Replace v1 immediately: rejected due to migration risk.
 3. Builder-specific profiles without core schema: rejected due to interoperability fragmentation.
 
-## Open Questions
-1. What evidence freshness window should be normative per tier?
-2. Should `TrustedProduction` require external audit attestation or only policy evidence?
-3. How long should v1/v2 dual-validation overlap remain active?
+## Resolved Decisions
+1. The normative evidence freshness window is 30 days for all tiers in v0.3.
+2. `TrustedProduction` requires policy/operational evidence, not mandatory external audit attestation, in v0.3.
+3. v1/v2 dual-validation overlap remains active until future governance approval retires v1.
+
+## Implementation Evidence
+1. v2 profile artifact:
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/adapter_certification_profile.v2.json`
+2. v2 validation test:
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_adapter_certification_profile_v2.py`
+3. Certification/governance updates:
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/governance/CERTIFICATION_PLAYBOOK.md`
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/governance/GOVERNANCE_INDEX.json`
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/governance/RELEASE_READINESS_CHECKLIST.md`
+4. Conformance/CI wiring:
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/run_all_checks.py`
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_conformance_suite.py`
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/.github/workflows/ci.yml`
 
 ## Approval
 - Maintainer Approval:

@@ -40,6 +40,7 @@ Use this checklist as the final go/no-go gate before a tagged release.
     "docs/governance/VENDOR_DIRECT_CERTIFICATION_RUNBOOK.md",
     "docs/governance/CERTIFICATION_PLAYBOOK.md",
     "docs/governance/GOVERNANCE_INDEX.json",
+    "conformance/adapter_certification_profile.v2.json",
     "conformance/interop_maturity_profile.v1.json",
     "conformance/rate_model_profile.v1.json",
     "conformance/rate_model_profile_keys.sample.json",
@@ -69,6 +70,7 @@ Use this checklist as the final go/no-go gate before a tagged release.
   ],
   "requiredTests": [
     "tests/run_scope_guardrails.py",
+    "tests/run_adapter_certification_profile_v2.py",
     "tests/run_verification_policy_profile.py",
     "tests/run_policy_decisions.py",
     "tests/run_policy_profile_sync.py",
@@ -147,6 +149,7 @@ Use this checklist as the final go/no-go gate before a tagged release.
     "shipper_orchestration_minimal",
     "shipper_orchestration_profile",
     "booking_plane_commercial_terms_doc",
+    "adapter_certification_profile_v2",
     "a2a_profile",
     "a2a_roundtrip",
     "a2a_watch_artifacts",

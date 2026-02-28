@@ -30,6 +30,10 @@ def _suite_commands() -> list[tuple[str, list[str]]]:
     python = sys.executable
     return [
         ("adapter_test_profile", [python, str(TESTS_DIR / "run_adapter_test_profile.py")]),
+        (
+            "adapter_certification_profile_v2",
+            [python, str(TESTS_DIR / "run_adapter_certification_profile_v2.py")],
+        ),
         ("submission_create", [python, str(TESTS_DIR / "run_create_submission_manifest.py")]),
         ("submission_manifest", [python, str(TESTS_DIR / "run_submission_manifest.py")]),
         ("key_lifecycle_policy", [python, str(TESTS_DIR / "run_key_lifecycle_policy.py")]),
