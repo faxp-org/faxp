@@ -23,7 +23,7 @@ Current certification artifacts establish baseline conformance and governance co
 - Message Types Added/Changed:
   - None.
 - Schema Fields Added/Changed:
-  - Certification/profile schemas in `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/` (planning target).
+  - Certification/profile schemas in `conformance/` (planning target).
   - Registry metadata fields for profile versioning and evidence classing (planning target).
 
 ### Required Checks
@@ -101,17 +101,17 @@ Current certification artifacts establish baseline conformance and governance co
 
 ## Implementation Evidence
 1. v2 profile artifact:
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/adapter_certification_profile.v2.json`
+   - `conformance/adapter_certification_profile.v2.json`
 2. v2 validation test:
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_adapter_certification_profile_v2.py`
+   - `tests/run_adapter_certification_profile_v2.py`
 3. Certification/governance updates:
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/governance/CERTIFICATION_PLAYBOOK.md`
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/governance/GOVERNANCE_INDEX.json`
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/governance/RELEASE_READINESS_CHECKLIST.md`
+   - `docs/governance/CERTIFICATION_PLAYBOOK.md`
+   - `docs/governance/GOVERNANCE_INDEX.json`
+   - `docs/governance/RELEASE_READINESS_CHECKLIST.md`
 4. Conformance/CI wiring:
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/run_all_checks.py`
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_conformance_suite.py`
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/.github/workflows/ci.yml`
+   - `conformance/run_all_checks.py`
+   - `tests/run_conformance_suite.py`
+   - `.github/workflows/ci.yml`
 
 ## Approval
 - Maintainer Approval:

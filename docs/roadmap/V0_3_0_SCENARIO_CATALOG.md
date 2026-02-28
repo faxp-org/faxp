@@ -14,7 +14,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S1: PerMile with Agreed Miles
 
 - Description: Broker posts `PerMile` load with proposed miles; carrier accepts or counters miles.
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-rate-model-extensibility.md`
+- RFC: `docs/rfc/RFC-v0.3-rate-model-extensibility.md`
 - Target: `v0.3.0`
 - Expected outcome:
   - Final contract contains agreed miles and agreed rate.
@@ -23,7 +23,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S2: PerPallet Negotiation
 
 - Description: Broker posts palletized freight with `PerPallet` pricing.
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-rate-model-extensibility.md`
+- RFC: `docs/rfc/RFC-v0.3-rate-model-extensibility.md`
 - Target: `v0.3.0`
 - Expected outcome:
   - Pallet terms validated.
@@ -32,7 +32,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S3: CWT Negotiation
 
 - Description: Load priced per hundredweight (`CWT`).
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-rate-model-extensibility.md`
+- RFC: `docs/rfc/RFC-v0.3-rate-model-extensibility.md`
 - Target: `v0.3.0`
 - Expected outcome:
   - Weight basis and units validated.
@@ -41,7 +41,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S4: LineHaul + Fuel Surcharge Split
 
 - Description: Rate is negotiated as two components: linehaul plus FSC.
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-rate-model-extensibility.md`
+- RFC: `docs/rfc/RFC-v0.3-rate-model-extensibility.md`
 - Target: `v0.3.0`
 - Expected outcome:
   - Component values preserved.
@@ -50,7 +50,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S5: Multi-Pick / Multi-Drop
 
 - Description: Load includes multiple pickups and drops.
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- RFC: `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
 - Target: `v0.3.1`
 - Expected outcome:
   - Ordered stop list and constraints.
@@ -60,7 +60,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S6: Reefer Temperature Requirement
 
 - Description: Reefer load requires specific temperature range and monitoring instructions.
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- RFC: `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
 - Target: `v0.3.1`
 - Expected outcome:
   - Requirement can be represented in `SpecialInstructions`.
@@ -69,7 +69,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S7: Flatbed Tarping Requirement
 
 - Description: Flatbed load requires tarping and securement notes.
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- RFC: `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
 - Target: `v0.3.1`
 - Expected outcome:
   - Requirement can be represented in `SpecialInstructions`.
@@ -78,7 +78,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S8: Verification Degraded Path with Provisional Hold
 
 - Description: Verification provider outage triggers `SoftHold` or `GraceCache` path.
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-provisional-booking-policy-contract.md`
+- RFC: `docs/rfc/RFC-v0.3-provisional-booking-policy-contract.md`
 - Target: `v0.3.0`
 - Expected outcome:
   - Deterministic policy decision.
@@ -87,7 +87,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S9: Required Delivery Date Commitment
 
 - Description: Shipper/broker requires delivery by specific date/time window.
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- RFC: `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
 - Target: `v0.3.1`
 - Expected outcome:
   - Delivery commitment fields are structured and validated.
@@ -97,7 +97,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S10: Trailer Size Match (`53'` vs `48'` Reefer)
 
 - Description: Load requires specific reefer trailer size.
-- RFC: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-equipment-taxonomy-expansion.md`
+- RFC: `docs/rfc/RFC-v0.3-equipment-taxonomy-expansion.md`
 - Target: `v0.3.x`
 - Expected outcome:
   - Equipment matching distinguishes size-sensitive requirements.
@@ -106,7 +106,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S11: Specialty Trailer Match (Hopper / StepDeck)
 
 - Description: Load requires non-standard trailer class.
-- RFC: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-equipment-taxonomy-expansion.md`
+- RFC: `docs/rfc/RFC-v0.3-equipment-taxonomy-expansion.md`
 - Target: `v0.3.x`
 - Expected outcome:
   - Specialty equipment taxonomy is structured and validated.
@@ -115,7 +115,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S12: Expedited Team Driver Requirement
 
 - Description: Expedited shipment requires team drivers.
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- RFC: `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
 - Target: `v0.3.1`
 - Expected outcome:
   - Driver configuration requirement is explicit in load terms.
@@ -125,7 +125,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S13: External Load Reference Correlation
 
 - Description: Broker and shipper need neutral cross-system reference numbers distinct from protocol `LoadID`.
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- RFC: `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
 - Target: `v0.3.1`
 - Expected outcome:
   - `NewLoad` can include `LoadReferenceNumbers` with neutral primary/secondary reference numbers.
@@ -135,7 +135,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S14: PerHour Negotiation for Dwell/Local Service
 
 - Description: Broker and carrier negotiate a `PerHour` booking-plane rate with explicit hours basis for a local or delay-sensitive load.
-- RFC: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-rate-model-hourly-lane-minimum.md`
+- RFC: `docs/rfc/RFC-v0.3-rate-model-hourly-lane-minimum.md`
 - Target: `v0.3.x`
 - Expected outcome:
   - `RateModel=PerHour` validates model-specific fields and unit basis deterministically.
@@ -145,7 +145,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S15: LaneMinimum Commercial Floor Contract
 
 - Description: Carrier and broker negotiate a lane floor where `LaneMinimum` applies when computed components fall below a minimum total.
-- RFC: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-rate-model-hourly-lane-minimum.md`
+- RFC: `docs/rfc/RFC-v0.3-rate-model-hourly-lane-minimum.md`
 - Target: `v0.3.x`
 - Expected outcome:
   - `RateModel=LaneMinimum` validates required minimum semantics and fails closed when incomplete.
@@ -155,7 +155,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S16: Detention Terms Agreed at Booking
 
 - Description: Broker and carrier agree detention commercial terms at booking time, including rate basis and responsibility.
-- RFC: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-accessorial-lifecycle-booking-plane.md`
+- RFC: `docs/rfc/RFC-v0.3-accessorial-lifecycle-booking-plane.md`
 - Target: `v0.3.x`
 - Expected outcome:
   - Accessorial terms are explicit (type, pricing mode, payer/payee, pre-approval/evidence requirements).
@@ -165,7 +165,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
 ### S17: Post-Booking Accessorial Claim with External Evidence Reference
 
 - Description: Carrier proposes a post-booking accessorial claim and references external proof metadata (not raw documents) for review.
-- RFC: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-accessorial-lifecycle-booking-plane.md`
+- RFC: `docs/rfc/RFC-v0.3-accessorial-lifecycle-booking-plane.md`
 - Target: `v0.3.x`
 - Expected outcome:
   - Claim state follows booking-plane contract (`Proposed -> Approved|Rejected`).

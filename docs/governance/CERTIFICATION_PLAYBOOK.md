@@ -7,7 +7,7 @@ Purpose:
 - Standardize certification intake for any builder-hosted adapter.
 - Provide deterministic pass/fail checks before registry acceptance.
 - Responsibility boundary reference:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md`
+  - `docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md`
 
 ## 1) Certification Tiers
 
@@ -31,7 +31,7 @@ Purpose:
 FAXP also maintains a v2 certification profile artifact for builder-hosted adapter certification maturity.
 
 Reference artifact:
-- `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/adapter_certification_profile.v2.json`
+- `conformance/adapter_certification_profile.v2.json`
 
 v2 additions:
 1. explicit evidence classes:
@@ -61,30 +61,30 @@ Required bundle files:
 6. Submission manifest JSON (schema valid; references all files above).
 
 Reference paths:
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/adapter_profile.schema.json`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/certification_registry.schema.json`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/adapter_test_profile.schema.json`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/submission_manifest.schema.json`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/submission_manifest_keys.sample.json`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/create_submission_manifest.py`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/key_lifecycle_policy.schema.json`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/key_lifecycle_policy.sample.json`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update.schema.json`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/registry_update_keys.sample.json`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/create_registry_update.py`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/REGISTRY_OPERATIONS_RUNBOOK.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/REGISTRY_CHANGELOG_POLICY.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/TRUSTED_VERIFIER_ADMISSION_REQUIREMENTS.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/TRUST_MODEL.md`
-- `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/GOVERNANCE_INDEX.json`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/RELEASE_READINESS_CHECKLIST.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/apply_registry_update.py`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/trusted_verifier_registry.sample.json`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/vendor_direct_verifier_profile.v1.json`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/trust_profile.v1.json`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/accessorial_terms_profile.v1.json`
+- `conformance/adapter_profile.schema.json`
+- `conformance/certification_registry.schema.json`
+- `conformance/adapter_test_profile.schema.json`
+- `conformance/submission_manifest.schema.json`
+- `conformance/submission_manifest_keys.sample.json`
+- `conformance/create_submission_manifest.py`
+- `conformance/key_lifecycle_policy.schema.json`
+- `conformance/key_lifecycle_policy.sample.json`
+- `conformance/registry_update.schema.json`
+- `conformance/registry_update_keys.sample.json`
+- `conformance/create_registry_update.py`
+- `docs/governance/REGISTRY_OPERATIONS_RUNBOOK.md`
+- `docs/governance/REGISTRY_CHANGELOG_POLICY.md`
+- `docs/governance/TRUSTED_VERIFIER_ADMISSION_REQUIREMENTS.md`
+- `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- `docs/governance/TRUST_MODEL.md`
+- `docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md`
+- `docs/governance/GOVERNANCE_INDEX.json`
+- `docs/governance/RELEASE_READINESS_CHECKLIST.md`
+- `conformance/apply_registry_update.py`
+- `conformance/trusted_verifier_registry.sample.json`
+- `conformance/vendor_direct_verifier_profile.v1.json`
+- `conformance/trust_profile.v1.json`
+- `conformance/accessorial_terms_profile.v1.json`
 
 ## 3) Intake Workflow
 
@@ -116,9 +116,9 @@ Reference paths:
 5. If all checks pass, registry entry is accepted/updated.
 6. If checks fail, submission is rejected with explicit failing check IDs.
 7. Reviewer emits a decision artifact using:
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/CERTIFICATION_DECISION_RECORD_TEMPLATE.md`
+- `docs/governance/CERTIFICATION_DECISION_RECORD_TEMPLATE.md`
 8. Reviewer follows decision-record operations runbook:
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/DECISION_RECORDS_RUNBOOK.md`
+- `docs/governance/DECISION_RECORDS_RUNBOOK.md`
 
 ## 4) Pass/Fail Gates
 
@@ -132,7 +132,7 @@ Mandatory gates:
 - supported profile alignment.
 4. Conformance report pass status for requested tier (`Conformant` or `TrustedProduction`).
 5. Policy profile conformance synchronization:
-- Normative profile matrix in `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/POLICY_PROFILES.md` is valid.
+- Normative profile matrix in `docs/governance/POLICY_PROFILES.md` is valid.
 - All three degraded modes are represented by active profile artifacts:
   - `HardBlock`
   - `SoftHold`
@@ -229,7 +229,7 @@ Required local checks before submission:
 Implementers that claim A2A and/or MCP interoperability maturity must back that claim with objective evidence.
 
 Reference artifact:
-- `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/interop_maturity_profile.v1.json`
+- `conformance/interop_maturity_profile.v1.json`
 
 Rules:
 1. Interop maturity claims are optional and must not imply mandatory FAXP core dependencies on A2A or MCP.

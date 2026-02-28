@@ -6,15 +6,15 @@ Scope policy: Booking-plane and certification governance only.
 
 ## Process
 
-1. Create RFC from `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC_TEMPLATE.md`.
+1. Create RFC from `docs/rfc/RFC_TEMPLATE.md`.
 2. Classify scope gate in each RFC (`In-Scope` or `Scope Expansion`).
 3. Require security and conformance impact section.
 4. Require migration/backward-compatibility note for schema/runtime changes.
 5. Only after governance acceptance: move item into implementation checklist.
 6. Map each RFC item to at least one scenario in:
-   - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/V0_3_0_SCENARIO_CATALOG.md`
+   - `docs/roadmap/V0_3_0_SCENARIO_CATALOG.md`
 7. Track open commercial requirements in:
-   - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/V0_3_0_COMMERCIAL_MODEL_BACKLOG.md`
+   - `docs/roadmap/V0_3_0_COMMERCIAL_MODEL_BACKLOG.md`
 
 ## Priority Backlog
 
@@ -24,7 +24,7 @@ Scope policy: Booking-plane and certification governance only.
 - Status: `Accepted (Implemented)`
 - Target: `v0.3.0`
 - Notes: Implemented with active model set (`PerMile`, `Flat`, `PerPallet`, `CWT`, `PerHour`, `LaneMinimum`) and fail-closed validation/profile gates.
-- Draft file: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-rate-model-extensibility.md`
+- Draft file: `docs/rfc/RFC-v0.3-rate-model-extensibility.md`
 
 2. `RFC-v0.3-shipper-orchestration-minimal`
 - Goal: Wire existing ShipperAgent stub into an optional shipper -> broker -> carrier booking path.
@@ -32,7 +32,7 @@ Scope policy: Booking-plane and certification governance only.
 - Status: `Accepted (Implemented)`
 - Target: `v0.3.x`
 - Notes: Implemented as optional shipper entry flow with role-capability policy and conformance gates; broker-carrier path remains unchanged.
-- Draft file: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-shipper-orchestration-minimal.md`
+- Draft file: `docs/rfc/RFC-v0.3-shipper-orchestration-minimal.md`
 
 3. `RFC-v0.3-schema-version-negotiation`
 - Goal: Formalize version negotiation and compatibility behavior for mixed v0.2/v0.3 agents.
@@ -40,7 +40,7 @@ Scope policy: Booking-plane and certification governance only.
 - Status: `Accepted (Implemented)`
 - Target: `v0.3.0`
 - Notes: Implemented with protocol compatibility profile, cross-version fixtures, and fail-closed negotiation checks.
-- Draft file: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-schema-version-negotiation.md`
+- Draft file: `docs/rfc/RFC-v0.3-schema-version-negotiation.md`
 
 4. `RFC-v0.3-adapter-certification-profile-v2`
 - Goal: Advance certification profile and registry policy requirements for builder-hosted adapters.
@@ -48,7 +48,7 @@ Scope policy: Booking-plane and certification governance only.
 - Status: `Accepted (Implemented)`
 - Target: `v0.3.x`
 - Notes: Implemented with explicit evidence classes, registry metadata requirements, dual v1/v2 transition support, and release-gated conformance/CI checks.
-- Draft file: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-adapter-certification-profile-v2.md`
+- Draft file: `docs/rfc/RFC-v0.3-adapter-certification-profile-v2.md`
 
 5. `RFC-v0.3-provisional-booking-policy-contract`
 - Goal: Standardize policy semantics for `HardBlock`, `SoftHold`, and `GraceCache` outcomes.
@@ -56,7 +56,7 @@ Scope policy: Booking-plane and certification governance only.
 - Status: `Accepted (Implemented)`
 - Target: `v0.3.0`
 - Notes: Implemented with normalized decision metadata, risk-tier matrix semantics, and release-gated conformance checks.
-- Draft file: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-provisional-booking-policy-contract.md`
+- Draft file: `docs/rfc/RFC-v0.3-provisional-booking-policy-contract.md`
 
 6. `RFC-v0.3-a2a-mcp-interop-maturity`
 - Goal: Define maturity criteria for translator/tool evidence interoperability across A2A and MCP tracks.
@@ -64,7 +64,7 @@ Scope policy: Booking-plane and certification governance only.
 - Status: `Accepted (Implemented)`
 - Target: `v0.3.x`
 - Notes: Implemented as an optional interop maturity profile with evidence-backed A2A/MCP track criteria and no mandatory A2A/MCP runtime dependency in FAXP core.
-- Draft file: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-a2a-mcp-interop-maturity.md`
+- Draft file: `docs/rfc/RFC-v0.3-a2a-mcp-interop-maturity.md`
 
 7. `RFC-v0.3-equipment-taxonomy-expansion`
 - Goal: Standardize specialty trailer taxonomy and dimensional compatibility semantics for booking-plane matching.
@@ -72,7 +72,7 @@ Scope policy: Booking-plane and certification governance only.
 - Status: `Accepted (Implemented)`
 - Target: `v0.3.x`
 - Notes: Implemented with canonical class/subclass/tag normalization, alias coverage, and trailer length range compatibility semantics.
-- Draft file: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-equipment-taxonomy-expansion.md`
+- Draft file: `docs/rfc/RFC-v0.3-equipment-taxonomy-expansion.md`
 
 8. `RFC-v0.3-rate-model-hourly-lane-minimum`
 - Goal: Add booking-plane `PerHour` and `LaneMinimum` rate models with deterministic validation and execution normalization.
@@ -80,7 +80,7 @@ Scope policy: Booking-plane and certification governance only.
 - Status: `Accepted (Implemented)`
 - Target: `v0.3.x`
 - Notes: Implemented with booking-plane-only scope and fail-closed model validation semantics.
-- Draft file: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-rate-model-hourly-lane-minimum.md`
+- Draft file: `docs/rfc/RFC-v0.3-rate-model-hourly-lane-minimum.md`
 
 9. `RFC-v0.3-accessorial-lifecycle-booking-plane`
 - Goal: Standardize accessorial booking-time terms, payer/payee responsibility, and post-booking claim states without entering settlement workflows.
@@ -88,7 +88,7 @@ Scope policy: Booking-plane and certification governance only.
 - Status: `Accepted (Implemented)`
 - Target: `v0.3.x`
 - Notes: Implemented as booking-plane-only contract semantics with external evidence references and explicit settlement/document-custody scope boundaries.
-- Draft file: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-accessorial-lifecycle-booking-plane.md`
+- Draft file: `docs/rfc/RFC-v0.3-accessorial-lifecycle-booking-plane.md`
 
 ## Deferred / Explicitly Out-of-Scope for v0.3.0 RFC Batch
 
@@ -106,7 +106,7 @@ These remain scope expansions and require separate governance track beyond curre
 - Status: `Draft` (Deferred to v0.3.x)
 - Target: `v0.3.x`
 - Notes: Optional metadata only; no FAXP-hosted oracle services and no mandatory vendor coupling.
-- Draft file: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-rate-oracle-extension.md`
+- Draft file: `docs/rfc/RFC-v0.3-rate-oracle-extension.md`
 
 11. `RFC-v0.3-operational-handoff-metadata`
 - Goal: Define optional neutral post-booking handoff metadata so systems can route completed bookings into the correct downstream ops workflow without moving dispatch into protocol core.
@@ -114,4 +114,4 @@ These remain scope expansions and require separate governance track beyond curre
 - Status: `Draft` (Deferred to v0.3.x)
 - Target: `v0.3.x`
 - Notes: Routing intent only; no dispatch packet content, appointment lifecycle, document custody, or settlement workflow state.
-- Draft file: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-operational-handoff-metadata.md`
+- Draft file: `docs/rfc/RFC-v0.3-operational-handoff-metadata.md`

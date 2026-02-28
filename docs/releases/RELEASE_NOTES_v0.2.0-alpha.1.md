@@ -13,7 +13,7 @@ This alpha consolidates the v0.2 neutrality/security foundation while preserving
 - Neutral `VerificationResult.provider` IDs in simulation outputs.
 - Legacy compatibility preserved via `providerAlias` and legacy metadata fields.
 - v0.2 compatibility schema file added:
-  - `/Users/zglitch009/projects/logistics-ai/FAXP/faxp.v0.2.schema.json`
+  - `faxp.v0.2.schema.json`
 
 2. Signed verifier attestation enforcement
 - `ExecutionReport.VerificationResult.attestation` enforced when signed verifier mode is enabled.

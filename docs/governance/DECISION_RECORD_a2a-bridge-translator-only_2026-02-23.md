@@ -23,9 +23,9 @@ FAXP core protocol envelopes, message types, and validation/security controls re
 - Aligns with open-standard neutrality and builder-operated deployment model.
 
 ## Normative Artifacts
-- A2A profile: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/A2A_COMPATIBILITY_PROFILE.md`
-- Translator contract: `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/a2a_translator_contract.json`
-- Conformance check: `/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_a2a_profile_check.py`
+- A2A profile: `docs/interop/A2A_COMPATIBILITY_PROFILE.md`
+- Translator contract: `conformance/a2a_translator_contract.json`
+- Conformance check: `tests/run_a2a_profile_check.py`
 
 ## Guardrails
 - Any proposal to embed A2A objects directly into FAXP core schemas or envelope rules requires a new RFC and governance vote.
@@ -34,4 +34,4 @@ FAXP core protocol envelopes, message types, and validation/security controls re
 ## Rollout
 - Effective immediately for v0.2 planning and onward.
 - Included in conformance suite via `a2a_profile` check.
-- Upstream monitoring is handled by `/Users/zglitch009/projects/logistics-ai/FAXP/.github/workflows/a2a-watch.yml` and `/Users/zglitch009/projects/logistics-ai/FAXP/scripts/check_a2a_upstream.py`.
+- Upstream monitoring is handled by `.github/workflows/a2a-watch.yml` and `scripts/check_a2a_upstream.py`.

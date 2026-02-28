@@ -38,7 +38,7 @@ Tag: `v0.2.0`
 ## Conformance Evidence
 
 Final suite report artifact:
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/reports/faxp_conformance_suite_v0.2.0.json`
+- `conformance/reports/faxp_conformance_suite_v0.2.0.json`
 
 Report summary:
 - `totalChecks`: `20`
@@ -63,7 +63,7 @@ Out of scope:
 ## Verification Commands (Release Gate)
 
 ```bash
-cd /Users/zglitch009/projects/logistics-ai/FAXP
+cd <repo-root>
 ./scripts/run_a2a_conformance.sh
 ./scripts/run_mcp_conformance.sh
 .venv/bin/python tests/run_release_readiness.py

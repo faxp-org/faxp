@@ -12,8 +12,8 @@ This note tracks governance/tooling items intentionally deferred while v0.1.x st
 
 ## Current Scope (Implemented Now)
 
-1. Canonical protocol schema at `/Users/zglitch009/projects/logistics-ai/FAXP/faxp.schema.json`.
-2. Runtime message validation inside `/Users/zglitch009/projects/logistics-ai/FAXP/faxp_mvp_simulation.py`.
+1. Canonical protocol schema at `faxp.schema.json`.
+2. Runtime message validation inside `faxp_mvp_simulation.py`.
 3. Explicit protocol metadata in message envelope: `Protocol` + `ProtocolVersion`.
 
 ## Revisit Trigger

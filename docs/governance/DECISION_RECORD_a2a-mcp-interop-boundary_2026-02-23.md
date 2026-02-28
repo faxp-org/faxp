@@ -24,23 +24,23 @@ FAXP core protocol remains independent from A2A and MCP runtime dependencies.
 - Ensures interop evolution is auditable via profile + contract + watch governance.
 
 ## Normative Artifacts
-- A2A profile: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/A2A_COMPATIBILITY_PROFILE.md`
-- A2A contract: `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/a2a_translator_contract.json`
-- A2A watch runbook: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/A2A_CHANGE_MANAGEMENT.md`
-- A2A tracking: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/A2A_UPSTREAM_TRACKING.json`
-- MCP profile: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/MCP_COMPATIBILITY_PROFILE.md`
-- MCP contract: `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/mcp_tooling_contract.json`
-- MCP watch runbook: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/MCP_CHANGE_MANAGEMENT.md`
-- MCP tracking: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/MCP_UPSTREAM_TRACKING.json`
+- A2A profile: `docs/interop/A2A_COMPATIBILITY_PROFILE.md`
+- A2A contract: `conformance/a2a_translator_contract.json`
+- A2A watch runbook: `docs/interop/A2A_CHANGE_MANAGEMENT.md`
+- A2A tracking: `docs/interop/A2A_UPSTREAM_TRACKING.json`
+- MCP profile: `docs/interop/MCP_COMPATIBILITY_PROFILE.md`
+- MCP contract: `conformance/mcp_tooling_contract.json`
+- MCP watch runbook: `docs/interop/MCP_CHANGE_MANAGEMENT.md`
+- MCP tracking: `docs/interop/MCP_UPSTREAM_TRACKING.json`
 
 ## Required Checks
-- `/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_a2a_profile_check.py`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_a2a_roundtrip_translation.py`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_a2a_watch_artifacts.py`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_mcp_profile_check.py`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_mcp_watch_artifacts.py`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/scripts/run_a2a_conformance.sh`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/scripts/run_mcp_conformance.sh`
+- `tests/run_a2a_profile_check.py`
+- `tests/run_a2a_roundtrip_translation.py`
+- `tests/run_a2a_watch_artifacts.py`
+- `tests/run_mcp_profile_check.py`
+- `tests/run_mcp_watch_artifacts.py`
+- `scripts/run_a2a_conformance.sh`
+- `scripts/run_mcp_conformance.sh`
 
 ## Guardrails
 - Any proposal to add mandatory A2A or MCP dependencies in FAXP core requires a new RFC and governance vote.

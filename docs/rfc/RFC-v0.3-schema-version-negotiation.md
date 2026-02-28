@@ -18,9 +18,9 @@ As FAXP evolves, agents will run mixed versions in production. Without explicit 
 ## Scope Gate (Required)
 - Scope Classification: `In-Scope`
 - Protocol-Core Impacted Files:
-  - `/Users/zglitch009/projects/logistics-ai/FAXP/faxp.v0.2.schema.json`
-  - `/Users/zglitch009/projects/logistics-ai/FAXP/faxp_mvp_simulation.py`
-  - `/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_schema_compatibility.py`
+  - `faxp.v0.2.schema.json`
+  - `faxp_mvp_simulation.py`
+  - `tests/run_schema_compatibility.py`
 - Message Types Added/Changed:
   - No new message types required.
   - Existing envelope metadata validation rules are clarified.
@@ -97,13 +97,13 @@ As FAXP evolves, agents will run mixed versions in production. Without explicit 
 
 ## Implementation Evidence
 - Runtime:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp_mvp_simulation.py`
+  - `faxp_mvp_simulation.py`
 - Conformance/Profile:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/protocol_compatibility_profile.v1.json`
+  - `conformance/protocol_compatibility_profile.v1.json`
 - Tests:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_protocol_version_negotiation.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_protocol_compatibility_profile.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_cross_version_fixtures.py`
+  - `tests/run_protocol_version_negotiation.py`
+  - `tests/run_protocol_compatibility_profile.py`
+  - `tests/run_cross_version_fixtures.py`
 
 ## Approval
 - Maintainer Approval: Approved

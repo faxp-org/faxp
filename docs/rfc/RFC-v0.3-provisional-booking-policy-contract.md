@@ -18,10 +18,10 @@ Current behavior includes the policy concepts (`HardBlock`, `SoftHold`, `GraceCa
 ## Scope Gate (Required)
 - Scope Classification: `In-Scope`
 - Protocol-Core Impacted Files:
-  - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/POLICY_PROFILES.md`
-  - `/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_policy_decisions.py`
-  - `/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_policy_profile_sync.py`
-  - `/Users/zglitch009/projects/logistics-ai/FAXP/faxp_mvp_simulation.py` (policy-decision mapping only)
+  - `docs/governance/POLICY_PROFILES.md`
+  - `tests/run_policy_decisions.py`
+  - `tests/run_policy_profile_sync.py`
+  - `faxp_mvp_simulation.py` (policy-decision mapping only)
 - Message Types Added/Changed:
   - No new message types.
   - Existing booking messages may include standardized policy decision metadata.
@@ -97,14 +97,14 @@ Current behavior includes the policy concepts (`HardBlock`, `SoftHold`, `GraceCa
 
 ## Implementation Evidence
 - Runtime:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp_mvp_simulation.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/streamlit_state_logic.py`
+  - `faxp_mvp_simulation.py`
+  - `streamlit_state_logic.py`
 - Conformance/Profile:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/verification_policy_profile.v1.json`
+  - `conformance/verification_policy_profile.v1.json`
 - Tests:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_verification_policy_profile.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_policy_decisions.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_policy_profile_sync.py`
+  - `tests/run_verification_policy_profile.py`
+  - `tests/run_policy_decisions.py`
+  - `tests/run_policy_profile_sync.py`
 
 ## Approval
 - Maintainer Approval: Approved
