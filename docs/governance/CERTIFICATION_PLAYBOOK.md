@@ -26,6 +26,30 @@ Purpose:
   - SLA/availability policy,
   - key management and rotation policy.
 
+## 1.1) Certification Profile v2
+
+FAXP also maintains a v2 certification profile artifact for builder-hosted adapter certification maturity.
+
+Reference artifact:
+- `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/adapter_certification_profile.v2.json`
+
+v2 additions:
+1. explicit evidence classes:
+- `SchemaEvidence`
+- `SecurityEvidence`
+- `OperationalEvidence`
+- `InteropEvidence`
+2. deterministic registry metadata requirements:
+- `adapterProfileVersion`
+- `evidenceFreshnessCheckedAt`
+- `keyLifecyclePolicyRef`
+- `decisionRecordRef`
+3. additive migration posture:
+- v1 remains accepted during transition
+- v1 retirement requires future governance approval
+
+Certification decisions should treat v2 as the normative maturity target while preserving dual-support during the transition window.
+
 ## 2) Submission Package (Required)
 
 Required bundle files:

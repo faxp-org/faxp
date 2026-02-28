@@ -1,0 +1,93 @@
+{
+  "profileVersion": "2.0.0",
+  "profileId": "FAXP_ADAPTER_CERTIFICATION_PROFILE_V2",
+  "protocol": "FAXP",
+  "scope": "booking-plane-certification-governance",
+  "description": "Canonical version 2 certification profile for builder-hosted adapters. Adds explicit evidence classes, freshness expectations, and decision-link requirements while preserving provider neutrality and no mandatory protocol-core coupling.",
+  "supportedLegacyProfileVersions": [
+    "1.x"
+  ],
+  "deprecationPolicy": {
+    "v1AcceptedDuringTransition": true,
+    "v1RetirementRequiresFutureGovernanceApproval": true
+  },
+  "evidenceClasses": {
+    "SchemaEvidence": {
+      "requiredRefs": [
+        "adapterProfileRef",
+        "registryEntryRef",
+        "conformanceReportRef"
+      ]
+    },
+    "SecurityEvidence": {
+      "requiredRefs": [
+        "attestationKeyringRef",
+        "keyLifecyclePolicyRef"
+      ]
+    },
+    "OperationalEvidence": {
+      "requiredRefs": [
+        "runbookRef",
+        "incidentResponseRef",
+        "slaPolicyRef"
+      ]
+    },
+    "InteropEvidence": {
+      "requiredRefs": [
+        "interopMaturityProfileRef"
+      ]
+    }
+  },
+  "tierRequirements": {
+    "SelfAttested": {
+      "requiredEvidenceClasses": [
+        "SchemaEvidence"
+      ],
+      "maximumEvidenceAgeDays": 30
+    },
+    "Conformant": {
+      "requiredEvidenceClasses": [
+        "SchemaEvidence",
+        "SecurityEvidence"
+      ],
+      "maximumEvidenceAgeDays": 30
+    },
+    "TrustedProduction": {
+      "requiredEvidenceClasses": [
+        "SchemaEvidence",
+        "SecurityEvidence",
+        "OperationalEvidence"
+      ],
+      "optionalEvidenceClasses": [
+        "InteropEvidence"
+      ],
+      "maximumEvidenceAgeDays": 30
+    }
+  },
+  "registryRequirements": {
+    "requiredMetadataFields": [
+      "adapterProfileVersion",
+      "evidenceFreshnessCheckedAt",
+      "keyLifecyclePolicyRef",
+      "decisionRecordRef"
+    ],
+    "decisionRecordRequiredForStatuses": [
+      "Active",
+      "Suspended",
+      "Revoked"
+    ]
+  },
+  "governanceRules": {
+    "builderHostedArchitectureRequired": true,
+    "mandatorySuiteLinkageRequired": true,
+    "missingMandatoryEvidenceFailsClosed": true
+  },
+  "conformanceRequirements": {
+    "requiredTests": [
+      "tests/run_adapter_certification_profile_v2.py"
+    ],
+    "requiredSuiteChecks": [
+      "adapter_certification_profile_v2"
+    ]
+  }
+}
