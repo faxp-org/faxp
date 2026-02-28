@@ -18,9 +18,9 @@ Initial behavior supported `PerMile` and `Flat` only. This was too narrow for br
 ## Scope Gate (Required)
 - Scope Classification: `In-Scope`
 - Protocol-Core Impacted Files:
-  - `/Users/zglitch009/projects/logistics-ai/FAXP/faxp.v0.2.schema.json` (compatibility bridge updates for v0.3 migration)
-  - `/Users/zglitch009/projects/logistics-ai/FAXP/faxp_mvp_simulation.py`
-  - `/Users/zglitch009/projects/logistics-ai/FAXP/streamlit_app.py`
+  - `faxp.v0.2.schema.json` (compatibility bridge updates for v0.3 migration)
+  - `faxp_mvp_simulation.py`
+  - `streamlit_app.py`
 - Message Types Added/Changed:
   - `NewLoad` (rate object extension only)
   - `LoadSearch` (rate filter extension only)
@@ -104,18 +104,18 @@ Initial behavior supported `PerMile` and `Flat` only. This was too narrow for br
 
 ## Implementation Evidence
 - Runtime:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp_mvp_simulation.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/streamlit_app.py`
+  - `faxp_mvp_simulation.py`
+  - `streamlit_app.py`
 - Schema:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp.schema.json`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp.v0.2.schema.json`
+  - `faxp.schema.json`
+  - `faxp.v0.2.schema.json`
 - Conformance/Profile:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/rate_model_profile.v1.json`
+  - `conformance/rate_model_profile.v1.json`
 - Tests:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_rate_model_extensibility.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_rate_model_requirements.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_rate_search_requirements.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_rate_model_profile.py`
+  - `tests/run_rate_model_extensibility.py`
+  - `tests/run_rate_model_requirements.py`
+  - `tests/run_rate_search_requirements.py`
+  - `tests/run_rate_model_profile.py`
 
 ## Approval
 - Maintainer Approval: Approved

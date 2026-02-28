@@ -42,9 +42,9 @@ This checkpoint converts the merged v0.3 RFC drafts into an execution order with
 ## Supporting Planning Artifacts
 
 1. Commercial model backlog:
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/V0_3_0_COMMERCIAL_MODEL_BACKLOG.md`
+- `docs/roadmap/V0_3_0_COMMERCIAL_MODEL_BACKLOG.md`
 2. Scenario catalog:
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/V0_3_0_SCENARIO_CATALOG.md`
+- `docs/roadmap/V0_3_0_SCENARIO_CATALOG.md`
 
 ## Scope Guardrails (Reconfirmed)
 

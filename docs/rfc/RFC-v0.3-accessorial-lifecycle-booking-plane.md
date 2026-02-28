@@ -23,11 +23,11 @@ This RFC closes that gap while preserving the scope boundary: FAXP standardizes 
 ## Scope Gate (Required)
 - Scope Classification: `In-Scope`
 - Protocol-Core Impacted Files:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp_mvp_simulation.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp.schema.json`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp.v0.2.schema.json`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/streamlit_app.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/` (new or updated profile artifact)
+  - `faxp_mvp_simulation.py`
+  - `faxp.schema.json`
+  - `faxp.v0.2.schema.json`
+  - `streamlit_app.py`
+  - `conformance/` (new or updated profile artifact)
 - Message Types Added/Changed:
   - `NewLoad` (accessorial contract terms extension only)
   - `BidRequest` (accessorial acceptance/counter semantics extension only)
@@ -103,17 +103,17 @@ This RFC closes that gap while preserving the scope boundary: FAXP standardizes 
 
 ## Implementation Evidence
 - Runtime:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp_mvp_simulation.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/streamlit_app.py`
+  - `faxp_mvp_simulation.py`
+  - `streamlit_app.py`
 - Conformance/Profile:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/accessorial_terms_profile.v1.json`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/accessorial_type_registry.v1.json`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/detention_terms_profile.v1.json`
+  - `conformance/accessorial_terms_profile.v1.json`
+  - `conformance/accessorial_type_registry.v1.json`
+  - `conformance/detention_terms_profile.v1.json`
 - Tests:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_accessorial_terms.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_accessorial_terms_profile.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_accessorial_type_registry.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_detention_terms_profile.py`
+  - `tests/run_accessorial_terms.py`
+  - `tests/run_accessorial_terms_profile.py`
+  - `tests/run_accessorial_type_registry.py`
+  - `tests/run_detention_terms_profile.py`
 
 ## Approval
 - Maintainer Approval: Approved

@@ -34,9 +34,9 @@ Notes:
 5. Fail closed on verifier errors or missing trust evidence.
 
 ## Governance Artifacts
-- Machine-readable trust profile: `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/trust_profile.v1.json`
-- Verifier admission policy: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/TRUSTED_VERIFIER_ADMISSION_REQUIREMENTS.md`
-- Verification boundary policy: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md`
+- Machine-readable trust profile: `conformance/trust_profile.v1.json`
+- Verifier admission policy: `docs/governance/TRUSTED_VERIFIER_ADMISSION_REQUIREMENTS.md`
+- Verification boundary policy: `docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md`
 
 ## Certification Impact
 Implementers are certified against trust conformance evidence, not against vendor preference.

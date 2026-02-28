@@ -18,9 +18,9 @@ FAXP already demonstrates broker-carrier and load/truck happy paths. A minimal s
 ## Scope Gate (Required)
 - Scope Classification: `In-Scope`
 - Protocol-Core Impacted Files:
-  - `/Users/zglitch009/projects/logistics-ai/FAXP/faxp_mvp_simulation.py`
-  - `/Users/zglitch009/projects/logistics-ai/FAXP/streamlit_app.py` (optional toggle-only update)
-  - `/Users/zglitch009/projects/logistics-ai/FAXP/faxp.v0.2.schema.json` (only if metadata fields are added)
+  - `faxp_mvp_simulation.py`
+  - `streamlit_app.py` (optional toggle-only update)
+  - `faxp.v0.2.schema.json` (only if metadata fields are added)
 - Message Types Added/Changed:
   - No new required message types.
   - Existing booking-plane message types remain primary (`NewLoad`, `LoadSearch`, `BidRequest`, `BidResponse`, `ExecutionReport`, `AmendRequest`).
@@ -90,13 +90,13 @@ FAXP already demonstrates broker-carrier and load/truck happy paths. A minimal s
 
 ## Implementation Evidence
 - Runtime:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp_mvp_simulation.py` (`--shipper-flow`)
+  - `faxp_mvp_simulation.py` (`--shipper-flow`)
 - Conformance/Profile:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/shipper_orchestration_profile.v1.json`
+  - `conformance/shipper_orchestration_profile.v1.json`
 - Tests:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_shipper_orchestration_minimal.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_shipper_orchestration_profile.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_role_capability_policy.py`
+  - `tests/run_shipper_orchestration_minimal.py`
+  - `tests/run_shipper_orchestration_profile.py`
+  - `tests/run_role_capability_policy.py`
 
 ## Approval
 - Maintainer Approval: Approved

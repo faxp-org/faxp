@@ -3,7 +3,7 @@
 This policy defines objective criteria for registry entry admission, renewal, and non-active status handling.
 
 ## Scope
-- Applies to certification registry artifacts under `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/`.
+- Applies to certification registry artifacts under `conformance/`.
 - Applies to admission and renewal decisions represented in registry metadata.
 - Does not define runtime booking behavior or adapter hosting operations.
 

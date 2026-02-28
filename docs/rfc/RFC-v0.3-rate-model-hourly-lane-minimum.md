@@ -22,11 +22,11 @@ Adding these models improves practical coverage without expanding into dispatch 
 ## Scope Gate (Required)
 - Scope Classification: `In-Scope`
 - Protocol-Core Impacted Files:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp_mvp_simulation.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp.schema.json`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp.v0.2.schema.json`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/rate_model_profile.v1.json` (or version bump successor)
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/streamlit_app.py`
+  - `faxp_mvp_simulation.py`
+  - `faxp.schema.json`
+  - `faxp.v0.2.schema.json`
+  - `conformance/rate_model_profile.v1.json` (or version bump successor)
+  - `streamlit_app.py`
 - Message Types Added/Changed:
   - `NewLoad` (rate object extension only)
   - `LoadSearch` (rate filter extension only)
@@ -111,17 +111,17 @@ Adding these models improves practical coverage without expanding into dispatch 
 
 ## Implementation Evidence
 - Runtime:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp_mvp_simulation.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/streamlit_app.py`
+  - `faxp_mvp_simulation.py`
+  - `streamlit_app.py`
 - Conformance/Profile:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/rate_model_profile.v1.json`
+  - `conformance/rate_model_profile.v1.json`
 - Schema:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp.schema.json`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp.v0.2.schema.json`
+  - `faxp.schema.json`
+  - `faxp.v0.2.schema.json`
 - Tests:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_rate_model_extensibility.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_rate_model_requirements.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_rate_search_requirements.py`
+  - `tests/run_rate_model_extensibility.py`
+  - `tests/run_rate_model_requirements.py`
+  - `tests/run_rate_search_requirements.py`
 
 ## Approval
 - Maintainer Approval: Approved

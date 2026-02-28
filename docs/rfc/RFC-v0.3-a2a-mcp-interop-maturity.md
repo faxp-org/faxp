@@ -100,24 +100,24 @@ FAXP already has compatibility profiles, contracts, conformance scripts, and wat
 
 ## Implementation Evidence
 1. Interop maturity profile:
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/interop_maturity_profile.v1.json`
+   - `conformance/interop_maturity_profile.v1.json`
 2. A2A artifacts and checks:
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/interop/A2A_COMPATIBILITY_PROFILE.md`
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/a2a_translator_contract.json`
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/a2a_roundtrip_fixtures.json`
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/.github/workflows/a2a-watch.yml`
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_a2a_profile_check.py`
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_a2a_roundtrip_translation.py`
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_a2a_watch_artifacts.py`
+   - `docs/interop/A2A_COMPATIBILITY_PROFILE.md`
+   - `conformance/a2a_translator_contract.json`
+   - `conformance/a2a_roundtrip_fixtures.json`
+   - `.github/workflows/a2a-watch.yml`
+   - `tests/run_a2a_profile_check.py`
+   - `tests/run_a2a_roundtrip_translation.py`
+   - `tests/run_a2a_watch_artifacts.py`
 3. MCP artifacts and checks:
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/interop/MCP_COMPATIBILITY_PROFILE.md`
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/mcp_tooling_contract.json`
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/.github/workflows/mcp-watch.yml`
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_mcp_profile_check.py`
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_mcp_watch_artifacts.py`
+   - `docs/interop/MCP_COMPATIBILITY_PROFILE.md`
+   - `conformance/mcp_tooling_contract.json`
+   - `.github/workflows/mcp-watch.yml`
+   - `tests/run_mcp_profile_check.py`
+   - `tests/run_mcp_watch_artifacts.py`
 4. Certification/governance alignment:
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/governance/CERTIFICATION_PLAYBOOK.md`
-   - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_interop_maturity_profile.py`
+   - `docs/governance/CERTIFICATION_PLAYBOOK.md`
+   - `tests/run_interop_maturity_profile.py`
 
 ## Approval
 - Maintainer Approval:

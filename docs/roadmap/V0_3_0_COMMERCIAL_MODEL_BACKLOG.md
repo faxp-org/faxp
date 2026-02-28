@@ -16,7 +16,7 @@ Purpose: Central place to capture commercial model requirements before implement
 
 1. `PerPallet` rate model
 - Target: `v0.3.0`
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-rate-model-extensibility.md`
+- RFC: `docs/rfc/RFC-v0.3-rate-model-extensibility.md`
 - Acceptance:
   - Negotiation supports `PerPallet`.
   - Validation enforces pallet-count terms.
@@ -24,7 +24,7 @@ Purpose: Central place to capture commercial model requirements before implement
 
 2. `CWT` (Hundredweight) rate model
 - Target: `v0.3.0`
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-rate-model-extensibility.md`
+- RFC: `docs/rfc/RFC-v0.3-rate-model-extensibility.md`
 - Acceptance:
   - Negotiation supports weight-unit terms.
   - Validation enforces weight basis.
@@ -32,7 +32,7 @@ Purpose: Central place to capture commercial model requirements before implement
 
 3. LineHaul + Fuel Surcharge componentized rates
 - Target: `v0.3.0`
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-rate-model-extensibility.md`
+- RFC: `docs/rfc/RFC-v0.3-rate-model-extensibility.md`
 - Acceptance:
   - `RateComponents` supports at least `LineHaul` and `FuelSurcharge`.
   - Total agreed-rate can be derived deterministically.
@@ -41,14 +41,14 @@ Purpose: Central place to capture commercial model requirements before implement
 
 1. Agreed miles field for `PerMile`
 - Target: `v0.3.0`
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-rate-model-extensibility.md`
+- RFC: `docs/rfc/RFC-v0.3-rate-model-extensibility.md`
 - Acceptance:
   - `AgreedMiles` captured in commercial terms.
   - `MilesSource` and timestamp/version are auditable.
 
 2. Miles dispute/negotiation flow
 - Target: `v0.3.0`
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-rate-model-extensibility.md`
+- RFC: `docs/rfc/RFC-v0.3-rate-model-extensibility.md`
 - Acceptance:
   - Counter/reason code supports mileage disputes.
   - Final agreed miles immutable in execution record.
@@ -57,7 +57,7 @@ Purpose: Central place to capture commercial model requirements before implement
 
 1. Multi-pick / multi-drop stop model
 - Target: `v0.3.1`
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- RFC: `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
 - Acceptance:
   - Ordered stop list with pickup/drop semantics.
   - Backward-compatible single-stop default.
@@ -65,7 +65,7 @@ Purpose: Central place to capture commercial model requirements before implement
 
 2. Service requirements (reefer temp bands, tarping, handling constraints)
 - Target: `v0.3.1`
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- RFC: `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
 - Acceptance:
   - Booking-time `SpecialInstructions` terms with explicit accept/counter semantics.
   - Carrier can return exceptions through `SpecialInstructionsAcceptance`.
@@ -73,7 +73,7 @@ Purpose: Central place to capture commercial model requirements before implement
 
 3. Required delivery date / service commitment windows
 - Target: `v0.3.1`
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- RFC: `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
 - Acceptance:
   - Pickup date range remains required and validated (`PickupEarliest`/`PickupLatest`).
   - Delivery date range and pickup/delivery time windows are structured and validated when provided.
@@ -81,7 +81,7 @@ Purpose: Central place to capture commercial model requirements before implement
 
 4. Equipment taxonomy expansion (specialty trailers + dimensional constraints)
 - Target: `v0.3.x`
-- RFC: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-equipment-taxonomy-expansion.md`
+- RFC: `docs/rfc/RFC-v0.3-equipment-taxonomy-expansion.md`
 - Acceptance:
   - Trailer type vocabulary includes `Hopper`, `StepDeck`, and others.
   - Trailer size/length is normalized and validated by equipment type.
@@ -89,7 +89,7 @@ Purpose: Central place to capture commercial model requirements before implement
 
 5. Driver configuration requirements (single vs team) for expedited freight
 - Target: `v0.3.1`
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- RFC: `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
 - Acceptance:
   - Load can declare required driver configuration.
   - Carrier bid can declare provided configuration.
@@ -97,7 +97,7 @@ Purpose: Central place to capture commercial model requirements before implement
 
 6. Neutral external load reference metadata
 - Target: `v0.3.1`
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- RFC: `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
 - Acceptance:
   - Load carries `LoadReferenceNumbers` distinct from protocol `LoadID`.
   - Supports neutral `PrimaryReferenceNumber` / `SecondaryReferenceNumber` and typed additional references.
@@ -107,13 +107,13 @@ Purpose: Central place to capture commercial model requirements before implement
 
 1. Additional rate structures (hourly, lane-minimums, tiered pricing)
 - Target: `v0.3.x`
-- RFC: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-rate-model-hourly-lane-minimum.md`
+- RFC: `docs/rfc/RFC-v0.3-rate-model-hourly-lane-minimum.md`
 - Acceptance:
   - Added only via RFC with compatibility plan.
 
 2. Advanced accessorial lifecycle scenarios
 - Target: `v0.3.x`
-- RFC: `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/rfc/RFC-v0.3-accessorial-lifecycle-booking-plane.md`
+- RFC: `docs/rfc/RFC-v0.3-accessorial-lifecycle-booking-plane.md`
 - Acceptance:
   - Clear pre-booking vs post-booking claim-state boundaries.
   - Explicit booking-time payer/payee responsibility semantics.
@@ -123,7 +123,7 @@ Purpose: Central place to capture commercial model requirements before implement
 
 1. Booking-plane accessorial/addendum contract baseline
 - Target: `v0.3.0`
-- RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.3-rate-model-extensibility.md`
+- RFC: `docs/rfc/RFC-v0.3-rate-model-extensibility.md`
 - Acceptance:
   - Commercial terms are structured for booking (`PricingMode`, `PayerParty`, `PayeeParty`, optional `CapAmount`).
   - Settlement/payment execution remains explicitly out of scope in governance docs.

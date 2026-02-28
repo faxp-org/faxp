@@ -8,9 +8,9 @@ This runbook defines how FAXP tracks upstream MCP changes while keeping FAXP cor
 - Keep MCP support in the interop/tool layer only.
 
 ## Source of Truth
-- Compatibility profile: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/MCP_COMPATIBILITY_PROFILE.md`
-- Tooling contract: `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/mcp_tooling_contract.json`
-- Tracking config: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/interop/MCP_UPSTREAM_TRACKING.json`
+- Compatibility profile: `docs/interop/MCP_COMPATIBILITY_PROFILE.md`
+- Tooling contract: `conformance/mcp_tooling_contract.json`
+- Tracking config: `docs/interop/MCP_UPSTREAM_TRACKING.json`
 
 ## Weekly Process
 1. Run the watch check (automated in GitHub Actions).
@@ -25,21 +25,21 @@ This runbook defines how FAXP tracks upstream MCP changes while keeping FAXP cor
    - Merge only after CI green.
 
 ## Escalation Rules
-- Any proposal that introduces mandatory MCP dependency into FAXP core must go through RFC using `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC_TEMPLATE.md`.
+- Any proposal that introduces mandatory MCP dependency into FAXP core must go through RFC using `docs/rfc/RFC_TEMPLATE.md`.
 - If security controls (least-privilege, allowlist, audit correlation, fail-closed) cannot be preserved, do not claim compatibility.
 
 ## Builder Quickstart
 1. Pull profile + contract artifacts into your adapter project.
 2. Run one-command local check:
 ```bash
-cd /Users/zglitch009/projects/logistics-ai/FAXP
+cd <repo-root>
 ./scripts/run_mcp_conformance.sh
 ```
 3. Submit conformance artifacts with certification bundle.
 
 ## Manual Command
 ```bash
-cd /Users/zglitch009/projects/logistics-ai/FAXP
+cd <repo-root>
 python3 scripts/check_mcp_upstream.py \
   --tracking docs/interop/MCP_UPSTREAM_TRACKING.json \
   --output /tmp/mcp_watch_report.json \

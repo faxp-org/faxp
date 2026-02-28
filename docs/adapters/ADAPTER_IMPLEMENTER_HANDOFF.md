@@ -3,12 +3,12 @@
 This checklist is the implementation handoff for any builder to host an FMCSA adapter while staying FAXP-conformant.
 
 Primary contract references:
-- `/Users/zglitch009/projects/logistics-ai/FAXP/adapter/INTERFACE.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/CERTIFICATION_PLAYBOOK.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/REGISTRY_OPERATIONS_RUNBOOK.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/adapter_test_profile.schema.json`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/fmcsa_adapter_test_profile.v1.json`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/submission_manifest.schema.json`
+- `adapter/INTERFACE.md`
+- `docs/governance/CERTIFICATION_PLAYBOOK.md`
+- `docs/governance/REGISTRY_OPERATIONS_RUNBOOK.md`
+- `conformance/adapter_test_profile.schema.json`
+- `conformance/fmcsa_adapter_test_profile.v1.json`
+- `conformance/submission_manifest.schema.json`
 
 ## 1) Build Scope
 

@@ -18,10 +18,10 @@ Current equipment support covers common classes and core matching behavior, but 
 ## Scope Gate (Required)
 - Scope Classification: `In-Scope`
 - Protocol-Core Impacted Files:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp_mvp_simulation.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp.schema.json`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp.v0.2.schema.json`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/equipment_profile.v1.json`
+  - `faxp_mvp_simulation.py`
+  - `faxp.schema.json`
+  - `faxp.v0.2.schema.json`
+  - `conformance/equipment_profile.v1.json`
 - Message Types Added/Changed:
   - `NewLoad` (equipment term normalization/validation only)
   - `LoadSearch` (equipment filter normalization/validation only)
@@ -104,14 +104,14 @@ Current equipment support covers common classes and core matching behavior, but 
 
 ## Implementation Evidence
 - Runtime:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/faxp_mvp_simulation.py`
+  - `faxp_mvp_simulation.py`
 - Conformance/Profile:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/equipment_profile.v1.json`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/equipment_type_alias_coverage.v1.json`
+  - `conformance/equipment_profile.v1.json`
+  - `conformance/equipment_type_alias_coverage.v1.json`
 - Tests:
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_equipment_terms.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_equipment_profile.py`
-  - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_equipment_type_alias_coverage.py`
+  - `tests/run_equipment_terms.py`
+  - `tests/run_equipment_profile.py`
+  - `tests/run_equipment_type_alias_coverage.py`
 
 ## Approval
 - Maintainer Approval: Approved

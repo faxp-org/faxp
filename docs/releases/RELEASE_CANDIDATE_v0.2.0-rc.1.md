@@ -13,24 +13,24 @@ Current recommendation: `GO` for RC tag based on local conformance evidence and 
 ## 2) Scope Included in RC
 
 1. Protocol simulation and schema baseline:
-- `/Users/zglitch009/projects/logistics-ai/FAXP/faxp_mvp_simulation.py`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/faxp.schema.json`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/faxp.v0.2.schema.json`
+- `faxp_mvp_simulation.py`
+- `faxp.schema.json`
+- `faxp.v0.2.schema.json`
 
 2. Policy and governance controls:
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/SCOPE_GUARDRAILS.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/POLICY_PROFILES.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/REGISTRY_ADMISSION_POLICY.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/REGISTRY_CHANGELOG_POLICY.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/CERTIFICATION_DECISION_RECORD_TEMPLATE.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/DECISION_RECORDS_RUNBOOK.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/RELEASE_READINESS_CHECKLIST.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/governance/GOVERNANCE_INDEX.json`
+- `docs/governance/SCOPE_GUARDRAILS.md`
+- `docs/governance/POLICY_PROFILES.md`
+- `docs/governance/REGISTRY_ADMISSION_POLICY.md`
+- `docs/governance/REGISTRY_CHANGELOG_POLICY.md`
+- `docs/governance/CERTIFICATION_DECISION_RECORD_TEMPLATE.md`
+- `docs/governance/DECISION_RECORDS_RUNBOOK.md`
+- `docs/governance/RELEASE_READINESS_CHECKLIST.md`
+- `docs/governance/GOVERNANCE_INDEX.json`
 
 3. Conformance and certification artifact gates:
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/run_all_checks.py`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_conformance_suite.py`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/.github/workflows/ci.yml`
+- `conformance/run_all_checks.py`
+- `tests/run_conformance_suite.py`
+- `.github/workflows/ci.yml`
 
 ## 3) Security and Trust Posture (RC Snapshot)
 
@@ -46,7 +46,7 @@ Current recommendation: `GO` for RC tag based on local conformance evidence and 
 ## 4) Conformance Evidence
 
 Local RC suite report artifact:
-- `/Users/zglitch009/projects/logistics-ai/FAXP/conformance/reports/faxp_conformance_suite_v0.2.0-rc.1.json`
+- `conformance/reports/faxp_conformance_suite_v0.2.0-rc.1.json`
 
 Report summary:
 - `totalChecks`: `16`
@@ -58,7 +58,7 @@ Report summary:
 
 ## 5) Known Deferrals (Not in RC Scope)
 
-From `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/FAXP_DEFERRED_ITEMS.md`:
+From `docs/roadmap/FAXP_DEFERRED_ITEMS.md`:
 1. Centralized `rulesync.jsonc`-style orchestration.
 2. Lockfile-driven frozen installs for all agent tooling.
 3. CI frozen dependency/config policy gates.
@@ -70,14 +70,14 @@ From `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/FAXP_DEFERRED_IT
 Verify working tree:
 
 ```bash
-cd /Users/zglitch009/projects/logistics-ai/FAXP
+cd <repo-root>
 git status
 ```
 
 Run release-readiness and conformance suite:
 
 ```bash
-cd /Users/zglitch009/projects/logistics-ai/FAXP
+cd <repo-root>
 .venv/bin/python tests/run_release_readiness.py
 .venv/bin/python conformance/run_all_checks.py --output conformance/reports/faxp_conformance_suite_v0.2.0-rc.1.json --log-dir /tmp/faxp-rc1-logs
 ```
@@ -85,7 +85,7 @@ cd /Users/zglitch009/projects/logistics-ai/FAXP
 Review report summary quickly:
 
 ```bash
-cd /Users/zglitch009/projects/logistics-ai/FAXP
+cd <repo-root>
 python3 - <<'PY'
 import json
 with open("conformance/reports/faxp_conformance_suite_v0.2.0-rc.1.json", "r", encoding="utf-8") as f:
@@ -97,7 +97,7 @@ PY
 Commit RC package artifacts:
 
 ```bash
-cd /Users/zglitch009/projects/logistics-ai/FAXP
+cd <repo-root>
 git add docs/releases/RELEASE_CANDIDATE_v0.2.0-rc.1.md conformance/reports/faxp_conformance_suite_v0.2.0-rc.1.json
 git commit -m "Add v0.2.0-rc.1 release candidate package and conformance report"
 git push
@@ -106,7 +106,7 @@ git push
 Tag RC:
 
 ```bash
-cd /Users/zglitch009/projects/logistics-ai/FAXP
+cd <repo-root>
 git tag -a v0.2.0-rc.1 -m "FAXP v0.2.0-rc.1"
 git push origin v0.2.0-rc.1
 ```

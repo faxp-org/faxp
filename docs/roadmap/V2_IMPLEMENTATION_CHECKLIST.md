@@ -1,7 +1,7 @@
 # FAXP v0.2 Implementation Checklist (From RFC Verification Neutrality)
 
 Status: Alpha Candidate  
-Source RFC: `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.2-verification-neutrality.md`  
+Source RFC: `docs/rfc/RFC-v0.2-verification-neutrality.md`  
 Updated: 2026-02-21 (alpha evidence closure)
 
 ## Phase 0: Branch + Baseline
@@ -16,8 +16,8 @@ Updated: 2026-02-21 (alpha evidence closure)
 ## Phase 1: Schema Updates (Provider-Agnostic Verification)
 
 Target files:
-- `/Users/zglitch009/projects/logistics-ai/FAXP/faxp.schema.json` (v0.1.1 baseline)
-- `/Users/zglitch009/projects/logistics-ai/FAXP/faxp.v0.2.schema.json` (compatibility track)
+- `faxp.schema.json` (v0.1.1 baseline)
+- `faxp.v0.2.schema.json` (compatibility track)
 
 - [x] Extend `ExecutionReport.VerificationResult` to neutral fields (in v0.2 schema):
   - [x] `status`
@@ -42,7 +42,7 @@ Acceptance:
 
 ## Phase 2: Simulation/Validator Changes
 
-Target file: `/Users/zglitch009/projects/logistics-ai/FAXP/faxp_mvp_simulation.py`
+Target file: `faxp_mvp_simulation.py`
 
 - [x] Update validation logic for `ExecutionReport.VerificationResult` neutral object.
 - [x] Add verifier attestation validation hook:
@@ -61,8 +61,8 @@ Acceptance:
 ## Phase 3: Capability Negotiation (Optional Metadata in v0.2)
 
 Targets:
-- `/Users/zglitch009/projects/logistics-ai/FAXP/faxp_mvp_simulation.py`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/streamlit_app.py`
+- `faxp_mvp_simulation.py`
+- `streamlit_app.py`
 
 - [x] Add optional `VerificationCapabilities` structure (agent-level metadata).
 - [x] Add matching logic stub:
@@ -75,7 +75,7 @@ Acceptance:
 
 ## Phase 4: Streamlit Cloud Alignment
 
-Target file: `/Users/zglitch009/projects/logistics-ai/FAXP/streamlit_app.py`
+Target file: `streamlit_app.py`
 
 - [x] Add cloud-safe mode switch in UI/config:
   - [x] hide/disable non-cloud-safe local verifier paths.
@@ -89,9 +89,9 @@ Acceptance:
 ## Phase 5: Tests and Conformance
 
 Targets:
-- `/Users/zglitch009/projects/logistics-ai/FAXP/faxp_mvp_simulation.py` (self-test paths)
+- `faxp_mvp_simulation.py` (self-test paths)
 - New test notes/doc file (optional):
-  - `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/TEST_MATRIX_v0.2.md`
+  - `docs/roadmap/TEST_MATRIX_v0.2.md`
 
 - [x] Add neutral-verification happy-path test vectors:
   - [x] mock provider A
@@ -112,9 +112,9 @@ Acceptance:
 ## Phase 6: Docs + Governance
 
 Targets:
-- `/Users/zglitch009/projects/logistics-ai/FAXP/README.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/roadmap/FAXP_DEFERRED_ITEMS.md`
-- `/Users/zglitch009/projects/logistics-ai/FAXP/docs/rfc/RFC-v0.2-verification-neutrality.md`
+- `README.md`
+- `docs/roadmap/FAXP_DEFERRED_ITEMS.md`
+- `docs/rfc/RFC-v0.2-verification-neutrality.md`
 
 - [x] Add protocol-neutral verification section to README.
 - [x] Document adapter pattern boundaries (core protocol vs provider adapters).
