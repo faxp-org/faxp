@@ -4,10 +4,10 @@
 - RFC ID: `rfc-v0.3-a2a-mcp-interop-maturity`
 - Title: `Define maturity criteria for A2A translator and MCP tool-layer interop`
 - Author(s): `FAXP Governance Working Group`
-- Status: `Draft`
+- Status: `Accepted (Implemented)`
 - Target Version: `v0.3.0`
 - Created: `2026-02-23`
-- Last Updated: `2026-02-23`
+- Last Updated: `2026-02-28`
 
 ## Summary
 Establish a maturity model and acceptance criteria for A2A and MCP interoperability artifacts so implementers can claim interop readiness consistently without introducing mandatory A2A/MCP dependencies in FAXP core.
@@ -93,10 +93,31 @@ FAXP already has compatibility profiles, contracts, conformance scripts, and wat
 2. No maturity framework: rejected (inconsistent certification posture).
 3. Mandatory A2A/MCP core embedding: rejected (scope and neutrality violation).
 
-## Open Questions
-1. Should maturity level be represented directly in registry entries or inferred from evidence?
-2. What review cadence should be required for maintaining `L3-Watched` status?
-3. Should `L4-Certifiable` require production incident drill evidence for interop pathways?
+## Resolved Decisions
+1. Maturity level is inferred from evidence, not represented directly in registry entries.
+2. `L3-Watched` requires a 30-day review cadence against active upstream tracking and watch workflows.
+3. `L4-Certifiable` in v0.3 does not require interop-specific production incident drill evidence.
+
+## Implementation Evidence
+1. Interop maturity profile:
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/interop_maturity_profile.v1.json`
+2. A2A artifacts and checks:
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/interop/A2A_COMPATIBILITY_PROFILE.md`
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/a2a_translator_contract.json`
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/a2a_roundtrip_fixtures.json`
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/.github/workflows/a2a-watch.yml`
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_a2a_profile_check.py`
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_a2a_roundtrip_translation.py`
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_a2a_watch_artifacts.py`
+3. MCP artifacts and checks:
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/interop/MCP_COMPATIBILITY_PROFILE.md`
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/conformance/mcp_tooling_contract.json`
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/.github/workflows/mcp-watch.yml`
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_mcp_profile_check.py`
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_mcp_watch_artifacts.py`
+4. Certification/governance alignment:
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/docs/governance/CERTIFICATION_PLAYBOOK.md`
+   - `/Users/zglitch009/projects/logistics-ai/FIX-F/tests/run_interop_maturity_profile.py`
 
 ## Approval
 - Maintainer Approval:
