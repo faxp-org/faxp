@@ -36,6 +36,7 @@ This index keeps governance, roadmap, and release artifacts discoverable while k
 - `docs/interop/MCP_UPSTREAM_TRACKING.json`
 
 ## Roadmap
+- `docs/roadmap/PHASE_2_IMPLEMENTATION_ROADMAP.md`
 - `docs/roadmap/V2_IMPLEMENTATION_CHECKLIST.md`
 - `docs/roadmap/TEST_MATRIX_v0.2.md`
 - `docs/roadmap/FAXP_DEFERRED_ITEMS.md`
