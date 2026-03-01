@@ -57,6 +57,10 @@ This index keeps governance, roadmap, and release artifacts discoverable while k
 - `docs/adapters/ADAPTER_IMPLEMENTER_HANDOFF.md`
 - `adapter/INTERFACE.md`
 
+## Demo and Contributor Quick Start
+- `docs/STREAMLIT_QUICKSTART.md`
+- `scripts/bootstrap_demo_env.sh`
+
 ## Reference Assets
 - `docs/reference/Detailed Diagram.svg`
 - `docs/reference/openapi 3.1.0 YAML SAMPLE copy.txt`
