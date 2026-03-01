@@ -31,6 +31,10 @@ python3 conformance/run_all_checks.py --output /tmp/faxp_conformance_suite_repor
 python3 tests/run_release_readiness.py
 ```
 
+If you need the fastest local demo/testing setup first, use:
+- `docs/STREAMLIT_QUICKSTART.md`
+- `./scripts/bootstrap_demo_env.sh`
+
 ## RFC Requirement
 
 Use RFC flow for:
