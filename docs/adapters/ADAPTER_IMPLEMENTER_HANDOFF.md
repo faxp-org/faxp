@@ -8,7 +8,7 @@ If you are new to the repo, start with:
 - `README.md`
 - `docs/BUILDERS_START_HERE.md`
 
-If you need the builder capability declaration model, use:
+If you need the builder integration profile and capability declaration model, use:
 - `docs/adapters/BUILDER_INTEGRATION_PROFILE.md`
 
 If you need certification intake/review rules, use:
