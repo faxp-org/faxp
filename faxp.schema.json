@@ -37,6 +37,8 @@
     },
     "From": { "type": "string" },
     "To": { "type": "string" },
+    "FromAgentID": { "type": "string" },
+    "ToAgentID": { "type": "string" },
     "Timestamp": { "type": "string" },
     "Body": { "type": "object" }
   },
