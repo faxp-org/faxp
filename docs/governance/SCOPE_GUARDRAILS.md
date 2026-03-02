@@ -44,6 +44,16 @@ These guardrails prevent scope creep into dispatch operations, tracking operatio
 - Accessorial evidence adjudication (receipt/POD/BOL validation), dispute handling, and settlement/payment execution remain out of scope for protocol core.
 - Reference pricing, market benchmarks, and internal pricing logic remain builder-side concerns unless a future RFC demonstrates a clear interoperability need for standardized transport.
 
+## Litmus Test For New Protocol Fields
+Before adding a new protocol field, profile, or behavior, answer all four questions:
+
+1. Is it needed to negotiate or confirm a booking?
+2. Would two independent implementations need the same field or behavior in a standardized form?
+3. Does the counterparty actually need to receive it across a system boundary?
+4. Can it be modeled without turning FAXP into dispatch, settlement, or hosted operations infrastructure?
+
+If the answer to any question is "no" or unclear, the feature should remain builder-side until a stronger interoperability case is proven.
+
 ## Change Control
 - Any proposed expansion into an out-of-scope domain requires an RFC using `/docs/rfc/RFC_TEMPLATE.md`.
 - RFCs that cross scope boundaries must be marked as `Scope Expansion` and approved before implementation.
