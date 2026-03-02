@@ -66,14 +66,15 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
   - Requirement can be represented in `SpecialInstructions`.
   - Carrier explicitly accepts or returns exceptions in bid negotiation.
 
-### S7: Flatbed Tarping Requirement
+### S7: Open-Deck Securement and Handling Requirements
 
-- Description: Flatbed load requires tarping and securement notes.
+- Description: Open-deck load requires securement and handling notes such as tarping, chains, straps, pipe stakes, dunnage, or other booking-time handling requirements.
 - RFC: `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
 - Target: `v0.3.1`
 - Expected outcome:
-  - Requirement can be represented in `SpecialInstructions`.
+  - Requirements can be represented in `SpecialInstructions`.
   - Carrier explicitly accepts or returns exceptions in bid negotiation.
+  - Unresolved securement/handling mismatch can trigger deterministic counter or reject behavior.
 
 ### S8: Verification Degraded Path with Provisional Hold
 
@@ -84,7 +85,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
   - Deterministic policy decision.
   - Explicit reason codes and exception references.
 
-### S9: Required Delivery Date Commitment
+### S9: Delivery Commitment Window
 
 - Description: Shipper/broker requires delivery by specific date/time window.
 - RFC: `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
@@ -94,7 +95,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
   - Pickup date range remains required.
   - Carrier can accept/counter based on `ScheduleAcceptance` constraints.
 
-### S10: Trailer Size Match (`53'` vs `48'` Reefer)
+### S10: Equipment Dimension Compatibility
 
 - Description: Load requires specific reefer trailer size.
 - RFC: `docs/rfc/RFC-v0.3-equipment-taxonomy-expansion.md`
@@ -132,7 +133,7 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
   - Additional typed references support partner-specific identifiers without schema churn.
   - `ExecutionReport` preserves references for downstream TMS/document handoff.
 
-### S14: PerHour Negotiation for Dwell/Local Service
+### S14: PerHour Negotiation for Local or Time-Based Service
 
 - Description: Broker and carrier negotiate a `PerHour` booking-plane rate with explicit hours basis for a local or delay-sensitive load.
 - RFC: `docs/rfc/RFC-v0.3-rate-model-hourly-lane-minimum.md`
@@ -162,15 +163,45 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
   - Bid accept/counter paths preserve deterministic reason codes for accessorial disputes.
   - `ExecutionReport` snapshots agreed booking-plane accessorial framework.
 
-### S17: Post-Booking Accessorial Claim with External Evidence Reference
+### S17: First-Time Carrier Booking with Manual Follow-Up
 
-- Description: Carrier proposes a post-booking accessorial claim and references external proof metadata (not raw documents) for review.
-- RFC: `docs/rfc/RFC-v0.3-accessorial-lifecycle-booking-plane.md`
-- Target: `v0.3.x`
+- Description: Broker books a first-time carrier with explicit identity and commercial agreement, but downstream setup status remains unknown or required.
+- RFC: `docs/rfc/RFC-v0.3-operational-handoff-metadata.md`
+- Target: `v0.4.x`
 - Expected outcome:
-  - Claim state follows booking-plane contract (`Proposed -> Approved|Rejected`).
-  - Evidence is represented as references/metadata only (ID/hash/URI), not custody workflow.
-  - Settlement/payment execution remains outside FAXP scope.
+  - Booking remains valid with explicit counterparty identity and booking references.
+  - `OperationalHandoff` can indicate neutral routing intent and `SetupStatus=Unknown|Required`.
+  - No automated dispatch assumptions are required; manual follow-up remains conformant.
+
+### S18: Known Carrier Booking with Straight-Through Handoff
+
+- Description: Broker books a known carrier and includes structured post-booking routing metadata so downstream systems can continue without custom conventions.
+- RFC: `docs/rfc/RFC-v0.3-operational-handoff-metadata.md`
+- Target: `v0.4.x`
+- Expected outcome:
+  - Booking remains valid and attributable through envelope identity and booking references.
+  - `OperationalHandoff` carries routing-only metadata with `SetupStatus=Known`.
+  - Downstream automation can route cleanly without expanding FAXP into dispatch state.
+
+### S19: Composite Expedited Service Booking
+
+- Description: Booking combines expedited service commitments such as pickup window, delivery deadline, appointment constraints, team-driver requirement, and detention terms agreed up front.
+- RFC: `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- Target: `v0.4.x`
+- Expected outcome:
+  - Multiple booking-time commitments validate and compose without schema ambiguity.
+  - Carrier can accept or counter schedule and driver terms deterministically.
+  - Final execution record snapshots the agreed booking-plane commercial framework only.
+
+### S20: Composite Specialty Equipment Booking
+
+- Description: Booking combines specialty equipment requirements, dimensional constraints, and securement/handling instructions in one negotiation.
+- RFC: `docs/rfc/RFC-v0.3-equipment-taxonomy-expansion.md`
+- Target: `v0.4.x`
+- Expected outcome:
+  - Equipment class/subclass, dimensional compatibility, and special instructions compose cleanly.
+  - Carrier can return targeted exceptions rather than forcing a generic reject path.
+  - Booking remains strictly within negotiation and confirmation scope.
 
 ## Scenario Expansion Policy
 
