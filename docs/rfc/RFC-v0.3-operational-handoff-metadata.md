@@ -4,10 +4,10 @@
 - RFC ID: `rfc-v0.3-operational-handoff-metadata`
 - Title: `Define neutral post-booking operational handoff metadata`
 - Author(s): `FAXP Governance Working Group`
-- Status: `Draft`
-- Target Version: `v0.3.x`
+- Status: `Accepted (Implemented)`
+- Target Version: `v0.4.x`
 - Created: `2026-02-27`
-- Last Updated: `2026-02-27`
+- Last Updated: `2026-03-02`
 
 ## Summary
 Define a neutral post-booking handoff model that separates:
@@ -28,13 +28,15 @@ This RFC also clarifies an important boundary:
 ## Scope Gate (Required)
 - Scope Classification: `In-Scope`
 - Protocol-Core Impacted Files:
-  - None required for base proposal.
-  - Optional schema/runtime changes only if this RFC is later accepted.
+  - `faxp_mvp_simulation.py`
+  - `faxp.schema.json`
+  - `faxp.v0.2.schema.json`
+  - `conformance/operational_handoff_profile.v1.json`
 - Message Types Added/Changed:
   - No new message types required.
-  - `ExecutionReport` may later carry optional handoff metadata if approved.
+  - `ExecutionReport` carries optional `OperationalHandoff` metadata.
 - Schema Fields Added/Changed:
-  - Planning target only: optional `OperationalHandoff` or equivalent metadata object.
+  - Optional `ExecutionReport.OperationalHandoff` metadata object.
 
 ### Required Checks
 - [x] This RFC stays within booking-plane protocol scope.
@@ -52,13 +54,12 @@ This RFC also clarifies an important boundary:
    - who the counterparty is,
    - which agent/system represented them,
    - which booking/operational reference identifies the deal.
-4. Candidate required identity/reference field set:
-   - `CounterpartyID`
-   - `CounterpartyRole`
-   - `AgentID`
-   - `BookingReference`
-   - `OperationalReference`
-5. Candidate optional operational routing field set:
+4. Current implementation uses existing booked identity/reference anchors:
+   - envelope `From` / `To`
+   - `ExecutionReport.LoadID` or `ExecutionReport.TruckID`
+   - `ExecutionReport.ContractID`
+   - optional `LoadReferenceNumbers` for external correlation
+5. Implemented optional operational routing field set:
    - `OperationalReference`
    - `SystemOfRecordType`
    - `SystemOfRecordRef`
@@ -71,7 +72,7 @@ This RFC also clarifies an important boundary:
    - identify the correct system-of-record reference,
    - surface whether setup/onboarding is already complete or still required.
 7. Required/optional distinction:
-   - booking identity/reference data is required for a meaningful booked relationship,
+   - booking identity/reference data remains required for a meaningful booked relationship,
    - routing metadata remains optional in protocol core,
    - profiles/policies may require routing metadata for straight-through automation.
 8. Strict non-goals:
@@ -99,16 +100,24 @@ This RFC also clarifies an important boundary:
 3. If mandatory booking counterparty/reference data is already satisfied elsewhere in existing envelope/body semantics, no breaking change is required.
 4. Implementations not using structured operational routing metadata must remain conformant, though local policy may still require manual fallback handling.
 
-## Test Plan (If Implemented Later)
-1. Schema tests for optional handoff object shape and allowed values.
-2. Runtime tests proving malformed metadata does not create implicit dispatch states.
-3. Conformance checks ensuring handoff object remains routing-only and does not transport dispatch content.
+## Implementation Evidence
+1. Runtime validation and default example generation:
+   - `faxp_mvp_simulation.py`
+2. Conformance profile:
+   - `conformance/operational_handoff_profile.v1.json`
+3. Runtime/profile tests:
+   - `tests/run_operational_handoff_terms.py`
+   - `tests/run_operational_handoff_profile.py`
+4. Governance/release wiring:
+   - `docs/governance/GOVERNANCE_INDEX.json`
+   - `docs/governance/RELEASE_READINESS_CHECKLIST.md`
+   - `conformance/run_all_checks.py`
+   - `.github/workflows/ci.yml`
 
 ## Rollout Plan
-1. Governance review and acceptance.
-2. Decide whether handoff metadata belongs in `ExecutionReport`, capability profiles, or both.
-3. If accepted, add optional profile/schema contract and tests.
-4. Keep all operational execution artifacts external to FAXP core.
+1. Implement optional `ExecutionReport.OperationalHandoff` object and keep booking validity independent from it.
+2. Keep all operational execution artifacts external to FAXP core.
+3. Revisit capability-profile publication of routing hints only after builder feedback.
 
 ## Alternatives Considered
 1. Put dispatch details directly into FAXP: rejected as out of scope.
@@ -116,12 +125,11 @@ This RFC also clarifies an important boundary:
 3. Use vendor-specific portal/TMS conventions only: rejected due to lock-in and inconsistent automation behavior.
 
 ## Open Questions
-1. Should mandatory counterparty identity/reference data be formalized in `ExecutionReport`, party profiles, or existing envelope/body references?
-2. Should routing metadata live only in `ExecutionReport`, or also in party capability/profile artifacts?
-3. Should `SetupStatus` be fully standardized or left implementation-defined?
-4. Should `SupportedHandoffActions` use a canonical small enum or remain profile-driven?
+1. Whether handoff routing hints should also be published in party capability/profile artifacts.
+2. Whether `SetupStatus` should remain a small canonical enum or become profile-extensible.
+3. Whether additional neutral routing targets are needed based on builder feedback.
 
 ## Approval
-- Maintainer Approval:
+- Maintainer Approval: Accepted (Implemented)
 - Governance Approval (if required):
-- Date:
+- Date: 2026-03-02

@@ -111,7 +111,7 @@ These remain scope expansions and require separate governance track beyond curre
 11. `RFC-v0.3-operational-handoff-metadata`
 - Goal: Define optional neutral post-booking handoff metadata so systems can route completed bookings into the correct downstream ops workflow without moving dispatch into protocol core.
 - Scope class: `In-Scope`
-- Status: `Draft` (Deferred to v0.3.x)
-- Target: `v0.3.x`
-- Notes: Routing intent only; no dispatch packet content, appointment lifecycle, document custody, or settlement workflow state.
+- Status: `Accepted (Implemented)`
+- Target: `v0.4.x`
+- Notes: Implemented as optional `ExecutionReport.OperationalHandoff` metadata with routing-only semantics; existing envelope/report references remain the required booking identity anchors.
 - Draft file: `docs/rfc/RFC-v0.3-operational-handoff-metadata.md`

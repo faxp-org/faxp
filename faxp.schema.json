@@ -278,6 +278,7 @@
         "Timestamp": { "type": "string" },
         "AgreedRate": { "$ref": "#/$defs/Rate" },
         "LoadReferenceNumbers": { "type": "object" },
+        "OperationalHandoff": { "type": "object" },
         "VerifiedBadge": {
           "type": "string",
           "enum": ["None", "Basic", "Premium"]
