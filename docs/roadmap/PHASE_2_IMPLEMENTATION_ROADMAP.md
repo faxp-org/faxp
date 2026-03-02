@@ -25,15 +25,15 @@ Out of scope:
 - POD/BOL custody and document adjudication
 - invoicing, remittance, payment rails, and settlement
 - FAXP-hosted verifier or operational infrastructure
+- benchmark/reference pricing standardization without a demonstrated interoperability need; pricing models and market benchmarks remain builder-side by default
 
 ## Priority Order
 
 1. Operational Handoff Metadata
 2. Counterparty Identity and Booking Reference Hardening
 3. Builder Integration Profiles
-4. Rate Oracle Extension
-5. Certification and Contributor Onboarding
-6. Scenario Expansion
+4. Certification and Contributor Onboarding
+5. Scenario Expansion
 
 ## 1) Operational Handoff Metadata
 
@@ -112,32 +112,7 @@ Success criteria:
 - verifier integration patterns stay provider-neutral
 - certification expectations are concrete and reproducible
 
-## 4) Rate Oracle Extension
-
-Objective:
-Allow optional benchmark/reference rate evidence without coupling FAXP to a specific vendor or requiring an oracle in core.
-
-Primary references:
-- `docs/rfc/RFC-v0.3-rate-oracle-extension.md`
-- `docs/roadmap/V0_3_0_RFC_BACKLOG.md`
-
-Target deliverables:
-- finalized optional extension shape for benchmark/reference rate evidence
-- attribution and freshness expectations
-- conformance profile for optional use
-- explicit guidance that reference data is additive and not booking-core required
-
-Guardrails:
-- no oracle dependency in core
-- no vendor lock-in
-- no FAXP-hosted market data service
-
-Success criteria:
-- builders can attach optional rate reference evidence in a normalized way
-- the protocol remains valid without any oracle fields present
-- benchmark/reference usage is auditable and provider-neutral
-
-## 5) Certification and Contributor Onboarding
+## 4) Certification and Contributor Onboarding
 
 Objective:
 Turn the repo into something outside builders and contributors can navigate productively after the public launch.
@@ -159,7 +134,7 @@ Success criteria:
 - builders can find certification expectations without reverse-engineering the repo
 - public issues and PRs stay aligned to current scope boundaries
 
-## 6) Scenario Expansion
+## 5) Scenario Expansion
 
 Objective:
 Expand booking-plane realism through more scenario coverage without drifting into operations execution.
@@ -198,6 +173,5 @@ Phase 2 is complete when:
 1. operational handoff metadata has a clear RFC-backed path and implementation guidance
 2. booking identity and reference requirements are explicit and testable
 3. builder implementation guidance is materially easier to follow
-4. optional extension paths like rate oracles are defined without compromising neutrality
-5. certification and contributor workflows are ready for sustained external participation
-6. scenario coverage is strong enough to support implementation feedback without expanding protocol scope
+4. certification and contributor workflows are ready for sustained external participation
+5. scenario coverage is strong enough to support implementation feedback without expanding protocol scope
