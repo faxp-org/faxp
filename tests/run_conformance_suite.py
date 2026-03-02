@@ -255,6 +255,10 @@ def main() -> int:
         "builder_integration_profile" in listed_checks.stdout.splitlines(),
         "conformance suite must include builder_integration_profile in default checks",
     )
+    _assert(
+        "composite_booking_scenarios" in listed_checks.stdout.splitlines(),
+        "conformance suite must include composite_booking_scenarios in default checks",
+    )
 
     with tempfile.TemporaryDirectory(prefix="faxp-conformance-suite-") as temp_dir:
         output_path = Path(temp_dir) / "suite_report.json"

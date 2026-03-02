@@ -24,6 +24,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `accessorial_type_registry.v1.json`: canonical registry of active/planned booking-plane accessorial type IDs.
 - `booking_identity_profile.v1.json`: canonical booking-plane identity/profile contract for required party agent IDs, canonical booking identifiers, and optional external correlation references.
 - `builder_integration_profile.v1.json`: canonical booking-plane builder capability/claim profile for roles, flows, supported booking profiles, verification patterns, and optional interop tracks.
+- composite booking scenario regression coverage is enforced via `tests/run_composite_booking_scenarios.py` so first-time/known-counterparty handoff cases remain tested as real booking-plane behavior.
 - `multi_stop_terms_profile.v1.json`: canonical booking-plane multi-stop commercial-term profile.
 - `special_instructions_profile.v1.json`: canonical booking-plane special-instructions commercial-term profile.
 - `schedule_terms_profile.v1.json`: canonical booking-plane schedule commitment profile.
@@ -246,6 +247,12 @@ Builder integration profile check:
 
 ```bash
 python3 tests/run_builder_integration_profile.py
+```
+
+Composite booking scenario check:
+
+```bash
+python3 tests/run_composite_booking_scenarios.py
 ```
 
 Multi-stop commercial-term check:
