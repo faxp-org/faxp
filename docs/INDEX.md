@@ -59,6 +59,7 @@ This index keeps governance, roadmap, and release artifacts discoverable while k
 
 ## Demo and Contributor Quick Start
 - `docs/STREAMLIT_QUICKSTART.md`
+- `docs/STREAMLIT_DEMO_WALKTHROUGH.md`
 - `scripts/bootstrap_demo_env.sh`
 
 ## Reference Assets
