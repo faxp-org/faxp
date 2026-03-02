@@ -172,6 +172,84 @@ def main() -> int:
             "S19 should preserve the agreed detention booking terms without adding post-booking workflow.",
         )
 
+        # S20: specialty equipment booking combines subclass, dimensional, and handling terms.
+        specialty_broker = BrokerAgent("Broker Agent")
+        specialty_carrier = CarrierAgent("Carrier Agent")
+        specialty_load = specialty_broker.post_new_load(rate_model="Flat")
+        specialty_load["EquipmentType"] = "Stepdeck - Conestoga"
+        specialty_load["EquipmentClass"] = "StepDeck"
+        specialty_load["EquipmentSubClass"] = "Conestoga"
+        specialty_load["EquipmentTags"] = ["Conestoga"]
+        specialty_load["TrailerLength"] = 48
+        specialty_load["SpecialInstructions"] = [
+            "Pipe stakes required for securement.",
+            "Hardwood blocks required for load separation.",
+        ]
+        specialty_bid = specialty_carrier.create_bid_request(specialty_load, bid_amount=1925.0)
+        validate_message_body("BidRequest", specialty_bid)
+        specialty_response = specialty_broker.respond_to_bid(specialty_bid, forced_response="Accept")
+        _assert(
+            specialty_response["ResponseType"] == "Accept",
+            "S20 matching specialty-equipment terms should remain acceptable.",
+        )
+
+        specialty_report = specialty_broker.create_execution_report(
+            load_id=specialty_bid["LoadID"],
+            bid_request=specialty_bid,
+            verified_badge="Basic",
+            verification_result={
+                "status": "Success",
+                "provider": "test-provider",
+                "score": 93,
+                "token": "opaque-token",
+                "source": "implementer-adapter",
+                "evidenceRef": "sha256:specialty",
+                "verifiedAt": now_utc(),
+            },
+            policy_decision={
+                "VerificationMode": "Live",
+                "VerificationPolicyProfileID": "US_FMCSA_BALANCED_V1",
+                "DispatchAuthorization": "Allowed",
+                "DecisionReasonCode": "Verified",
+                "PolicyRuleID": "balanced-tier1",
+                "ReverifyBy": now_utc(),
+                "EvidenceRefs": ["sha256:specialty"],
+            },
+        )
+        validate_message_body("ExecutionReport", specialty_report)
+        equipment_terms = specialty_report.get("EquipmentTerms") or {}
+        _assert(
+            equipment_terms.get("EquipmentClass") == "StepDeck",
+            "S20 should preserve specialty equipment class in ExecutionReport.",
+        )
+        _assert(
+            equipment_terms.get("EquipmentSubClass") == "Conestoga",
+            "S20 should preserve specialty equipment subclass in ExecutionReport.",
+        )
+        _assert(
+            equipment_terms.get("TrailerLength") == 48,
+            "S20 should preserve dimensional booking commitments in ExecutionReport.",
+        )
+        _assert(
+            len(specialty_report.get("SpecialInstructions") or []) == 2,
+            "S20 should preserve booking-time securement and handling requirements.",
+        )
+
+        mismatch_bid = specialty_carrier.create_bid_request(specialty_load, bid_amount=1925.0)
+        mismatch_bid["EquipmentAcceptance"]["EquipmentSubClass"] = "AirRide"
+        mismatch_bid["EquipmentAcceptance"]["TrailerLength"] = 53
+        mismatch_bid["EquipmentAcceptance"]["TrailerLengthMin"] = 53
+        mismatch_bid["EquipmentAcceptance"]["TrailerLengthMax"] = 53
+        mismatch_response = specialty_broker.respond_to_bid(mismatch_bid, forced_response="Accept")
+        _assert(
+            mismatch_response["ResponseType"] == "Counter",
+            "S20 equipment incompatibility should counter rather than drift into execution logic.",
+        )
+        _assert(
+            mismatch_response.get("ReasonCode") == "EquipmentCompatibilityDispute",
+            "S20 equipment mismatch should use EquipmentCompatibilityDispute.",
+        )
+
         print("Composite booking scenario checks passed.")
         return 0
     finally:
