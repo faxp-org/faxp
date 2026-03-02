@@ -33,6 +33,7 @@ python3 tests/run_release_readiness.py
 
 If you need the fastest local demo/testing setup first, use:
 - `docs/STREAMLIT_QUICKSTART.md`
+- `docs/STREAMLIT_DEMO_WALKTHROUGH.md`
 - `./scripts/bootstrap_demo_env.sh`
 
 ## RFC Requirement

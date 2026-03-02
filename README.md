@@ -72,6 +72,7 @@ Run the Streamlit demo:
 
 Demo quick start:
 - `docs/STREAMLIT_QUICKSTART.md`
+- `docs/STREAMLIT_DEMO_WALKTHROUGH.md`
 
 ## Conformance and Governance
 
@@ -120,6 +121,7 @@ Security policy and vulnerability reporting:
 Contributor workflow and scope expectations:
 - `CONTRIBUTING.md`
 - `docs/STREAMLIT_QUICKSTART.md`
+- `docs/STREAMLIT_DEMO_WALKTHROUGH.md`
 
 Before opening a PR:
 1. read the scope guardrails
