@@ -1,0 +1,44 @@
+{
+  "profileVersion": "1.0.0",
+  "profileId": "booking-identity-profile.v1",
+  "protocol": "FAXP",
+  "scope": "booking-plane-identity",
+  "description": "Canonical booking identity profile for operationally attributable FAXP bookings using existing envelope agent IDs, booking identifiers, and optional external correlation metadata.",
+  "envelopeIdentity": {
+    "partyFields": [
+      "From",
+      "To"
+    ],
+    "agentIdFields": [
+      "FromAgentID",
+      "ToAgentID"
+    ],
+    "nonLocalModeRequiresAgentIds": true,
+    "agentIdsMustBindToPartyNames": true
+  },
+  "bookingIdentifiers": {
+    "executionReportRequiredFields": [
+      "ContractID",
+      "LoadID|TruckID"
+    ],
+    "optionalCorrelationField": "LoadReferenceNumbers",
+    "contractIdIsCanonicalBookingIdentifier": true
+  },
+  "normativeConstraints": {
+    "existingEnvelopeFieldsRemainPrimaryIdentitySurface": true,
+    "executionReportMustRemainOperationallyAttributable": true,
+    "loadReferenceNumbersRemainOptionalCorrelationMetadata": true,
+    "noGlobalParticipantRegistry": true,
+    "noUniversalTrustScore": true
+  },
+  "conformanceRequirements": {
+    "requiredTests": [
+      "tests/run_booking_identity_terms.py",
+      "tests/run_booking_identity_profile.py"
+    ],
+    "requiredSuiteChecks": [
+      "booking_identity_terms",
+      "booking_identity_profile"
+    ]
+  }
+}

@@ -22,6 +22,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `accessorial_terms_profile.v1.json`: canonical booking-plane accessorial commercial-term profile.
 - `detention_terms_profile.v1.json`: canonical booking-plane detention commercial-term profile.
 - `accessorial_type_registry.v1.json`: canonical registry of active/planned booking-plane accessorial type IDs.
+- `booking_identity_profile.v1.json`: canonical booking-plane identity/profile contract for required party agent IDs, canonical booking identifiers, and optional external correlation references.
 - `multi_stop_terms_profile.v1.json`: canonical booking-plane multi-stop commercial-term profile.
 - `special_instructions_profile.v1.json`: canonical booking-plane special-instructions commercial-term profile.
 - `schedule_terms_profile.v1.json`: canonical booking-plane schedule commitment profile.
@@ -225,6 +226,18 @@ Accessorial type registry check:
 
 ```bash
 python3 tests/run_accessorial_type_registry.py
+```
+
+Booking identity runtime check:
+
+```bash
+python3 tests/run_booking_identity_terms.py
+```
+
+Booking identity profile check:
+
+```bash
+python3 tests/run_booking_identity_profile.py
 ```
 
 Multi-stop commercial-term check:

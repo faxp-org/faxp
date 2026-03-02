@@ -148,6 +148,14 @@ def main() -> int:
         "conformance suite must include operational_handoff_profile in default checks",
     )
     _assert(
+        "booking_identity_terms" in listed_checks.stdout.splitlines(),
+        "conformance suite must include booking_identity_terms in default checks",
+    )
+    _assert(
+        "booking_identity_profile" in listed_checks.stdout.splitlines(),
+        "conformance suite must include booking_identity_profile in default checks",
+    )
+    _assert(
         "multi_stop_terms" in listed_checks.stdout.splitlines(),
         "conformance suite must include multi_stop_terms in default checks",
     )
