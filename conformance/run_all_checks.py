@@ -116,6 +116,10 @@ def _suite_commands() -> list[tuple[str, list[str]]]:
             "builder_integration_profile",
             [python, str(TESTS_DIR / "run_builder_integration_profile.py")],
         ),
+        (
+            "composite_booking_scenarios",
+            [python, str(TESTS_DIR / "run_composite_booking_scenarios.py")],
+        ),
         ("registry_apply", [python, str(TESTS_DIR / "run_apply_registry_update.py")]),
         ("certification_artifacts", [python, str(TESTS_DIR / "run_certification_artifacts.py")]),
         ("policy_profile_sync", [python, str(TESTS_DIR / "run_policy_profile_sync.py")]),
