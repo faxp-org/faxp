@@ -2,6 +2,13 @@
 
 This index keeps governance, roadmap, and release artifacts discoverable while keeping the repo root clean.
 
+## Start Here
+
+- New reader: `README.md`
+- Builder / TMS / load board implementer: `docs/BUILDERS_START_HERE.md`
+- Demo user: `docs/STREAMLIT_QUICKSTART.md`
+- Conformance / certification reviewer: `conformance/README.md`
+
 ## Governance
 - `docs/governance/FAXP_GOVERNANCE_MODEL.md`
 - `docs/governance/SCOPE_GUARDRAILS.md`

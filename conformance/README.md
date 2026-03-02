@@ -2,6 +2,14 @@
 
 FAXP is a protocol and certification authority model, not a centralized transaction host.
 
+This document is for builders who are already past the basic repo orientation stage and need the machine-readable artifact and certification reference layer.
+
+If you are new to the repo, start here first:
+1. `README.md`
+2. `docs/BUILDERS_START_HERE.md`
+
+Then come back to this document when you are ready to work with profiles, bundle artifacts, and certification mechanics.
+
 This folder defines machine-readable artifacts for implementer-hosted adapters:
 
 - `certification_registry.schema.json`: schema for registry metadata.
