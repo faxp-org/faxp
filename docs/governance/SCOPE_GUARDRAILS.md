@@ -42,6 +42,7 @@ These guardrails prevent scope creep into dispatch operations, tracking operatio
 - Verification ownership boundaries are documented in `docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md`.
 - Accessorials in protocol core are booking-time commercial terms/addenda only (allowed types, pricing mode, payer/payee allocation, optional caps, and approval intent).
 - Accessorial evidence adjudication (receipt/POD/BOL validation), dispute handling, and settlement/payment execution remain out of scope for protocol core.
+- Reference pricing, market benchmarks, and internal pricing logic remain builder-side concerns unless a future RFC demonstrates a clear interoperability need for standardized transport.
 
 ## Change Control
 - Any proposed expansion into an out-of-scope domain requires an RFC using `/docs/rfc/RFC_TEMPLATE.md`.

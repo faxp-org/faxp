@@ -103,9 +103,9 @@ These remain scope expansions and require separate governance track beyond curre
 10. `RFC-v0.3-rate-oracle-extension`
 - Goal: Define optional provider-agnostic benchmark/reference rate evidence extension for booking-plane negotiations.
 - Scope class: `In-Scope`
-- Status: `Draft` (Deferred to v0.3.x)
+- Status: `Deferred (Builder-side)`
 - Target: `v0.3.x`
-- Notes: Optional metadata only; no FAXP-hosted oracle services and no mandatory vendor coupling.
+- Notes: Current decision is to keep benchmark/reference pricing on the builder side. FAXP will revisit only if a future interoperability case justifies standard transport.
 - Draft file: `docs/rfc/RFC-v0.3-rate-oracle-extension.md`
 
 11. `RFC-v0.3-operational-handoff-metadata`
