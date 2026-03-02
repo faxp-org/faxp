@@ -120,6 +120,7 @@ Security policy and vulnerability reporting:
 
 Contributor workflow and scope expectations:
 - `CONTRIBUTING.md`
+- `docs/BUILDERS_START_HERE.md`
 - `docs/STREAMLIT_QUICKSTART.md`
 - `docs/STREAMLIT_DEMO_WALKTHROUGH.md`
 
