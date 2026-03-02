@@ -63,7 +63,7 @@ Purpose: Central place to capture commercial model requirements before implement
   - Backward-compatible single-stop default.
   - Conformance profile and runtime checks are release-gated.
 
-2. Service requirements (reefer temp bands, tarping, handling constraints)
+2. Service requirements (reefer temp bands, open-deck securement, handling constraints)
 - Target: `v0.3.1`
 - RFC: `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
 - Acceptance:
@@ -111,13 +111,13 @@ Purpose: Central place to capture commercial model requirements before implement
 - Acceptance:
   - Added only via RFC with compatibility plan.
 
-2. Advanced accessorial lifecycle scenarios
+2. Additional composite booking-plane commercial scenarios
 - Target: `v0.3.x`
-- RFC: `docs/rfc/RFC-v0.3-accessorial-lifecycle-booking-plane.md`
+- RFC: `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
 - Acceptance:
-  - Clear pre-booking vs post-booking claim-state boundaries.
-  - Explicit booking-time payer/payee responsibility semantics.
-  - Evidence handled as references/metadata only; settlement remains out of scope.
+  - Combines multiple booking-time commercial commitments in a single scenario.
+  - Explicit booking-time payer/payee responsibility semantics remain preserved.
+  - No post-booking claim workflow, settlement handling, or document-custody logic is introduced.
 
 ### E) Scope-Lock Baseline (Commercial Terms)
 
