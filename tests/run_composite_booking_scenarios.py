@@ -110,6 +110,68 @@ def main() -> int:
             "S18 should keep routing intent focused on straight-through handoff actions.",
         )
 
+        # S19: expedited service can combine schedule, driver, instructions, and detention terms.
+        broker = BrokerAgent("Broker Agent")
+        carrier = CarrierAgent("Carrier Agent")
+        expedited_load = broker.post_new_load(rate_model="PerMile")
+        expedited_load["DriverConfiguration"] = "Team"
+        expedited_load["SpecialInstructions"] = [
+            "Expedited service: arrive in pickup window without rollover.",
+            "Broker must be notified immediately if delivery window is at risk.",
+        ]
+        expedited_load["AccessorialPolicy"]["Terms"] = [
+            term for term in expedited_load["AccessorialPolicy"]["Terms"] if term["Type"] == "Detention"
+        ]
+        expedited_bid = carrier.create_bid_request(expedited_load, bid_amount=2.62)
+        validate_message_body("BidRequest", expedited_bid)
+        expedited_response = broker.respond_to_bid(expedited_bid, forced_response="Accept")
+        _assert(
+            expedited_response["ResponseType"] == "Accept",
+            "S19 matching expedited booking terms should remain acceptable.",
+        )
+
+        expedited_report = broker.create_execution_report(
+            load_id=expedited_bid["LoadID"],
+            bid_request=expedited_bid,
+            verified_badge="Basic",
+            verification_result={
+                "status": "Success",
+                "provider": "test-provider",
+                "score": 96,
+                "token": "opaque-token",
+                "source": "implementer-adapter",
+                "evidenceRef": "sha256:expedited",
+                "verifiedAt": now_utc(),
+            },
+            policy_decision={
+                "VerificationMode": "Live",
+                "VerificationPolicyProfileID": "US_FMCSA_BALANCED_V1",
+                "DispatchAuthorization": "Allowed",
+                "DecisionReasonCode": "Verified",
+                "PolicyRuleID": "balanced-tier1",
+                "ReverifyBy": now_utc(),
+                "EvidenceRefs": ["sha256:expedited"],
+            },
+        )
+        validate_message_body("ExecutionReport", expedited_report)
+        _assert(
+            expedited_report.get("DriverTerms", {}).get("DriverConfiguration") == "Team",
+            "S19 should preserve the expedited team-driver requirement in DriverTerms.",
+        )
+        _assert(
+            "PickupTimeWindow" in (expedited_report.get("ScheduleTerms") or {}),
+            "S19 should preserve booking-time pickup window commitments.",
+        )
+        _assert(
+            len(expedited_report.get("SpecialInstructions") or []) == 2,
+            "S19 should preserve explicit expedited service instructions.",
+        )
+        detention_terms = (expedited_report.get("AccessorialPolicy") or {}).get("Terms") or []
+        _assert(
+            len(detention_terms) == 1 and detention_terms[0].get("Type") == "Detention",
+            "S19 should preserve the agreed detention booking terms without adding post-booking workflow.",
+        )
+
         print("Composite booking scenario checks passed.")
         return 0
     finally:
