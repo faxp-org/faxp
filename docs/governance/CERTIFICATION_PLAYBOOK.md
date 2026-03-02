@@ -9,6 +9,10 @@ Purpose:
 - Responsibility boundary reference:
   - `docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md`
 
+Builder capability claim reference:
+- `docs/adapters/BUILDER_INTEGRATION_PROFILE.md`
+- `conformance/builder_integration_profile.v1.json`
+
 ## 1) Certification Tiers
 
 1. `SelfAttested`
@@ -85,6 +89,18 @@ Reference paths:
 - `conformance/vendor_direct_verifier_profile.v1.json`
 - `conformance/trust_profile.v1.json`
 - `conformance/accessorial_terms_profile.v1.json`
+- `conformance/builder_integration_profile.v1.json`
+
+## 2.1) Builder Integration Claims
+
+Builders may also declare a normalized implementation claim using the builder integration profile.
+
+Purpose:
+1. make it easier for outside implementers to understand what a builder actually supports
+2. make supported roles, flows, profiles, and verification patterns comparable across implementations
+3. keep claims tied to evidence rather than marketing language
+
+The builder integration profile does not replace certification evidence. It standardizes the claim surface around that evidence.
 
 ## 3) Intake Workflow
 

@@ -19,7 +19,8 @@
     "conformance/adapter_certification_profile.v2.json",
     "conformance/interop_maturity_profile.v1.json",
     "conformance/operational_handoff_profile.v1.json",
-    "conformance/booking_identity_profile.v1.json"
+    "conformance/booking_identity_profile.v1.json",
+    "conformance/builder_integration_profile.v1.json"
   ],
   "requiredTests": [
     "tests/run_scope_guardrails.py",
@@ -60,6 +61,7 @@
     "tests/run_role_capability_policy.py",
     "tests/run_shipper_orchestration_minimal.py",
     "tests/run_shipper_orchestration_profile.py",
+    "tests/run_builder_integration_profile.py",
     "tests/run_booking_plane_commercial_terms_doc.py",
     "tests/run_a2a_profile_check.py",
     "tests/run_a2a_roundtrip_translation.py",
@@ -109,6 +111,7 @@
     "role_capability_policy",
     "shipper_orchestration_minimal",
     "shipper_orchestration_profile",
+    "builder_integration_profile",
     "booking_plane_commercial_terms_doc",
     "adapter_certification_profile_v2",
     "a2a_profile",
@@ -159,6 +162,7 @@
     "role_capability_policy": "tests/run_role_capability_policy.py",
     "shipper_orchestration_minimal": "tests/run_shipper_orchestration_minimal.py",
     "shipper_orchestration_profile": "tests/run_shipper_orchestration_profile.py",
+    "builder_integration_profile": "tests/run_builder_integration_profile.py",
     "booking_plane_commercial_terms_doc": "tests/run_booking_plane_commercial_terms_doc.py",
     "adapter_certification_profile_v2": "tests/run_adapter_certification_profile_v2.py",
     "a2a_profile": "tests/run_a2a_profile_check.py",
