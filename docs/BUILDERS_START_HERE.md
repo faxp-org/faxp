@@ -2,6 +2,9 @@
 
 This is the fastest path for a TMS team, load board team, or agent builder to understand the repo without reverse-engineering the whole project.
 
+Use this document when you want to implement or evaluate FAXP.
+Do not use it as the full certification or governance reference; those are linked only after the implementation path is clear.
+
 ## 1) Understand the Boundary First
 
 Read these first:
@@ -28,6 +31,10 @@ The core booking path is:
 5. `ExecutionReport`
 
 That is the heart of the protocol.
+
+If you only need the interactive demo first, stop here and use:
+- `docs/STREAMLIT_QUICKSTART.md`
+- `docs/STREAMLIT_DEMO_WALKTHROUGH.md`
 
 ## 3) Understand What Has Already Been Standardized
 
@@ -112,6 +119,11 @@ You can ignore these on day one unless they are directly relevant to your implem
 4. deployment-specific runbooks
 
 Those matter later, not first.
+
+When you are ready for deeper implementation claims or certification review, move next to:
+1. `docs/adapters/BUILDER_INTEGRATION_PROFILE.md`
+2. `conformance/README.md`
+3. `docs/governance/CERTIFICATION_PLAYBOOK.md`
 
 ## 9) Common Mistakes
 

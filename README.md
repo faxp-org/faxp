@@ -6,6 +6,15 @@ FAXP standardizes how freight agents exchange booking messages across systems wi
 
 FAXP does not determine regulatory eligibility; it authenticates protocol messages and can transport optional verifier evidence.
 
+## Start Here
+
+Use the entry point that matches your job:
+
+- Public overview: `README.md`
+- Builder/TMS/load board implementation path: `docs/BUILDERS_START_HERE.md`
+- Demo/testing setup: `docs/STREAMLIT_QUICKSTART.md`
+- Full docs map: `docs/INDEX.md`
+
 ## Scope
 
 In scope:
@@ -121,8 +130,6 @@ Security policy and vulnerability reporting:
 Contributor workflow and scope expectations:
 - `CONTRIBUTING.md`
 - `docs/BUILDERS_START_HERE.md`
-- `docs/STREAMLIT_QUICKSTART.md`
-- `docs/STREAMLIT_DEMO_WALKTHROUGH.md`
 
 Before opening a PR:
 1. read the scope guardrails
