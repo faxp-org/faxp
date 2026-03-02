@@ -27,6 +27,8 @@ Out of scope:
 - FAXP-hosted verifier or operational infrastructure
 - benchmark/reference pricing standardization without a demonstrated interoperability need; pricing models and market benchmarks remain builder-side by default
 
+Apply the scope litmus test in `docs/governance/SCOPE_GUARDRAILS.md` before proposing any new protocol field, profile, or workflow.
+
 ## Priority Order
 
 1. Operational Handoff Metadata
