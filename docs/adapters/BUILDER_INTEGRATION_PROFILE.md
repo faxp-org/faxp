@@ -1,5 +1,17 @@
 # Builder Integration Profile
 
+Use this document when you need to declare what a builder actually supports at the booking-plane level.
+
+If you are new to the repo, start with:
+- `README.md`
+- `docs/BUILDERS_START_HERE.md`
+
+If you need adapter-hosting requirements, use:
+- `docs/adapters/ADAPTER_IMPLEMENTER_HANDOFF.md`
+
+If you need certification intake/review rules, use:
+- `docs/governance/CERTIFICATION_PLAYBOOK.md`
+
 ## Plain-English Purpose
 
 This profile is a standard capability sheet for builders.
@@ -60,6 +72,19 @@ This profile is not:
 - a replacement for certification evidence
 
 It is a normalized way to declare what a builder actually supports.
+
+## What This Document Answers
+
+This document is intentionally narrow.
+
+It answers:
+1. how a builder describes supported roles and flows
+2. how a builder declares supported booking-plane profiles
+3. how verification integration patterns and optional interop tracks are claimed
+
+It does not explain:
+1. how to host an adapter runtime
+2. how certification intake and review are performed
 
 ## Required Claim Areas
 

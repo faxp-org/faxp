@@ -1,5 +1,17 @@
 # FAXP Certification Playbook
 
+Use this document when you need the certification intake and review rules.
+
+If you are new to the repo, start with:
+- `README.md`
+- `docs/BUILDERS_START_HERE.md`
+
+If you need builder capability declarations, use:
+- `docs/adapters/BUILDER_INTEGRATION_PROFILE.md`
+
+If you need adapter-hosting implementation obligations, use:
+- `docs/adapters/ADAPTER_IMPLEMENTER_HANDOFF.md`
+
 This playbook defines how implementers submit adapter certification bundles and how FAXP evaluates them.
 
 Purpose:
@@ -12,6 +24,19 @@ Purpose:
 Builder capability claim reference:
 - `docs/adapters/BUILDER_INTEGRATION_PROFILE.md`
 - `conformance/builder_integration_profile.v1.json`
+
+## What This Document Answers
+
+This document is intentionally narrow.
+
+It answers:
+1. what evidence a certification submission must contain
+2. what checks must pass
+3. how acceptance, rejection, renewal, and revocation decisions work
+
+It does not explain:
+1. how to host an adapter runtime
+2. how a builder should first orient themselves to the repo
 
 ## 1) Certification Tiers
 
