@@ -55,6 +55,7 @@ This index keeps governance, roadmap, and release artifacts discoverable while k
 
 ## Adapter Guidance
 - `docs/adapters/ADAPTER_IMPLEMENTER_HANDOFF.md`
+- `docs/adapters/BUILDER_INTEGRATION_PROFILE.md`
 - `adapter/INTERFACE.md`
 
 ## Demo and Contributor Quick Start

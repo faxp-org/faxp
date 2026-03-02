@@ -1,0 +1,98 @@
+{
+  "profileVersion": "1.0.0",
+  "profileId": "builder-integration-profile.v1",
+  "protocol": "FAXP",
+  "scope": "booking-plane-builder-integration",
+  "description": "Canonical builder integration profile for declaring what a FAXP implementation supports across roles, flows, booking-plane profiles, verification patterns, and optional interop tracks.",
+  "claimSurface": {
+    "supportedRoles": [
+      "Broker",
+      "Carrier",
+      "Shipper"
+    ],
+    "supportedFlows": [
+      "LoadCentric",
+      "TruckCapacity",
+      "ShipperOrigin"
+    ],
+    "supportedProfileIds": [
+      "booking-identity-profile.v1",
+      "operational-handoff-metadata.v1",
+      "shipper-orchestration-minimal.v1",
+      "accessorial_terms_profile.v1",
+      "detention_terms_profile.v1",
+      "multi_stop_terms_profile.v1",
+      "special_instructions_profile.v1",
+      "schedule_terms_profile.v1",
+      "driver_configuration_profile.v1",
+      "load_reference_numbers_profile.v1",
+      "equipment_profile.v1",
+      "rate_model_profile.v1"
+    ],
+    "verificationIntegrationPatterns": [
+      "vendor-direct",
+      "implementer-adapter",
+      "authority-only",
+      "self-attested"
+    ],
+    "optionalInteropTracks": [
+      "A2A",
+      "MCP"
+    ]
+  },
+  "minimumClaimRequirements": {
+    "mustDeclareAtLeastOneRole": true,
+    "mustDeclareAtLeastOneFlow": true,
+    "mustDeclareAtLeastOneVerificationPattern": true,
+    "mustReferenceConformanceEvidence": true,
+    "allClaimedProfileIdsMustBeKnown": true
+  },
+  "claimMatrix": {
+    "BrokerBookingPlane": {
+      "requiredRoles": ["Broker"],
+      "requiredFlows": ["LoadCentric", "TruckCapacity"],
+      "minimumProfileIds": [
+        "booking-identity-profile.v1",
+        "operational-handoff-metadata.v1",
+        "rate_model_profile.v1"
+      ]
+    },
+    "CarrierBookingPlane": {
+      "requiredRoles": ["Carrier"],
+      "requiredFlows": ["LoadCentric", "TruckCapacity"],
+      "minimumProfileIds": [
+        "booking-identity-profile.v1",
+        "operational-handoff-metadata.v1",
+        "rate_model_profile.v1"
+      ]
+    },
+    "ShipperOriginOptional": {
+      "requiredRoles": ["Shipper", "Broker"],
+      "requiredFlows": ["ShipperOrigin"],
+      "minimumProfileIds": [
+        "shipper-orchestration-minimal.v1",
+        "booking-identity-profile.v1"
+      ]
+    }
+  },
+  "normativeConstraints": {
+    "faxpCoreRemainsBookingPlaneOnly": true,
+    "noFaxpHostedOperationsRequired": true,
+    "verificationProviderNeutralityRequired": true,
+    "claimedCapabilitiesMustMapToPassingChecks": true,
+    "undeclaredCapabilitiesMustNotBeImplied": true
+  },
+  "conformanceRequirements": {
+    "requiredDocs": [
+      "docs/adapters/BUILDER_INTEGRATION_PROFILE.md",
+      "docs/adapters/ADAPTER_IMPLEMENTER_HANDOFF.md",
+      "docs/governance/CERTIFICATION_PLAYBOOK.md"
+    ],
+    "requiredTests": [
+      "tests/run_builder_integration_profile.py"
+    ],
+    "requiredSuiteChecks": [
+      "builder_integration_profile"
+    ]
+  }
+}

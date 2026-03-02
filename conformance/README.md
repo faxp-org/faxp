@@ -23,6 +23,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `detention_terms_profile.v1.json`: canonical booking-plane detention commercial-term profile.
 - `accessorial_type_registry.v1.json`: canonical registry of active/planned booking-plane accessorial type IDs.
 - `booking_identity_profile.v1.json`: canonical booking-plane identity/profile contract for required party agent IDs, canonical booking identifiers, and optional external correlation references.
+- `builder_integration_profile.v1.json`: canonical booking-plane builder capability/claim profile for roles, flows, supported booking profiles, verification patterns, and optional interop tracks.
 - `multi_stop_terms_profile.v1.json`: canonical booking-plane multi-stop commercial-term profile.
 - `special_instructions_profile.v1.json`: canonical booking-plane special-instructions commercial-term profile.
 - `schedule_terms_profile.v1.json`: canonical booking-plane schedule commitment profile.
@@ -62,6 +63,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 
 Human-readable adapter contract:
 - `adapter/INTERFACE.md`: implementer handoff contract for request/response, security, and conformance expectations.
+- `docs/adapters/BUILDER_INTEGRATION_PROFILE.md`: plain-English explainer for builder capability claims and implementation matrices.
 - `docs/governance/CERTIFICATION_PLAYBOOK.md`: certification intake workflow and tier decision rules.
 - `docs/governance/REGISTRY_OPERATIONS_RUNBOOK.md`: operational process for update/revoke/rollback and rollback safety.
 
@@ -238,6 +240,12 @@ Booking identity profile check:
 
 ```bash
 python3 tests/run_booking_identity_profile.py
+```
+
+Builder integration profile check:
+
+```bash
+python3 tests/run_builder_integration_profile.py
 ```
 
 Multi-stop commercial-term check:

@@ -4,6 +4,7 @@ This checklist is the implementation handoff for any builder to host an FMCSA ad
 
 Primary contract references:
 - `adapter/INTERFACE.md`
+- `docs/adapters/BUILDER_INTEGRATION_PROFILE.md`
 - `docs/governance/CERTIFICATION_PLAYBOOK.md`
 - `docs/governance/REGISTRY_OPERATIONS_RUNBOOK.md`
 - `conformance/adapter_test_profile.schema.json`
@@ -27,6 +28,20 @@ FAXP does not own:
 - Production adapter hosting for brokers/carriers.
 - Runtime carrier verification operations.
 - Customer credentials or secrets for builder-hosted adapters.
+
+## Why This Exists
+
+This adapter checklist is one part of a larger builder story.
+
+Builders also need a consistent way to declare what they support at the booking-plane level:
+- which roles they implement,
+- which flows they support,
+- which booking-plane profiles they support,
+- which verification integration patterns they use.
+
+That broader builder integration profile is covered by:
+- `docs/adapters/BUILDER_INTEGRATION_PROFILE.md`
+- `conformance/builder_integration_profile.v1.json`
 
 ## 2) Endpoint Requirements
 
