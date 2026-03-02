@@ -2,6 +2,18 @@
 
 This checklist is the implementation handoff for any builder to host an FMCSA adapter while staying FAXP-conformant.
 
+Use this document only if you are hosting an adapter or verifier-facing integration runtime.
+
+If you are new to the repo, start with:
+- `README.md`
+- `docs/BUILDERS_START_HERE.md`
+
+If you need the builder capability declaration model, use:
+- `docs/adapters/BUILDER_INTEGRATION_PROFILE.md`
+
+If you need certification intake/review rules, use:
+- `docs/governance/CERTIFICATION_PLAYBOOK.md`
+
 Primary contract references:
 - `adapter/INTERFACE.md`
 - `docs/adapters/BUILDER_INTEGRATION_PROFILE.md`
@@ -31,15 +43,14 @@ FAXP does not own:
 
 ## Why This Exists
 
-This adapter checklist is one part of a larger builder story.
+This document is intentionally narrow.
 
-Builders also need a consistent way to declare what they support at the booking-plane level:
-- which roles they implement,
-- which flows they support,
-- which booking-plane profiles they support,
-- which verification integration patterns they use.
+It answers:
+1. what an adapter host must implement
+2. what security and normalization rules apply
+3. what checks must pass before release/certification
 
-That broader builder integration profile is covered by:
+It does not try to describe the full builder capability story. That is handled by:
 - `docs/adapters/BUILDER_INTEGRATION_PROFILE.md`
 - `conformance/builder_integration_profile.v1.json`
 
