@@ -2161,6 +2161,71 @@ def _validate_load_reference_numbers(reference_numbers, context):
         raise ValueError(f"{context} must include at least one reference number.")
 
 
+def _validate_operational_handoff(handoff, context):
+    if not isinstance(handoff, dict):
+        raise ValueError(f"{context} must be an object.")
+
+    allowed_fields = {
+        "OperationalReference",
+        "SystemOfRecordType",
+        "SystemOfRecordRef",
+        "HandoffEndpointType",
+        "HandoffEndpointRef",
+        "SupportedHandoffActions",
+        "SetupStatus",
+    }
+    unknown_fields = sorted(set(handoff.keys()) - allowed_fields)
+    if unknown_fields:
+        raise ValueError(f"{context} contains unsupported fields: {unknown_fields}.")
+
+    _require_fields(
+        handoff,
+        ["OperationalReference", "SystemOfRecordType", "SystemOfRecordRef", "SetupStatus"],
+        context,
+    )
+    _bounded_string(handoff["OperationalReference"], f"{context}.OperationalReference")
+    _bounded_string(handoff["SystemOfRecordType"], f"{context}.SystemOfRecordType")
+    if handoff["SystemOfRecordType"] not in VALID_HANDOFF_SYSTEM_OF_RECORD_TYPES:
+        raise ValueError(
+            f"{context}.SystemOfRecordType must be one of {sorted(VALID_HANDOFF_SYSTEM_OF_RECORD_TYPES)}."
+        )
+    _bounded_string(handoff["SystemOfRecordRef"], f"{context}.SystemOfRecordRef")
+    _bounded_string(handoff["SetupStatus"], f"{context}.SetupStatus")
+    if handoff["SetupStatus"] not in VALID_HANDOFF_SETUP_STATUSES:
+        raise ValueError(
+            f"{context}.SetupStatus must be one of {sorted(VALID_HANDOFF_SETUP_STATUSES)}."
+        )
+
+    has_endpoint_type = "HandoffEndpointType" in handoff
+    has_endpoint_ref = "HandoffEndpointRef" in handoff
+    if has_endpoint_type != has_endpoint_ref:
+        raise ValueError(
+            f"{context} must include both HandoffEndpointType and HandoffEndpointRef when either is present."
+        )
+    if has_endpoint_type:
+        _bounded_string(handoff["HandoffEndpointType"], f"{context}.HandoffEndpointType")
+        if handoff["HandoffEndpointType"] not in VALID_HANDOFF_ENDPOINT_TYPES:
+            raise ValueError(
+                f"{context}.HandoffEndpointType must be one of {sorted(VALID_HANDOFF_ENDPOINT_TYPES)}."
+            )
+        _bounded_string(handoff["HandoffEndpointRef"], f"{context}.HandoffEndpointRef")
+
+    if "SupportedHandoffActions" in handoff:
+        actions = handoff["SupportedHandoffActions"]
+        if not isinstance(actions, list) or not actions:
+            raise ValueError(f"{context}.SupportedHandoffActions must be a non-empty array.")
+        seen = set()
+        for idx, action in enumerate(actions):
+            _bounded_string(action, f"{context}.SupportedHandoffActions[{idx}]")
+            if action not in VALID_HANDOFF_ACTIONS:
+                raise ValueError(
+                    f"{context}.SupportedHandoffActions[{idx}] must be one of {sorted(VALID_HANDOFF_ACTIONS)}."
+                )
+            if action in seen:
+                raise ValueError(f"{context}.SupportedHandoffActions must not contain duplicates.")
+            seen.add(action)
+
+
 def _validate_verifier_dependency_integrity():
     if not NON_LOCAL_MODE:
         return
@@ -2173,6 +2238,29 @@ def _validate_verifier_dependency_integrity():
         raise RuntimeError("Verifier dependency file not found.") from exc
     if digest != EXPECTED_VERIFIER_COMPONENT_SHA256:
         raise RuntimeError("Verifier dependency hash mismatch.")
+
+
+def _default_operational_handoff(agent_name, load_id, load):
+    slug = re.sub(r"[^a-z0-9]+", "-", str(agent_name).strip().lower()).strip("-") or "ops"
+    reference_numbers = load.get("LoadReferenceNumbers") or {}
+    operational_reference = (
+        reference_numbers.get("PrimaryReferenceNumber")
+        or reference_numbers.get("SecondaryReferenceNumber")
+        or f"OPS-{load_id[:8].upper()}"
+    )
+    return {
+        "OperationalReference": operational_reference,
+        "SystemOfRecordType": "TMS",
+        "SystemOfRecordRef": f"{slug}-load-{load_id[:8]}",
+        "HandoffEndpointType": "InternalQueue",
+        "HandoffEndpointRef": f"{slug}:booking-confirmed",
+        "SupportedHandoffActions": [
+            "GenerateRateConfirmation",
+            "RequestCarrierSetup",
+            "RetrieveDispatchInstructions",
+        ],
+        "SetupStatus": "Unknown",
+    }
 
 
 def _validate_agent_identity_binding(envelope):
@@ -2742,6 +2830,32 @@ VALID_VERIFIED_BADGES = {"None", "Basic", "Premium"}
 VALID_VERIFICATION_STATUSES = {"Success", "Fail", "Pending"}
 VALID_VERIFICATION_MODES = {"Live", "Cached", "Fallback"}
 VALID_DISPATCH_AUTHORIZATIONS = {"Allowed", "Hold", "Blocked"}
+VALID_HANDOFF_SYSTEM_OF_RECORD_TYPES = {
+    "TMS",
+    "LoadBoard",
+    "BrokerPortal",
+    "CarrierPortal",
+    "ShipperPortal",
+    "InternalQueue",
+    "ManualWorkflow",
+}
+VALID_HANDOFF_ENDPOINT_TYPES = {
+    "A2A",
+    "Webhook",
+    "Portal",
+    "Email",
+    "InternalQueue",
+    "ManualWorkflow",
+}
+VALID_HANDOFF_SETUP_STATUSES = {"Known", "Required", "Expired", "Unknown"}
+VALID_HANDOFF_ACTIONS = {
+    "GenerateRateConfirmation",
+    "SendRateConfirmation",
+    "RequestCarrierSetup",
+    "RetrieveDispatchInstructions",
+    "AcknowledgeBooking",
+    "ManualFollowUp",
+}
 VALID_ACCESSORIAL_PRICING_MODES = {
     "IncludedInBaseRate",
     "Reimbursable",
@@ -4173,6 +4287,8 @@ def validate_message_body(message_type, body):
             if "EquipmentType" not in equipment_terms:
                 equipment_terms["EquipmentType"] = "Special"
             _validate_equipment_contract(equipment_terms, "ExecutionReport.EquipmentTerms")
+        if "OperationalHandoff" in body:
+            _validate_operational_handoff(body["OperationalHandoff"], "ExecutionReport.OperationalHandoff")
         _bounded_string(body["ContractID"], "ExecutionReport.ContractID")
         _validate_iso_datetime(body["Timestamp"], "ExecutionReport.Timestamp")
         _validate_verification_result(body["VerificationResult"], "ExecutionReport.VerificationResult")
@@ -5413,6 +5529,7 @@ class BrokerAgent:
             "PolicyRuleID": policy_decision["PolicyRuleID"],
             "ReverifyBy": policy_decision["ReverifyBy"],
             "EvidenceRefs": policy_decision.get("EvidenceRefs", []),
+            "OperationalHandoff": _default_operational_handoff(self.name, load_id, load),
         }
         if load.get("DriverConfiguration"):
             report["DriverTerms"] = {"DriverConfiguration": load.get("DriverConfiguration")}
