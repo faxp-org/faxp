@@ -103,6 +103,14 @@ Purpose: Central place to capture commercial model requirements before implement
   - Supports neutral `PrimaryReferenceNumber` / `SecondaryReferenceNumber` and typed additional references.
   - Execution report snapshots references for cross-system correlation.
 
+7. Commodity and declared cargo value discovery facts
+- Target: `deferred`
+- RFC: `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- Acceptance:
+  - Load can declare neutral fit-related facts such as commodity type, commodity description, and declared cargo value.
+  - Builders can use those facts in local insurance/risk logic before negotiation without FAXP standardizing the eligibility decision.
+  - Protocol core remains limited to carrying neutral booking/discovery facts rather than commodity-coverage adjudication.
+
 ### D) Future Commercial Scenarios
 
 1. Additional rate structures (hourly, lane-minimums, tiered pricing)
