@@ -111,6 +111,14 @@ Purpose: Central place to capture commercial model requirements before implement
   - Builders can use those facts in local insurance/risk logic before negotiation without FAXP standardizing the eligibility decision.
   - Protocol core remains limited to carrying neutral booking/discovery facts rather than commodity-coverage adjudication.
 
+8. Shipment/service mode discovery fact (`TL` vs `LTL`)
+- Target: `deferred`
+- RFC: `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- Acceptance:
+  - Load can declare a neutral shipment/service mode fact for discovery and booking fit.
+  - Builders can use that fact to separate TL-oriented and LTL-oriented workflows before negotiation.
+  - Protocol core remains limited to the neutral fit signal and does not standardize full LTL workflow semantics, classing, consolidation, or rating logic.
+
 ### D) Future Commercial Scenarios
 
 1. Additional rate structures (hourly, lane-minimums, tiered pricing)

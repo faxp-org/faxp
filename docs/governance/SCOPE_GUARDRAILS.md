@@ -45,6 +45,8 @@ These guardrails prevent scope creep into dispatch operations, tracking operatio
 - Reference pricing, market benchmarks, and internal pricing logic remain builder-side concerns unless a future RFC demonstrates a clear interoperability need for standardized transport.
 - FAXP may carry neutral booking/discovery facts such as commodity type, declared cargo value, and handling-sensitive cargo descriptors when those facts affect fit or negotiation.
 - Insurance interpretation, commodity-eligibility decisions, underwriting exceptions, and internal risk-acceptance logic remain builder-side unless a future RFC demonstrates a narrow interoperability need for standardizing a shared outcome.
+- FAXP may carry neutral shipment/service mode facts such as `TL` versus `LTL` when those facts affect discovery or booking fit.
+- Full LTL workflow modeling (classification, terminal routing, consolidation, rehandling, and LTL-specific rating logic) remains deferred until a future RFC demonstrates a clear booking-plane interoperability need.
 
 ## Litmus Test For New Protocol Fields
 Before adding a new protocol field, profile, or behavior, answer all four questions:
