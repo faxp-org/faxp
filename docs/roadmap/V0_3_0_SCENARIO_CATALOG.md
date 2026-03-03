@@ -215,6 +215,16 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
   - Carrier-side builder uses local insurance, exclusion, and risk rules to decide whether to surface, bid, block, or require review.
   - FAXP does not determine whether the carrier is eligible to haul the commodity or whether additional cargo coverage is required.
 
+### F2: Shipment Mode Fit (TL vs LTL)
+
+- Description: Load declares whether the shipment is `TL` or `LTL` so builders can filter and route discovery appropriately before negotiation.
+- RFC: `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- Target: `deferred`
+- Expected outcome:
+  - FAXP carries a neutral shipment/service mode fact for discovery and booking fit.
+  - Builder-side logic uses that fact to determine whether the opportunity belongs in a TL-oriented or LTL-oriented workflow.
+  - FAXP does not attempt to model full LTL workflow semantics such as freight class, terminal routing, consolidation, or LTL-specific rating behavior.
+
 ## Scenario Expansion Policy
 
 1. New scenario proposals must be added here first.
