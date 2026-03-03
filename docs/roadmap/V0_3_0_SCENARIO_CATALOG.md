@@ -203,6 +203,18 @@ Purpose: Concrete scenarios used to drive RFC decisions and acceptance tests.
   - Carrier can return targeted exceptions rather than forcing a generic reject path.
   - Booking remains strictly within negotiation and confirmation scope.
 
+## Deferred / Future Scenario Candidates
+
+### F1: Commodity and Cargo Value Fit
+
+- Description: Load declares commodity type and cargo value so a carrier-side builder can determine whether the freight is a fit before negotiation, based on local coverage/risk rules.
+- RFC: `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- Target: `deferred`
+- Expected outcome:
+  - FAXP carries neutral booking/discovery facts such as `CommodityType`, `CommodityDescription`, and `DeclaredCargoValue`.
+  - Carrier-side builder uses local insurance, exclusion, and risk rules to decide whether to surface, bid, block, or require review.
+  - FAXP does not determine whether the carrier is eligible to haul the commodity or whether additional cargo coverage is required.
+
 ## Scenario Expansion Policy
 
 1. New scenario proposals must be added here first.

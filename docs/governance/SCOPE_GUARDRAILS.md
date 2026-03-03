@@ -43,6 +43,8 @@ These guardrails prevent scope creep into dispatch operations, tracking operatio
 - Accessorials in protocol core are booking-time commercial terms/addenda only (allowed types, pricing mode, payer/payee allocation, optional caps, and approval intent).
 - Accessorial evidence adjudication (receipt/POD/BOL validation), dispute handling, and settlement/payment execution remain out of scope for protocol core.
 - Reference pricing, market benchmarks, and internal pricing logic remain builder-side concerns unless a future RFC demonstrates a clear interoperability need for standardized transport.
+- FAXP may carry neutral booking/discovery facts such as commodity type, declared cargo value, and handling-sensitive cargo descriptors when those facts affect fit or negotiation.
+- Insurance interpretation, commodity-eligibility decisions, underwriting exceptions, and internal risk-acceptance logic remain builder-side unless a future RFC demonstrates a narrow interoperability need for standardizing a shared outcome.
 
 ## Litmus Test For New Protocol Fields
 Before adding a new protocol field, profile, or behavior, answer all four questions:
