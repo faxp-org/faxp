@@ -6,6 +6,14 @@ FAXP standardizes how freight agents exchange booking messages across systems wi
 
 FAXP does not determine regulatory eligibility; it authenticates protocol messages and can transport optional verifier evidence.
 
+## Project Maturity
+
+FAXP is currently experimental and early-stage.
+
+Treat current schemas, profiles, demos, and scripts as pilot/evaluation artifacts, not production guarantees.
+
+Before production claims, implementers should complete security hardening, red-team testing, and multi-implementation interoperability validation.
+
 ## Start Here
 
 Use the entry point that matches your job:
