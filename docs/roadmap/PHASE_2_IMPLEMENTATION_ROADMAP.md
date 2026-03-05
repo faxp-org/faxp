@@ -4,6 +4,8 @@ Status: Planned
 Scope Class: Booking-plane implementation maturity  
 Updated: 2026-03-01
 
+Project maturity note: this roadmap tracks experimental-to-production hardening; items should be treated as pilot-stage until release readiness gates are met.
+
 ## Phase 2 Goal
 
 Turn FAXP from a well-scoped booking protocol into a practical implementation standard that outside builders can integrate without expanding FAXP into dispatch, tracking, document custody, or settlement.

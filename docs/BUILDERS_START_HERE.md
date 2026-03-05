@@ -5,6 +5,13 @@ This is the fastest path for a TMS team, load board team, or agent builder to un
 Use this document when you want to implement or evaluate FAXP.
 Do not use it as the full certification or governance reference; those are linked only after the implementation path is clear.
 
+## Maturity Notice
+
+FAXP is currently experimental and early-stage.
+
+Use sandbox/test environments first.
+Treat current implementation guidance as evolving until release-readiness and interoperability criteria are met across independent builders.
+
 ## 1) Understand the Boundary First
 
 Read these first:
