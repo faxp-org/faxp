@@ -2,6 +2,8 @@
 
 This index keeps governance, roadmap, and release artifacts discoverable while keeping the repo root clean.
 
+Project status note: FAXP is currently experimental and early-stage; use these docs for pilot/evaluation work unless a specific release document states otherwise.
+
 ## Start Here
 
 - New reader: `README.md`
