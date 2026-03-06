@@ -164,6 +164,47 @@ def main() -> int:
                 f"Expected failure when ProviderExtensions contain biometric key {biometric_key!r}."
             )
 
+    try:
+        translate_verifier_payload(
+            "generic",
+            {
+                "status": "Success",
+                "category": "Biometric",
+                "method": "LivenessPlusDocument",
+                "provider": "identity.vendor",
+                "assuranceLevel": "AAL2",
+                "score": 97,
+                "token": "opaque-token",
+                "providerExtensions": {
+                    "fаceimage": "base64:RAW_BIOMETRIC_SAMPLE",
+                },
+            },
+            source="generic",
+        )
+    except TranslationError as exc:
+        _assert(
+            "non-ASCII key name" in str(exc),
+            "Expected non-ASCII key rejection for ProviderExtensions.",
+        )
+    else:
+        raise AssertionError("Expected failure for non-ASCII biometric key in ProviderExtensions.")
+
+    try:
+        translate_verifier_payload(
+            "generic",
+            {"payload": {}, "signature": "not-an-object"},
+            source="generic",
+            signature_keys=keyring,
+            require_signed_wrapper=True,
+        )
+    except TranslationError as exc:
+        _assert(
+            "signature must be an object" in str(exc),
+            "Expected explicit signature object-type rejection.",
+        )
+    else:
+        raise AssertionError("Expected failure for non-object wrapper signature.")
+
     print("Verifier translator regression checks passed.")
     return 0
 

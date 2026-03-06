@@ -211,6 +211,63 @@ def main() -> int:
     else:
         raise AssertionError("Expected failure for non-object ExecutionReport VerificationResult.")
 
+    confusable_export_envelope = {
+        "Protocol": "FAXP",
+        "ProtocolVersion": "0.2",
+        "MessageType": "ExecutionReport",
+        "From": "Broker Agent",
+        "To": "Carrier Agent",
+        "Timestamp": "2026-03-06T12:00:00Z",
+        "MessageID": "msg-export-003",
+        "Nonce": "nonce-export-003",
+        "Body": {
+            "Status": "Booked",
+            "Timestamp": "2026-03-06T12:00:00Z",
+            "VerifiedBadge": "Basic",
+            "VerificationResult": {
+                "nest": {"tоken": "confusable-token"},
+            },
+        },
+    }
+    try:
+        faxp_to_a2a_task_sanitized_export(confusable_export_envelope, contract=contract)
+    except A2ABridgeError as exc:
+        _assert(
+            "non-ASCII key name" in str(exc),
+            "Unexpected error for non-ASCII VerificationResult key.",
+        )
+    else:
+        raise AssertionError("Expected failure for non-ASCII token-like key in VerificationResult.")
+
+    deep_node = {"token": "x"}
+    for _ in range(700):
+        deep_node = {"child": deep_node}
+    deep_export_envelope = {
+        "Protocol": "FAXP",
+        "ProtocolVersion": "0.2",
+        "MessageType": "ExecutionReport",
+        "From": "Broker Agent",
+        "To": "Carrier Agent",
+        "Timestamp": "2026-03-06T12:00:00Z",
+        "MessageID": "msg-export-004",
+        "Nonce": "nonce-export-004",
+        "Body": {
+            "Status": "Booked",
+            "Timestamp": "2026-03-06T12:00:00Z",
+            "VerifiedBadge": "Basic",
+            "VerificationResult": deep_node,
+        },
+    }
+    try:
+        faxp_to_a2a_task_sanitized_export(deep_export_envelope, contract=contract)
+    except A2ABridgeError as exc:
+        _assert(
+            "exceeded max traversal depth" in str(exc),
+            "Expected bounded traversal failure for deep VerificationResult payload.",
+        )
+    else:
+        raise AssertionError("Expected bounded traversal failure for deep VerificationResult payload.")
+
     print("A2A round-trip translator checks passed.")
     return 0
 

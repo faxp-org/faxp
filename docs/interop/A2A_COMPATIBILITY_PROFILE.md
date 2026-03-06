@@ -23,6 +23,7 @@ This profile defines how FAXP interoperates with A2A environments through a tran
 - External/shared exports should use sanitized artifacts by default.
 - Recommended exporter: `faxp_to_a2a_task_sanitized_export` in `conformance/a2a_bridge_translator.py`.
 - Sanitized export redacts `Nonce`, removes signature fields, recursively scrubs token-like fields under `VerificationResult`, and replaces top-level `VerificationResult.token` with `tokenRef`.
+- Sanitized export fails closed for non-ASCII key names in `VerificationResult` and enforces bounded traversal limits for nested payload safety.
 
 <!-- A2A_PROFILE_BEGIN -->
 {

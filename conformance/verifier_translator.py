@@ -48,6 +48,18 @@ def _normalize_key(key: object) -> str:
     return re.sub(r"[^a-z0-9]", "", str(key).strip().lower())
 
 
+def _assert_ascii_keys(value: object, context: str) -> None:
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if not str(key).isascii():
+                raise TranslationError(f"{context} contains non-ASCII key name: {key!r}")
+            _assert_ascii_keys(item, context)
+        return
+    if isinstance(value, list):
+        for item in value:
+            _assert_ascii_keys(item, context)
+
+
 def _contains_forbidden_biometric(value: object) -> bool:
     if isinstance(value, dict):
         for key, item in value.items():
@@ -106,6 +118,8 @@ def _verify_signed_wrapper(
         return
     if not signature:
         raise TranslationError("Signed wrapper is required but signature is missing.")
+    if not isinstance(signature, dict):
+        raise TranslationError("Wrapper signature must be an object.")
     if not signature_keys:
         raise TranslationError("No signature keyring provided for signed wrapper validation.")
     alg = str(signature.get("alg") or "").strip().upper()
@@ -292,6 +306,8 @@ def translate_verifier_payload(
         raise TranslationError(f"Unsupported provider kind: {provider_kind!r}")
 
     _require_neutral_fields(verification_result)
+    _assert_ascii_keys(verification_result, "VerificationResult")
+    _assert_ascii_keys(provider_extensions, "ProviderExtensions")
     if _contains_forbidden_biometric(provider_extensions):
         raise TranslationError("Raw biometric artifacts are not allowed in ProviderExtensions.")
     return {
