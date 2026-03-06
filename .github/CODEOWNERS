@@ -1,1 +1,18 @@
+# Protocol core contracts and schemas
+/faxp.schema.json @truckingadvantage
+/faxp.v0.2.schema.json @truckingadvantage
+/conformance/** @truckingadvantage
+/docs/governance/** @truckingadvantage
+/docs/rfc/** @truckingadvantage
+
+# Reference runtime and demo surfaces (non-normative)
+/faxp_mvp_simulation.py @truckingadvantage
+/streamlit_app.py @truckingadvantage
+/streamlit_state_logic.py @truckingadvantage
+/scripts/run_secure_demo.sh @truckingadvantage
+/scripts/incident_drill.sh @truckingadvantage
+/scripts/bootstrap_demo_env.sh @truckingadvantage
+/docs/STREAMLIT_*.md @truckingadvantage
+
+# Default owner fallback
 * @truckingadvantage

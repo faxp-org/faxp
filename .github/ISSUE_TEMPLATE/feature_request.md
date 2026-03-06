@@ -18,7 +18,8 @@ Describe the proposed behavior.
 
 - [ ] Booking-plane in-scope
 - [ ] Scope-adjacent (needs RFC)
-- [ ] Out-of-scope for protocol core
+- [ ] Out-of-scope for protocol-core
+- [ ] Reference-runtime only (non-normative demo/simulation behavior)
 
 ## Alternatives considered
 
@@ -34,3 +35,10 @@ Expected impact on:
 ## References
 
 Link RFCs/issues/docs.
+
+## Suggested labels
+
+- [ ] protocol-core
+- [ ] reference-runtime
+- [ ] governance
+- [ ] interop
