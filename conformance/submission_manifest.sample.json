@@ -35,8 +35,8 @@
   "submissionSignature": {
     "alg": "HMAC_SHA256",
     "kid": "faxp-submission-kid-2026q1",
-    "payloadDigestSha256": "sha256:8c6063eb72e6ac9e339faba0e376c72884ae2fa9aa353f5537c18bbc3dad9a41",
-    "sig": "a57999c57dc1460106e7ca945f63711a8ec2b8c893c884e2a0f1a00d0ed66612",
+    "payloadDigestSha256": "sha256:d038d1018efff14da4f782cf228e70ea109bc39a612107745d0e80033d9cb498",
+    "sig": "d7ec46b04a11a3719da86fd585aff4fbe5a688a5b0e661b96b8cad3b25c96ae8",
     "signedAt": "2026-02-22T00:00:00Z"
   },
   "notes": "Sample submission manifest for CI and onboarding verification."
