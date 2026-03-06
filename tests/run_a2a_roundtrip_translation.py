@@ -19,6 +19,7 @@ from conformance.a2a_bridge_translator import (  # noqa: E402
     assert_round_trip_from_a2a,
     assert_round_trip,
     faxp_to_a2a_task,
+    faxp_to_a2a_task_sanitized_export,
     load_contract,
 )
 
@@ -128,6 +129,56 @@ def main() -> int:
         _assert("Unmapped A2A task type" in str(exc), "Unexpected error for unmapped task type")
     else:
         raise AssertionError("Expected failure for unmapped A2A task type.")
+
+    export_envelope = {
+        "Protocol": "FAXP",
+        "ProtocolVersion": "0.2",
+        "MessageType": "ExecutionReport",
+        "From": "Broker Agent",
+        "To": "Carrier Agent",
+        "Timestamp": "2026-03-06T12:00:00Z",
+        "MessageID": "msg-export-001",
+        "Nonce": "nonce-export-001",
+        "Signature": "signature-material",
+        "SignatureAlgorithm": "HMAC_SHA256",
+        "SignatureKeyID": "kid-1",
+        "Body": {
+            "Status": "Booked",
+            "Timestamp": "2026-03-06T12:00:00Z",
+            "VerifiedBadge": "Basic",
+            "VerificationResult": {
+                "status": "Success",
+                "provider": "vendor",
+                "score": 90,
+                "token": "realistic-sensitive-token",
+                "source": "vendor-adapter",
+                "evidenceRef": "sha256:abcd",
+                "verifiedAt": "2026-03-06T12:00:00Z",
+            },
+        },
+    }
+    sanitized_export = faxp_to_a2a_task_sanitized_export(export_envelope, contract=contract)
+    sanitized_envelope = sanitized_export["payload"]["faxpEnvelope"]
+    _assert(
+        sanitized_envelope.get("Nonce") == "[REDACTED]",
+        "Sanitized export must redact envelope nonce.",
+    )
+    _assert("Signature" not in sanitized_envelope, "Sanitized export must remove Signature.")
+    _assert(
+        "SignatureAlgorithm" not in sanitized_envelope,
+        "Sanitized export must remove SignatureAlgorithm.",
+    )
+    _assert(
+        "SignatureKeyID" not in sanitized_envelope,
+        "Sanitized export must remove SignatureKeyID.",
+    )
+    verification_result = (sanitized_envelope.get("Body") or {}).get("VerificationResult") or {}
+    _assert("token" not in verification_result, "Sanitized export must remove VerificationResult token.")
+    _assert("tokenRef" in verification_result, "Sanitized export must add VerificationResult tokenRef.")
+    _assert(
+        sanitized_export.get("metadata", {}).get("sanitizedExport") is True,
+        "Sanitized export metadata marker missing.",
+    )
 
     print("A2A round-trip translator checks passed.")
     return 0

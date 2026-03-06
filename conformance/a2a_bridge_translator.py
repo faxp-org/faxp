@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import hashlib
 from pathlib import Path
 import json
 
@@ -94,6 +95,44 @@ def faxp_to_a2a_task(envelope: dict, *, contract: dict | None = None) -> dict:
         },
     }
     return task
+
+
+def _token_ref(value: object) -> str:
+    digest = hashlib.sha256(str(value).encode("utf-8")).hexdigest()
+    return f"sha256:{digest[:24]}"
+
+
+def _sanitize_envelope_for_export(envelope: dict) -> dict:
+    sanitized = deepcopy(envelope)
+    sanitized["Nonce"] = "[REDACTED]"
+    sanitized.pop("Signature", None)
+    sanitized.pop("SignatureAlgorithm", None)
+    sanitized.pop("SignatureKeyID", None)
+    body = sanitized.get("Body")
+    if isinstance(body, dict):
+        verification_result = body.get("VerificationResult")
+        if isinstance(verification_result, dict):
+            token = verification_result.pop("token", None)
+            if token and "tokenRef" not in verification_result:
+                verification_result["tokenRef"] = _token_ref(token)
+    return sanitized
+
+
+def faxp_to_a2a_task_sanitized_export(envelope: dict, *, contract: dict | None = None) -> dict:
+    """Translate envelope for external/shared artifacts with sensitive fields redacted."""
+    task = faxp_to_a2a_task(envelope, contract=contract)
+    sanitized_task = deepcopy(task)
+    payload = sanitized_task.get("payload")
+    if isinstance(payload, dict):
+        faxp_envelope = payload.get("faxpEnvelope")
+        if isinstance(faxp_envelope, dict):
+            payload["faxpEnvelope"] = _sanitize_envelope_for_export(faxp_envelope)
+    metadata = sanitized_task.get("metadata")
+    if isinstance(metadata, dict):
+        if "faxpNonce" in metadata:
+            metadata["faxpNonce"] = "[REDACTED]"
+        metadata["sanitizedExport"] = True
+    return sanitized_task
 
 
 def a2a_task_to_faxp(task: dict, *, contract: dict | None = None) -> dict:

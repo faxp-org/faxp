@@ -135,6 +135,32 @@ def main() -> int:
     else:
         raise AssertionError("Expected failure for missing neutral fields in generic translation.")
 
+    try:
+        translate_verifier_payload(
+            "generic",
+            {
+                "status": "Success",
+                "category": "Biometric",
+                "method": "LivenessPlusDocument",
+                "provider": "identity.vendor",
+                "assuranceLevel": "AAL2",
+                "score": 97,
+                "token": "opaque-token",
+                "providerExtensions": {
+                    "faceImage": "base64:RAW_BIOMETRIC_SAMPLE",
+                    "sessionId": "abc",
+                },
+            },
+            source="generic",
+        )
+    except TranslationError as exc:
+        _assert(
+            "ProviderExtensions" in str(exc),
+            "Expected biometric ProviderExtensions rejection message.",
+        )
+    else:
+        raise AssertionError("Expected failure when ProviderExtensions contain raw biometric data.")
+
     print("Verifier translator regression checks passed.")
     return 0
 
