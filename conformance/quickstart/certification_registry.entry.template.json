@@ -4,7 +4,7 @@
   "hostingModel": "ImplementerHosted",
   "certificationTier": "SelfAttested",
   "status": "Active",
-  "profilesSupported": ["US_FMCSA_BALANCED_V1"],
+  "profilesSupported": ["US_VERIFICATION_BALANCED_V1"],
   "securityAttestation": {
     "signedRequests": true,
     "signedResponses": true,

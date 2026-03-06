@@ -112,6 +112,6 @@ Migration complete.
 Recommended:
 1) source $TARGET_ENV with:
    set -a; source $TARGET_ENV; set +a
-2) Use /Users/zglitch009/projects/logistics-ai/FAXP/scripts/run_secure_demo.sh
+2) Use ./scripts/run_secure_demo.sh
 3) Remove in-repo local secret files if no longer needed.
 EOF

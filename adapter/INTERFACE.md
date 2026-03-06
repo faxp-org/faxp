@@ -1,13 +1,13 @@
-# FAXP Adapter Interface (FMCSA v1)
+# FAXP Adapter Interface (Compliance v1)
 
-This document defines the implementer-facing adapter contract for FMCSA verification.
+This document defines the implementer-facing adapter contract for compliance verification.
 
 Goal:
 - FAXP (non-profit) owns the contract, conformance checks, and certification profile.
 - Implementers own hosted runtime, operations, and SLAs.
 
 Scope:
-- Applies to builder-hosted FMCSA adapters used by FAXP clients.
+- Applies to builder-hosted compliance adapters used by FAXP clients.
 - Keeps FAXP core protocol logic independent from provider-specific API shapes.
 
 ## 1) Endpoint Contract
@@ -16,7 +16,7 @@ Method:
 - `POST`
 
 Path:
-- `/v1/fmcsa/verify`
+- `/v1/compliance/verify`
 
 Content type:
 - `application/json`
@@ -24,15 +24,12 @@ Content type:
 Request body:
 ```json
 {
-  "mcNumber": "498282"
+  "carrierReference": "carrier-498282"
 }
 ```
 
 Required request fields:
-- `mcNumber`
-
-MC normalization:
-- Adapter should normalize MC to digits-only and strip leading zeroes.
+- `carrierReference`
 
 ## 2) Request Security Contract
 
@@ -101,28 +98,21 @@ Allowed signature algorithms:
 - `verifiedAt`
 
 `payload.ProviderExtensions` expected fields:
-- `mcNumber`
+- `carrierReference`
 - `sourceAuthority`
 - `carrier`
 
 `payload.ProviderExtensions.carrier` expected fields:
-- `usdot`
-- `mc`
 - `name`
-- `operatingStatus`
-- `hasCurrentInsurance`
-- `interstateAuthorityOk`
+- `authorityOk`
 
 Legacy normalized payload (accepted for compatibility when no `VerificationResult` object):
 - `found`
 - `status`
 - `score`
-- `usdot_number`
-- `mc_number`
+- `carrier_reference`
 - `carrier_name`
-- `operating_status`
-- `has_current_insurance`
-- `interstate_authority_ok`
+- `authority_ok`
 
 ## 5) Fail-Closed Rules
 
@@ -139,14 +129,12 @@ Adapter client and verifier should fail closed on:
 
 Authoritative artifacts:
 - `conformance/adapter_test_profile.schema.json`
-- `conformance/fmcsa_adapter_test_profile.v1.json`
+- `conformance/compliance_adapter_test_profile.v1.json`
 - `conformance/adapter_profile.schema.json`
 - `conformance/certification_registry.schema.json`
 
 Reference tests:
 - `tests/run_adapter_test_profile.py`
-- `tests/run_fmcsa_hosted_adapter.py`
-- `tests/run_adapter_server_translation.py`
 - `tests/run_certification_artifacts.py`
 
 Minimum bar for `Conformant` tier:
@@ -159,7 +147,7 @@ Minimum bar for `Conformant` tier:
 ## 7) Versioning and Compatibility
 
 Profile ID:
-- `FAXP_FMCSA_ADAPTER_TEST_V1`
+- `FAXP_COMPLIANCE_ADAPTER_TEST_V1`
 
 Compatibility guidance:
 - Additive fields are allowed if backward compatible.

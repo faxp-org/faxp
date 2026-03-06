@@ -161,9 +161,9 @@ fi
 case "$MODE" in
   sim)
     if [[ "${#EXTRA_ARGS[@]}" -gt 0 ]]; then
-      python3 "$PROJECT_DIR/faxp_mvp_simulation.py" --provider FMCSA --mc-number 498282 "${EXTRA_ARGS[@]}"
+      python3 "$PROJECT_DIR/faxp_mvp_simulation.py" --provider MockComplianceProvider "${EXTRA_ARGS[@]}"
     else
-      python3 "$PROJECT_DIR/faxp_mvp_simulation.py" --provider FMCSA --mc-number 498282
+      python3 "$PROJECT_DIR/faxp_mvp_simulation.py" --provider MockComplianceProvider
     fi
     ;;
   streamlit)

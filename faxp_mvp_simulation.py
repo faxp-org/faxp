@@ -53,7 +53,7 @@ APP_MODE = os.getenv("FAXP_APP_MODE", "local").strip().lower()
 NON_LOCAL_MODE = APP_MODE not in {"local", "dev", "development"}
 VERIFICATION_POLICY_PROFILE_ID = os.getenv(
     "FAXP_VERIFICATION_POLICY_PROFILE_ID",
-    "US_FMCSA_BALANCED_V1",
+    "US_VERIFICATION_BALANCED_V1",
 ).strip()
 MILEAGE_DISPUTE_POLICY = _normalize_mileage_dispute_policy(
     os.getenv("FAXP_MILEAGE_DISPUTE_POLICY", "balanced")
@@ -2428,7 +2428,7 @@ def parse_args():
     parser.add_argument(
         "--policy-profile-id",
         default=VERIFICATION_POLICY_PROFILE_ID,
-        help="Verification policy profile ID (for example: US_FMCSA_BALANCED_V1).",
+        help="Verification policy profile ID (for example: US_VERIFICATION_BALANCED_V1).",
     )
     parser.add_argument(
         "--risk-tier",

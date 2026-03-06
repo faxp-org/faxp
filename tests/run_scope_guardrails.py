@@ -11,8 +11,11 @@ from typing import Iterable
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 # Protocol-core artifacts guarded for scope drift.
+# NOTE:
+# - `faxp_mvp_simulation.py` is intentionally excluded. It is a reference
+#   implementer/runtime artifact (builder-side behavior), not normative
+#   protocol-core schema/governance source.
 CORE_FILES = [
-    REPO_ROOT / "faxp_mvp_simulation.py",
     REPO_ROOT / "faxp.schema.json",
     REPO_ROOT / "faxp.v0.2.schema.json",
 ]

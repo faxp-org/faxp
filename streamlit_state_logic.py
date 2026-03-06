@@ -7,9 +7,9 @@ from typing import Any, Mapping, MutableMapping
 
 
 def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]]:
-    implementer_adapter_preset = {
-        "provider": "FMCSA",
-        "policy_profile_id": "US_FMCSA_BALANCED_V1",
+    compliance_mock_preset = {
+        "provider": "MockComplianceProvider",
+        "policy_profile_id": "US_VERIFICATION_BALANCED_V1",
         "risk_tier": 1,
         "mileage_dispute_policy": "balanced",
         "mileage_abs_tolerance_miles": 25.0,
@@ -21,31 +21,12 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
         "response_type": "Accept",
         "verification_status": "Success",
         "no_match": False,
-        "mc_number": "498282",
-        "fmcsa_source_local": "implementer-adapter",
-        "fmcsa_source_cloud": "implementer-adapter",
-    }
-    authority_mock_balanced = {
-        "provider": "FMCSA",
-        "policy_profile_id": "US_FMCSA_BALANCED_V1",
-        "risk_tier": 1,
-        "mileage_dispute_policy": "balanced",
-        "mileage_abs_tolerance_miles": 25.0,
-        "mileage_rel_tolerance_ratio": 0.02,
-        "exception_approved": False,
-        "exception_approval_ref": "",
-        "rate_model": "PerMile",
-        "bid_amount": float(default_per_mile_bid),
-        "response_type": "Accept",
-        "verification_status": "Success",
-        "no_match": False,
-        "mc_number": "498282",
-        "fmcsa_source_local": "authority-mock",
-        "fmcsa_source_cloud": "authority-mock",
+        "compliance_source_local": "authority-mock",
+        "compliance_source_cloud": "authority-mock",
     }
     strict_mileage_policy = {
-        "provider": "FMCSA",
-        "policy_profile_id": "US_FMCSA_BALANCED_V1",
+        "provider": "MockComplianceProvider",
+        "policy_profile_id": "US_VERIFICATION_BALANCED_V1",
         "risk_tier": 1,
         "mileage_dispute_policy": "strict",
         "mileage_abs_tolerance_miles": 25.0,
@@ -57,18 +38,16 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
         "response_type": "Accept",
         "verification_status": "Success",
         "no_match": False,
-        "mc_number": "498282",
-        "fmcsa_source_local": "authority-mock",
-        "fmcsa_source_cloud": "authority-mock",
+        "compliance_source_local": "authority-mock",
+        "compliance_source_cloud": "authority-mock",
     }
     return {
-        "Compliance implementer-adapter (balanced)": dict(implementer_adapter_preset),
-        "Compliance authority-mock (balanced)": dict(authority_mock_balanced),
+        "Compliance mock (balanced)": dict(compliance_mock_preset),
         "Compliance strict mileage policy": dict(strict_mileage_policy),
         "Shipper-origin flow (identity mock)": {
             "shipper_flow": True,
             "provider": "MockBiometricProvider",
-            "policy_profile_id": "US_FMCSA_BALANCED_V1",
+            "policy_profile_id": "US_VERIFICATION_BALANCED_V1",
             "risk_tier": 1,
             "mileage_dispute_policy": "balanced",
             "mileage_abs_tolerance_miles": 25.0,
@@ -80,11 +59,10 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
             "response_type": "Accept",
             "verification_status": "Success",
             "no_match": False,
-            "mc_number": "",
         },
         "Identity verifier (mock success)": {
             "provider": "MockBiometricProvider",
-            "policy_profile_id": "US_FMCSA_BALANCED_V1",
+            "policy_profile_id": "US_VERIFICATION_BALANCED_V1",
             "risk_tier": 1,
             "mileage_dispute_policy": "balanced",
             "mileage_abs_tolerance_miles": 25.0,
@@ -96,11 +74,10 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
             "response_type": "Accept",
             "verification_status": "Success",
             "no_match": False,
-            "mc_number": "",
         },
         "Forced fail demo": {
             "provider": "MockBiometricProvider",
-            "policy_profile_id": "US_FMCSA_BALANCED_V1",
+            "policy_profile_id": "US_VERIFICATION_BALANCED_V1",
             "risk_tier": 2,
             "mileage_dispute_policy": "balanced",
             "mileage_abs_tolerance_miles": 25.0,
@@ -112,11 +89,10 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
             "response_type": "Accept",
             "verification_status": "Fail",
             "no_match": False,
-            "mc_number": "",
         },
         "GraceCache with approved exception": {
-            "provider": "FMCSA",
-            "policy_profile_id": "US_FMCSA_BALANCED_V1",
+            "provider": "MockComplianceProvider",
+            "policy_profile_id": "US_VERIFICATION_BALANCED_V1",
             "risk_tier": 2,
             "mileage_dispute_policy": "balanced",
             "mileage_abs_tolerance_miles": 25.0,
@@ -128,9 +104,8 @@ def build_quick_presets(default_per_mile_bid: float) -> dict[str, dict[str, Any]
             "response_type": "Accept",
             "verification_status": "Success",
             "no_match": False,
-            "mc_number": "498282",
-            "fmcsa_source_local": "implementer-adapter",
-            "fmcsa_source_cloud": "implementer-adapter",
+            "compliance_source_local": "authority-mock",
+            "compliance_source_cloud": "authority-mock",
         },
     }
 
@@ -139,7 +114,7 @@ def default_sidebar_state(default_per_mile_bid: float) -> dict[str, Any]:
     return {
         "quick_preset_select": "Identity verifier (mock success)",
         "shipper_flow_checkbox": False,
-        "policy_profile_select": "US_FMCSA_BALANCED_V1",
+        "policy_profile_select": "US_VERIFICATION_BALANCED_V1",
         "risk_tier_select": 1,
         "mileage_policy_select": "balanced",
         "mileage_abs_tolerance_input": 25.0,
@@ -149,11 +124,10 @@ def default_sidebar_state(default_per_mile_bid: float) -> dict[str, Any]:
         "rate_model_select": "PerMile",
         "bid_amount_input": float(default_per_mile_bid),
         "response_type_select": "Accept",
-        "provider_local_select": "FMCSA",
-        "provider_cloud_select": "ComplianceVerifier (Trusted Adapter)",
-        "fmcsa_source_select_local": "authority-mock",
-        "fmcsa_source_select_cloud": "implementer-adapter",
-        "mc_number_input": "498282",
+        "provider_local_select": "ComplianceVerifier (Mock)",
+        "provider_cloud_select": "ComplianceVerifier (Mock)",
+        "compliance_source_select_local": "authority-mock",
+        "compliance_source_select_cloud": "authority-mock",
         "verification_status_select": "Success",
         "no_match_checkbox": False,
     }
@@ -171,8 +145,6 @@ def apply_preset_to_state(
     state: MutableMapping[str, Any],
     presets: Mapping[str, Mapping[str, Any]],
     preset_name: str,
-    *,
-    hosted_fmcsa_configured: bool = False,
 ) -> None:
     preset = presets.get(preset_name)
     if not preset:
@@ -186,9 +158,11 @@ def apply_preset_to_state(
     state["response_type_select"] = preset["response_type"]
     state["verification_status_select"] = preset["verification_status"]
     state["no_match_checkbox"] = bool(preset["no_match"])
-    state["mc_number_input"] = str(preset.get("mc_number", ""))
     state["policy_profile_select"] = str(
-        preset.get("policy_profile_id", state.get("policy_profile_select", "US_FMCSA_BALANCED_V1"))
+        preset.get(
+            "policy_profile_id",
+            state.get("policy_profile_select", "US_VERIFICATION_BALANCED_V1"),
+        )
     )
     state["risk_tier_select"] = int(preset.get("risk_tier", state.get("risk_tier_select", 1)))
     state["mileage_policy_select"] = str(
@@ -208,16 +182,17 @@ def apply_preset_to_state(
     )
 
     provider = preset["provider"]
-    if provider == "FMCSA":
-        state["provider_local_select"] = "FMCSA"
-        state["provider_cloud_select"] = "ComplianceVerifier (Trusted Adapter)"
-        state["fmcsa_source_select_local"] = preset.get(
-            "fmcsa_source_local", "authority-mock"
+    if provider == "MockComplianceProvider":
+        state["provider_local_select"] = "ComplianceVerifier (Mock)"
+        state["provider_cloud_select"] = "ComplianceVerifier (Mock)"
+        state["compliance_source_select_local"] = preset.get(
+            "compliance_source_local",
+            "authority-mock",
         )
-        cloud_source = preset.get("fmcsa_source_cloud", "authority-mock")
-        if cloud_source in {"hosted-adapter", "implementer-adapter", "vendor-direct"} and not hosted_fmcsa_configured:
-            cloud_source = "authority-mock"
-        state["fmcsa_source_select_cloud"] = cloud_source
+        state["compliance_source_select_cloud"] = preset.get(
+            "compliance_source_cloud",
+            "authority-mock",
+        )
     else:
         state["provider_local_select"] = "MockBiometricProvider"
         state["provider_cloud_select"] = "MockBiometricProvider"
