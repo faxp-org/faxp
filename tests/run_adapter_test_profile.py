@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate FMCSA adapter conformance test profile artifacts."""
+"""Validate compliance adapter conformance test profile artifacts."""
 
 from __future__ import annotations
 
@@ -13,11 +13,10 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from adapter.fmcsa_live import validate_fmcsa_payload  # noqa: E402
 from conformance.verifier_translator import translate_verifier_payload  # noqa: E402
 
 PROFILE_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "adapter_test_profile.schema.json"
-PROFILE_PATH = PROJECT_ROOT / "conformance" / "fmcsa_adapter_test_profile.v1.json"
+PROFILE_PATH = PROJECT_ROOT / "conformance" / "compliance_adapter_test_profile.v1.json"
 
 
 def _load_json(path: Path) -> dict:
@@ -43,10 +42,10 @@ def main() -> int:
     profile = _load_json(PROFILE_PATH)
     _validate_schema(profile_schema, profile)
 
-    _assert(profile["provider"] == "FMCSA", "provider must be FMCSA")
+    _assert(profile["provider"] == "ComplianceVerifier", "provider must be ComplianceVerifier")
     _assert(
-        profile["requestContract"]["requiredBodyFields"] == ["mcNumber"],
-        "request contract must require mcNumber",
+        profile["requestContract"]["requiredBodyFields"] == ["carrierReference"],
+        "request contract must require carrierReference",
     )
     _assert(
         profile["responseContract"]["wrapperRequired"] is True,
@@ -59,21 +58,25 @@ def main() -> int:
 
     native_payload = {
         "status": "Success",
+        "category": "Compliance",
+        "method": "AuthorityRecordCheck",
+        "assuranceLevel": "AAL1",
         "score": 93,
-        "mcNumber": "498282",
-        "carrier": {
-            "usdot": 1292301,
-            "mc": "498282",
-            "name": "CA FREIGHT XPRESS INC",
-            "operatingStatus": "ACTIVE",
-            "hasCurrentInsurance": True,
-            "interstateAuthorityOk": True,
+        "token": "compliance-abc123",
+        "source": "authority-mock",
+        "providerExtensions": {
+            "carrierReference": "carrier-498282",
+            "sourceAuthority": "US_COMPLIANCE_REGISTRY",
+            "carrier": {
+                "name": "CA FREIGHT XPRESS INC",
+                "authorityOk": True,
+            },
         },
     }
     translated = translate_verifier_payload(
-        "fmcsa",
+        "generic",
         native_payload,
-        source="hosted-adapter",
+        source="authority-mock",
         provider_id=profile["providerId"],
     )
     verification_result = translated["VerificationResult"]
@@ -88,19 +91,15 @@ def main() -> int:
         "found": True,
         "status": "Success",
         "score": 93,
-        "usdot_number": 1292301,
-        "mc_number": "498282",
+        "carrier_reference": "carrier-498282",
         "carrier_name": "CA FREIGHT XPRESS INC",
-        "operating_status": "Common=NONE; Contract=ACTIVE; Broker=NONE",
-        "has_current_insurance": True,
-        "interstate_authority_ok": True,
+        "authority_ok": True,
     }
     expected_legacy_fields = set(profile["responseContract"]["legacyNormalizedFields"])
     _assert(
         set(legacy_payload.keys()) == expected_legacy_fields,
         "legacy normalized payload fields mismatch profile contract",
     )
-    validate_fmcsa_payload(legacy_payload, requested_mc="498282")
 
     required_checks = {
         "request_contract_shape",
@@ -120,4 +119,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

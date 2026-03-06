@@ -1,0 +1,56 @@
+{
+  "profileId": "US_VERIFICATION_STRICT_V1",
+  "version": "1.0.0",
+  "jurisdiction": "US",
+  "verificationSources": ["hosted-adapter", "cache"],
+  "policyDefaults": {
+    "degradedMode": "HardBlock",
+    "maxFallbackDurationSeconds": 0,
+    "requireManualEscalationForTier": 1
+  },
+  "riskTiers": [
+    {
+      "tier": 0,
+      "tierLabel": "Low",
+      "decisionOnOutage": "AllowProvisional",
+      "dispatchAuthorization": "Hold",
+      "maxCacheAgeSeconds": 21600,
+      "requiresHumanApproval": false
+    },
+    {
+      "tier": 1,
+      "tierLabel": "Medium",
+      "decisionOnOutage": "HoldDispatch",
+      "dispatchAuthorization": "Hold",
+      "maxCacheAgeSeconds": 0,
+      "requiresHumanApproval": true
+    },
+    {
+      "tier": 2,
+      "tierLabel": "High",
+      "decisionOnOutage": "Block",
+      "dispatchAuthorization": "Blocked",
+      "maxCacheAgeSeconds": 0,
+      "requiresHumanApproval": true
+    },
+    {
+      "tier": 3,
+      "tierLabel": "Critical",
+      "decisionOnOutage": "Block",
+      "dispatchAuthorization": "Blocked",
+      "maxCacheAgeSeconds": 0,
+      "requiresHumanApproval": true
+    }
+  ],
+  "dispatchRules": {
+    "reverifyBeforeDispatch": true,
+    "reverifyWindowSeconds": 21600,
+    "allowHazmatWhenDegraded": false
+  },
+  "signingRequirements": {
+    "requireSignedRequests": true,
+    "requireSignedResponses": true,
+    "allowedAlgorithms": ["ED25519", "HMAC_SHA256"],
+    "maxClockSkewSeconds": 30
+  }
+}

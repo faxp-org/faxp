@@ -76,7 +76,7 @@ def _neutral_execution_report_v020(provider: str = "provider-opaque-id") -> dict
             "Status": "Booked",
             "Timestamp": "2026-02-21T18:01:00Z",
             "VerificationMode": "Live",
-            "VerificationPolicyProfileID": "US_FMCSA_BALANCED_V1",
+            "VerificationPolicyProfileID": "US_VERIFICATION_BALANCED_V1",
             "DispatchAuthorization": "Allowed",
             "DecisionReasonCode": "VerificationSuccess",
             "PolicyRuleID": "policy.live.success.v1",
