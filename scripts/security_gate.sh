@@ -67,18 +67,7 @@ normalized_patterns = [
     ("private-key-marker", re.compile(r"BEGIN[A-Z]*PRIVATEKEY")),
 ]
 
-base64_candidate_pattern = re.compile(r"(?<![A-Za-z0-9+/=])[A-Za-z0-9+/]{32,}={0,2}(?![A-Za-z0-9+/=])")
-regex_literal_fragments = (
-    "AKIA[0-9A-Z]{16}",
-    "ASIA[0-9A-Z]{16}",
-    "ghp_[A-Za-z0-9]{36}",
-    "github_pat_[A-Za-z0-9_]{60,}",
-    "xox[baprs]-[A-Za-z0-9-]{10,}",
-    "-----BEGIN [A-Z ]*PRIVATE KEY-----",
-    "AIza[0-9A-Za-z_-]{35}",
-    "sk_live_[0-9A-Za-z]{24,}",
-    "sk_test_[0-9A-Za-z]{24,}",
-)
+base64_candidate_pattern = re.compile(r"(?<![A-Za-z0-9+/])[A-Za-z0-9+/]{24,}={0,2}(?![A-Za-z0-9+/])")
 
 completed = subprocess.run(
     ["git", "-C", str(project_dir), "ls-files", "-z"],
@@ -104,13 +93,12 @@ for rel_path in tracked_files:
         continue
     if b"\x00" in raw_bytes:
         continue
+    # Avoid scanner self-matches from this script regex literals.
+    if rel_path == "scripts/security_gate.sh":
+        continue
     text = raw_bytes.decode("utf-8", "ignore")
     lines = text.splitlines()
     for line_no, line in enumerate(lines, start=1):
-        if "re.compile(" in line or "pattern='" in line or 'pattern="' in line:
-            continue
-        if any(fragment in line for fragment in regex_literal_fragments):
-            continue
         normalized_line = _normalize(line)
         for label, pattern in normalized_patterns:
             if pattern.search(normalized_line):
