@@ -287,8 +287,9 @@ def translate_verifier_payload(
         raise TranslationError(f"Unsupported provider kind: {provider_kind!r}")
 
     _require_neutral_fields(verification_result)
+    if _contains_forbidden_biometric(provider_extensions):
+        raise TranslationError("Raw biometric artifacts are not allowed in ProviderExtensions.")
     return {
         "VerificationResult": verification_result,
         "ProviderExtensions": provider_extensions,
     }
-

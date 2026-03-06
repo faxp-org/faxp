@@ -18,6 +18,12 @@ This profile defines how FAXP interoperates with A2A environments through a tran
 3. Carry a reversible mapping (`faxpEnvelope`, `a2aTask`) for audit replay.
 4. Enforce fail-closed behavior on malformed mappings.
 
+## Artifact Handling
+- Internal deterministic translation may include full `faxpEnvelope` content for replay/audit.
+- External/shared exports should use sanitized artifacts by default.
+- Recommended exporter: `faxp_to_a2a_task_sanitized_export` in `conformance/a2a_bridge_translator.py`.
+- Sanitized export redacts `Nonce`, removes signature fields, and replaces `VerificationResult.token` with `tokenRef`.
+
 <!-- A2A_PROFILE_BEGIN -->
 {
   "profileId": "FAXP_A2A_BRIDGE_V0_1",
