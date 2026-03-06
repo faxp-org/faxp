@@ -68,6 +68,8 @@ normalized_patterns = [
 ]
 
 base64_candidate_pattern = re.compile(r"(?<![A-Za-z0-9+/])[A-Za-z0-9+/]{24,}={0,2}(?![A-Za-z0-9+/])")
+max_base64_candidates_per_file = 50000
+max_base64_decoded_bytes_per_file = 8 * 1024 * 1024
 
 completed = subprocess.run(
     ["git", "-C", str(project_dir), "ls-files", "-z"],
@@ -98,6 +100,9 @@ for rel_path in tracked_files:
         continue
     text = raw_bytes.decode("utf-8", "ignore")
     lines = text.splitlines()
+    candidate_count = 0
+    decoded_bytes = 0
+    budget_exhausted = False
     for line_no, line in enumerate(lines, start=1):
         normalized_line = _normalize(line)
         for label, pattern in normalized_patterns:
@@ -105,8 +110,15 @@ for rel_path in tracked_files:
                 findings.append(f"{rel_path}:{line_no}:normalized-{label}")
                 break
 
-        match_count = 0
         for match in base64_candidate_pattern.finditer(line):
+            candidate_count += 1
+            if candidate_count > max_base64_candidates_per_file:
+                findings.append(
+                    f"{rel_path}:{line_no}:base64-scan-budget-exhausted(candidates)"
+                )
+                budget_exhausted = True
+                break
+
             token = match.group(0).strip()
             if not token:
                 continue
@@ -117,6 +129,13 @@ for rel_path in tracked_files:
                 continue
             if len(decoded) < 12:
                 continue
+            decoded_bytes += len(decoded)
+            if decoded_bytes > max_base64_decoded_bytes_per_file:
+                findings.append(
+                    f"{rel_path}:{line_no}:base64-scan-budget-exhausted(bytes)"
+                )
+                budget_exhausted = True
+                break
             printable = sum(32 <= b < 127 or b in (9, 10, 13) for b in decoded)
             if printable / len(decoded) < 0.85:
                 continue
@@ -133,10 +152,8 @@ for rel_path in tracked_files:
             if hit:
                 findings.append(f"{rel_path}:{line_no}:base64-decoded-secret-like-content")
                 break
-
-            match_count += 1
-            if match_count >= 8:
-                break
+        if budget_exhausted:
+            break
 
 if findings:
     print("\n".join(findings))
