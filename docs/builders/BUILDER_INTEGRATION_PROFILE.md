@@ -6,8 +6,8 @@ If you are new to the repo, start with:
 - `README.md`
 - `docs/BUILDERS_START_HERE.md`
 
-If you need adapter-hosting requirements, use:
-- `docs/adapters/ADAPTER_IMPLEMENTER_HANDOFF.md`
+If you need verification-runtime hosting requirements, use:
+- `docs/builders/BUILDER_VERIFICATION_RUNTIME_HANDOFF.md`
 
 If you need certification intake/review rules, use:
 - `docs/governance/CERTIFICATION_PLAYBOOK.md`
@@ -83,7 +83,7 @@ It answers:
 3. how verification integration patterns and optional interop tracks are claimed
 
 It does not explain:
-1. how to host an adapter runtime
+1. how to host a verification runtime
 2. how certification intake and review are performed
 
 ## Required Claim Areas
@@ -104,5 +104,5 @@ The builder integration profile does not replace the certification playbook. It 
 
 Use this profile together with:
 - `docs/governance/CERTIFICATION_PLAYBOOK.md`
-- `docs/adapters/ADAPTER_IMPLEMENTER_HANDOFF.md`
+- `docs/builders/BUILDER_VERIFICATION_RUNTIME_HANDOFF.md`
 - `conformance/builder_integration_profile.v1.json`

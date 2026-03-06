@@ -84,8 +84,8 @@
   },
   "conformanceRequirements": {
     "requiredDocs": [
-      "docs/adapters/BUILDER_INTEGRATION_PROFILE.md",
-      "docs/adapters/ADAPTER_IMPLEMENTER_HANDOFF.md",
+      "docs/builders/BUILDER_INTEGRATION_PROFILE.md",
+      "docs/builders/BUILDER_VERIFICATION_RUNTIME_HANDOFF.md",
       "docs/governance/CERTIFICATION_PLAYBOOK.md"
     ],
     "requiredTests": [

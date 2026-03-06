@@ -22,7 +22,7 @@ You should come away with this understanding:
 1. FAXP is a booking-plane protocol.
 2. FAXP standardizes booking messages and related conformance profiles.
 3. FAXP does not do dispatch execution, tracking, document custody, or settlement.
-4. Builder-hosted integrations remain builder-side unless there is a clear interoperability reason to standardize them.
+4. Builder-hosted integrations (including FMCSA/compliance and biometric verification execution) remain builder-side unless there is a clear interoperability reason to standardize them.
 
 ## 2) Understand the Core Message Flow
 
@@ -43,12 +43,15 @@ If you only need the interactive demo first, stop here and use:
 - `docs/STREAMLIT_QUICKSTART.md`
 - `docs/STREAMLIT_DEMO_WALKTHROUGH.md`
 
+Implementation note:
+- Demo/runtime artifacts in this repo are reference material and are planned for migration into a dedicated builder-runtime workspace per `docs/roadmap/BUILDER_RUNTIME_MIGRATION_PLAN.md`.
+
 ## 3) Understand What Has Already Been Standardized
 
 Read:
 - `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
 - `conformance/README.md`
-- `docs/adapters/BUILDER_INTEGRATION_PROFILE.md`
+- `docs/builders/BUILDER_INTEGRATION_PROFILE.md`
 
 Important existing protocol/profile areas:
 1. booking identity
@@ -72,7 +75,7 @@ The main builder patterns currently supported are:
    - wants broker/carrier/shipper agents to negotiate through FAXP
 
 3. Verifier or integration implementer
-   - wants to plug in optional verification evidence or external routing patterns while staying outside protocol core
+   - wants to plug in optional verification evidence or external routing patterns while staying outside protocol-core
 
 ## 5) Minimum Viable Implementation
 
@@ -128,7 +131,7 @@ You can ignore these on day one unless they are directly relevant to your implem
 Those matter later, not first.
 
 When you are ready for deeper implementation claims or certification review, move next to:
-1. `docs/adapters/BUILDER_INTEGRATION_PROFILE.md`
+1. `docs/builders/BUILDER_INTEGRATION_PROFILE.md`
 2. `conformance/README.md`
 3. `docs/governance/CERTIFICATION_PLAYBOOK.md`
 

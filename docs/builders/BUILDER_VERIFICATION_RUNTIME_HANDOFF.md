@@ -1,6 +1,6 @@
-# Adapter Implementer Handoff Checklist
+# Builder Verification Runtime Handoff Checklist
 
-This checklist is the implementation handoff for any builder to host an FMCSA adapter while staying FAXP-conformant.
+This checklist is the implementation handoff for any builder to host a verification runtime while staying FAXP-conformant.
 
 Use this document only if you are hosting an adapter or verifier-facing integration runtime.
 
@@ -9,18 +9,18 @@ If you are new to the repo, start with:
 - `docs/BUILDERS_START_HERE.md`
 
 If you need the builder integration profile and capability declaration model, use:
-- `docs/adapters/BUILDER_INTEGRATION_PROFILE.md`
+- `docs/builders/BUILDER_INTEGRATION_PROFILE.md`
 
 If you need certification intake/review rules, use:
 - `docs/governance/CERTIFICATION_PLAYBOOK.md`
 
 Primary contract references:
 - `adapter/INTERFACE.md`
-- `docs/adapters/BUILDER_INTEGRATION_PROFILE.md`
+- `docs/builders/BUILDER_INTEGRATION_PROFILE.md`
 - `docs/governance/CERTIFICATION_PLAYBOOK.md`
 - `docs/governance/REGISTRY_OPERATIONS_RUNBOOK.md`
 - `conformance/adapter_test_profile.schema.json`
-- `conformance/fmcsa_adapter_test_profile.v1.json`
+- `conformance/compliance_adapter_test_profile.v1.json`
 - `conformance/submission_manifest.schema.json`
 
 ## 1) Build Scope
@@ -28,7 +28,7 @@ Primary contract references:
 Implementer owns:
 - Production adapter hosting and uptime.
 - Secrets, key management, observability, incident response, and SLAs.
-- FMCSA upstream integration runtime.
+- compliance upstream integration runtime.
 - Temporary cache/fallback behavior and business continuity policy.
 
 FAXP owns:
@@ -51,17 +51,17 @@ It answers:
 3. what checks must pass before release/certification
 
 It does not try to describe the full builder capability story. That is handled by:
-- `docs/adapters/BUILDER_INTEGRATION_PROFILE.md`
+- `docs/builders/BUILDER_INTEGRATION_PROFILE.md`
 - `conformance/builder_integration_profile.v1.json`
 
 ## 2) Endpoint Requirements
 
 Required endpoint:
-- `POST /v1/fmcsa/verify`
+- `POST /v1/compliance/verify`
 
 Request:
 - `Content-Type: application/json`
-- Body requires `mcNumber` string/number-like value.
+- Body requires `carrierReference` (opaque carrier identifier string).
 
 Response:
 - Signed wrapper with:
@@ -105,17 +105,13 @@ Recommended:
 - `verifiedAt`
 
 `ProviderExtensions` must include:
-- `mcNumber`
+- `carrierReference`
 - `sourceAuthority`
 - `carrier`
 
 `carrier` should include:
-- `usdot`
-- `mc`
 - `name`
-- `operatingStatus`
-- `hasCurrentInsurance`
-- `interstateAuthorityOk`
+- `authorityOk`
 
 Legacy normalized payload compatibility must still be accepted by the FAXP reference client for transition periods.
 
@@ -123,17 +119,13 @@ Legacy normalized payload compatibility must still be accepted by the FAXP refer
 
 Must pass:
 1. `python3 tests/run_adapter_test_profile.py`
-2. `python3 tests/run_fmcsa_hosted_adapter.py`
-3. `python3 tests/run_adapter_server_translation.py`
-4. `python3 tests/run_certification_artifacts.py`
-5. `python3 tests/run_conformance_bundle.py`
+2. `python3 tests/run_certification_artifacts.py`
+3. `python3 tests/run_conformance_bundle.py`
 
 Recommended local command set:
 1. `.venv/bin/python tests/run_adapter_test_profile.py`
-2. `.venv/bin/python tests/run_fmcsa_hosted_adapter.py`
-3. `.venv/bin/python tests/run_adapter_server_translation.py`
-4. `.venv/bin/python tests/run_certification_artifacts.py`
-5. `.venv/bin/python tests/run_conformance_bundle.py`
+2. `.venv/bin/python tests/run_certification_artifacts.py`
+3. `.venv/bin/python tests/run_conformance_bundle.py`
 
 ## 6) Deployment Readiness Checklist
 
@@ -150,7 +142,7 @@ Recommended local command set:
 Required files:
 1. Adapter profile JSON (schema-valid): `conformance/adapter_profile.schema.json`
 2. Registry entry JSON (schema-valid): `conformance/certification_registry.schema.json`
-3. Adapter test profile ID(s) supported (for FMCSA: `FAXP_FMCSA_ADAPTER_TEST_V1`)
+3. Adapter test profile ID(s) supported (for compliance adapters: `FAXP_COMPLIANCE_ADAPTER_TEST_V1`)
 4. Conformance report artifact (bundle output)
 5. Active signer key IDs used for adapter response signatures
 

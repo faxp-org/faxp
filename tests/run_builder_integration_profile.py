@@ -11,9 +11,9 @@ import sys
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 PROFILE_PATH = PROJECT_ROOT / "conformance" / "builder_integration_profile.v1.json"
-DOC_PATH = PROJECT_ROOT / "docs" / "adapters" / "BUILDER_INTEGRATION_PROFILE.md"
+DOC_PATH = PROJECT_ROOT / "docs" / "builders" / "BUILDER_INTEGRATION_PROFILE.md"
 PLAYBOOK_PATH = PROJECT_ROOT / "docs" / "governance" / "CERTIFICATION_PLAYBOOK.md"
-HANDOFF_PATH = PROJECT_ROOT / "docs" / "adapters" / "ADAPTER_IMPLEMENTER_HANDOFF.md"
+HANDOFF_PATH = PROJECT_ROOT / "docs" / "builders" / "BUILDER_VERIFICATION_RUNTIME_HANDOFF.md"
 DOC_INDEX_PATH = PROJECT_ROOT / "docs" / "INDEX.md"
 CONFORMANCE_README_PATH = PROJECT_ROOT / "conformance" / "README.md"
 SUITE_PATH = PROJECT_ROOT / "conformance" / "run_all_checks.py"
@@ -123,8 +123,8 @@ def main() -> int:
     _assert(
         required_docs
         == {
-            "docs/adapters/BUILDER_INTEGRATION_PROFILE.md",
-            "docs/adapters/ADAPTER_IMPLEMENTER_HANDOFF.md",
+            "docs/builders/BUILDER_INTEGRATION_PROFILE.md",
+            "docs/builders/BUILDER_VERIFICATION_RUNTIME_HANDOFF.md",
             "docs/governance/CERTIFICATION_PLAYBOOK.md",
         },
         "requiredDocs must include explainer, handoff, and playbook",
@@ -140,9 +140,9 @@ def main() -> int:
     playbook_text = PLAYBOOK_PATH.read_text(encoding="utf-8")
     _assert("builder integration profile" in playbook_text.lower(), "playbook must reference builder integration profile")
     handoff_text = HANDOFF_PATH.read_text(encoding="utf-8")
-    _assert("builder integration profile" in handoff_text.lower(), "adapter handoff doc must reference builder integration profile")
+    _assert("builder integration profile" in handoff_text.lower(), "builder runtime handoff doc must reference builder integration profile")
     index_text = DOC_INDEX_PATH.read_text(encoding="utf-8")
-    _assert("docs/adapters/BUILDER_INTEGRATION_PROFILE.md" in index_text, "docs index must include builder explainer")
+    _assert("docs/builders/BUILDER_INTEGRATION_PROFILE.md" in index_text, "docs index must include builder explainer")
     conformance_readme = CONFORMANCE_README_PATH.read_text(encoding="utf-8")
     _assert("builder_integration_profile.v1.json" in conformance_readme, "conformance README must list builder profile")
 

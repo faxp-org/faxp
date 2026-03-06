@@ -102,7 +102,7 @@ Target deliverables:
 - improved handoff documentation for external builders
 
 Primary references:
-- `docs/adapters/ADAPTER_IMPLEMENTER_HANDOFF.md`
+- `docs/builders/BUILDER_VERIFICATION_RUNTIME_HANDOFF.md`
 - `docs/governance/CERTIFICATION_PLAYBOOK.md`
 - `docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md`
 

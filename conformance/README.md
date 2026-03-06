@@ -17,7 +17,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 - `adapter_profile.schema.json`: schema for adapter self-attestation profile.
 - `adapter_profile.sample.json`: sample adapter profile with self-attestation payload.
 - `adapter_test_profile.schema.json`: schema for adapter API test-profile contracts.
-- `fmcsa_adapter_test_profile.v1.json`: FMCSA adapter certification test profile.
+- `compliance_adapter_test_profile.v1.json`: compliance adapter certification test profile.
 - `submission_manifest.schema.json`: schema for certification submission manifest bundles.
 - `submission_manifest.sample.json`: sample certification submission manifest.
 - `submission_manifest_keys.sample.json`: test-only keyring for signing submission manifests.
@@ -72,7 +72,7 @@ This folder defines machine-readable artifacts for implementer-hosted adapters:
 
 Human-readable adapter contract:
 - `adapter/INTERFACE.md`: implementer handoff contract for request/response, security, and conformance expectations.
-- `docs/adapters/BUILDER_INTEGRATION_PROFILE.md`: plain-English explainer for builder capability claims and implementation matrices.
+- `docs/builders/BUILDER_INTEGRATION_PROFILE.md`: plain-English explainer for builder capability claims and implementation matrices.
 - `docs/governance/CERTIFICATION_PLAYBOOK.md`: certification intake workflow and tier decision rules.
 - `docs/governance/REGISTRY_OPERATIONS_RUNBOOK.md`: operational process for update/revoke/rollback and rollback safety.
 
@@ -438,14 +438,22 @@ Translator wrapper quick usage:
 from conformance.verifier_translator import translate_verifier_payload
 
 result = translate_verifier_payload(
-    "fmcsa",
-    {"payload": {"mcNumber": "498282"}, "signature": {"alg": "HMAC_SHA256", "kid": "k1", "sig": "..."}},
-    source="hosted-adapter",
+    "generic",
+    {
+      "payload": {
+        "status": "Success",
+        "category": "Compliance",
+        "method": "AuthorityRecordCheck",
+        "assuranceLevel": "AAL1",
+        "score": 90,
+        "token": "compliance-abc123",
+        "source": "authority-mock",
+        "providerExtensions": {"carrierReference": "carrier-123"}
+      },
+      "signature": {"alg": "HMAC_SHA256", "kid": "k1", "sig": "..."}
+    },
+    source="authority-mock",
     signature_keys={"k1": "shared-secret"},
     require_signed_wrapper=True,
 )
 ```
-
-Production note:
-
-- `fmcsa_adapter_server.py` now routes FMCSA lookup output through this translator wrapper by default before signing responses.
