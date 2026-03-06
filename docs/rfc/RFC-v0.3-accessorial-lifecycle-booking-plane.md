@@ -99,7 +99,7 @@ This RFC closes that gap while preserving the scope boundary: FAXP standardizes 
 ## Resolved Questions
 1. Canonical claim-state vocabulary: `Proposed`, `Approved`, `Rejected`.
 2. External verifier evidence references are optional and policy-driven; evidence adjudication remains external.
-3. Profile-level policy may define approval thresholds by accessorial type; protocol core remains neutral.
+3. Profile-level policy may define approval thresholds by accessorial type; protocol-core remains neutral.
 
 ## Implementation Evidence
 - Runtime:

@@ -12,8 +12,10 @@
 Before opening a PR, read:
 - `docs/governance/SCOPE_GUARDRAILS.md`
 - `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
+- `REFERENCE_RUNTIME_BOUNDARY.md`
 
 Changes that expand into dispatch/tracking/settlement domains require an RFC and explicit approval.
+Changes that affect only simulation/demo behavior should be treated as reference-runtime updates, not protocol-core changes.
 
 ## Development Workflow
 

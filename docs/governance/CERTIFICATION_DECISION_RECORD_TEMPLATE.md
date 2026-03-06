@@ -47,7 +47,7 @@ Use this template to produce deterministic, auditable certification decisions.
 {
   "decisionId": "faxp-cert-decision-20260222-0001",
   "decisionTimestamp": "2026-02-22T19:30:00Z",
-  "adapterId": "sample-fmcsa-adapter-us-prod",
+  "adapterId": "sample-compliance-adapter-us-prod",
   "requestedTier": "TrustedProduction",
   "decisionOutcome": "Approve",
   "decidedTier": "TrustedProduction",

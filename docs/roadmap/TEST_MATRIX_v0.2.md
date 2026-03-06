@@ -106,28 +106,7 @@ Input:
 Expected:
 - Validation fails.
 
-4. FMCSA parser regression guard
-Fixtures:
-- `tests/fmcsa_fixtures/contract_authority_active_with_bipd_amount.json`
-- `tests/fmcsa_fixtures/inactive_no_insurance.json`
-- `tests/fmcsa_fixtures/no_carrier_match.json`
-Command:
-- `python3 tests/run_fmcsa_parser_fixtures.py`
-Expected:
-- One pass per fixture.
-- MC normalization and authority/insurance interpretation remain stable.
-
-5. FMCSA contract drift detector guard
-Command:
-- `python3 - <<'PY'`
-- `from adapter.fmcsa_live import unknown_fmcsa_top_level_keys`
-- `print(unknown_fmcsa_top_level_keys({"content": {}, "meta": {}, "timestamp": "x"}))`
-- `PY`
-Expected:
-- Returns `["meta", "timestamp"]` with default config.
-- Runtime logs one non-blocking warning if these keys appear in live responses.
-
-6. Replay and TTL guards unchanged
+4. Replay and TTL guards unchanged
 Expected:
 - Existing replay/TTL protections continue to pass/fail as before.
 
@@ -174,14 +153,11 @@ Current CI workflow (`.github/workflows/ci.yml`) covers:
 - security gate,
 - simulation smoke,
 - neutral provider smoke check for MockBiometricProvider,
-- neutral provider smoke check for FMCSA mock provider,
+- neutral provider smoke check for compliance mock provider,
 - security self-test,
-- FMCSA parser regression check,
-- FMCSA contract drift detector check,
-- FMCSA adapter test profile contract check,
+- compliance adapter test profile contract check,
 - incident drill (CI mode),
 - per-workflow RunID log artifacts (`faxp-ci-logs-<runid>`).
 
 Remaining CI additions (v0.2+):
-- optional live FMCSA adapter contract test against sandbox/stub API,
 - dedicated compatibility suite for legacy-field deprecation warnings.

@@ -149,7 +149,7 @@ Purpose: Central place to capture commercial model requirements before implement
 - Target: `deferred`
 - RFC: `TBD (separate scope-expansion RFC required)`
 - Acceptance:
-  - Track is documented as separate from protocol core.
+  - Track is documented as separate from protocol-core.
   - No protocol-core implementation until RFC/governance approval.
 
 ## Intake Template (for new items)
