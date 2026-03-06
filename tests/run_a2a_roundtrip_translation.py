@@ -151,6 +151,7 @@ def main() -> int:
                 "provider": "vendor",
                 "score": 90,
                 "token": "realistic-sensitive-token",
+                "nested": {"token": "nested-sensitive-token"},
                 "source": "vendor-adapter",
                 "evidenceRef": "sha256:abcd",
                 "verifiedAt": "2026-03-06T12:00:00Z",
@@ -174,11 +175,41 @@ def main() -> int:
     )
     verification_result = (sanitized_envelope.get("Body") or {}).get("VerificationResult") or {}
     _assert("token" not in verification_result, "Sanitized export must remove VerificationResult token.")
+    _assert(
+        (verification_result.get("nested") or {}).get("token") is None,
+        "Sanitized export must scrub nested token fields in VerificationResult.",
+    )
     _assert("tokenRef" in verification_result, "Sanitized export must add VerificationResult tokenRef.")
     _assert(
         sanitized_export.get("metadata", {}).get("sanitizedExport") is True,
         "Sanitized export metadata marker missing.",
     )
+
+    invalid_export_envelope = {
+        "Protocol": "FAXP",
+        "ProtocolVersion": "0.2",
+        "MessageType": "ExecutionReport",
+        "From": "Broker Agent",
+        "To": "Carrier Agent",
+        "Timestamp": "2026-03-06T12:00:00Z",
+        "MessageID": "msg-export-002",
+        "Nonce": "nonce-export-002",
+        "Body": {
+            "Status": "Booked",
+            "Timestamp": "2026-03-06T12:00:00Z",
+            "VerifiedBadge": "Basic",
+            "VerificationResult": "not-an-object",
+        },
+    }
+    try:
+        faxp_to_a2a_task_sanitized_export(invalid_export_envelope, contract=contract)
+    except A2ABridgeError as exc:
+        _assert(
+            "VerificationResult must be an object" in str(exc),
+            "Unexpected error for invalid VerificationResult object type.",
+        )
+    else:
+        raise AssertionError("Expected failure for non-object ExecutionReport VerificationResult.")
 
     print("A2A round-trip translator checks passed.")
     return 0
