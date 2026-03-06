@@ -38,6 +38,130 @@ scan_tracked_content_secrets() {
   fi
 }
 
+scan_tracked_content_obfuscated_and_encoded() {
+  local hits
+  hits="$(
+    python3 - "$PROJECT_DIR" <<'PY'
+import base64
+import binascii
+from pathlib import Path
+import re
+import subprocess
+import sys
+
+project_dir = Path(sys.argv[1]).resolve()
+
+high_signal_pattern = re.compile(
+    r"AKIA[0-9A-Z]{16}|ASIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{60,}|xox[baprs]-[A-Za-z0-9-]{10,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|AIza[0-9A-Za-z_-]{35}|sk_live_[0-9A-Za-z]{24,}|sk_test_[0-9A-Za-z]{24,}",
+    re.IGNORECASE,
+)
+
+normalized_patterns = [
+    ("aws-access-key-id", re.compile(r"(AKIA|ASIA)[A-Z0-9]{16}")),
+    ("github-classic-token", re.compile(r"GHP[A-Z0-9]{36}")),
+    ("github-fine-grained-token", re.compile(r"GITHUBPAT[A-Z0-9]{60,}")),
+    ("slack-token", re.compile(r"XOX[BAPRS][A-Z0-9]{10,}")),
+    ("google-api-key", re.compile(r"AIZA[0-9A-Z]{35}")),
+    ("stripe-live-key", re.compile(r"SKLIVE[0-9A-Z]{24,}")),
+    ("stripe-test-key", re.compile(r"SKTEST[0-9A-Z]{24,}")),
+    ("private-key-marker", re.compile(r"BEGIN[A-Z]*PRIVATEKEY")),
+]
+
+base64_candidate_pattern = re.compile(r"(?<![A-Za-z0-9+/=])[A-Za-z0-9+/]{32,}={0,2}(?![A-Za-z0-9+/=])")
+regex_literal_fragments = (
+    "AKIA[0-9A-Z]{16}",
+    "ASIA[0-9A-Z]{16}",
+    "ghp_[A-Za-z0-9]{36}",
+    "github_pat_[A-Za-z0-9_]{60,}",
+    "xox[baprs]-[A-Za-z0-9-]{10,}",
+    "-----BEGIN [A-Z ]*PRIVATE KEY-----",
+    "AIza[0-9A-Za-z_-]{35}",
+    "sk_live_[0-9A-Za-z]{24,}",
+    "sk_test_[0-9A-Za-z]{24,}",
+)
+
+completed = subprocess.run(
+    ["git", "-C", str(project_dir), "ls-files", "-z"],
+    check=True,
+    capture_output=True,
+)
+tracked_files = [
+    item
+    for item in completed.stdout.decode("utf-8", "ignore").split("\0")
+    if item and item != "security.env.template"
+]
+
+findings = []
+
+def _normalize(value: str) -> str:
+    return re.sub(r"[^A-Za-z0-9]", "", value).upper()
+
+for rel_path in tracked_files:
+    path = project_dir / rel_path
+    try:
+        raw_bytes = path.read_bytes()
+    except OSError:
+        continue
+    if b"\x00" in raw_bytes:
+        continue
+    text = raw_bytes.decode("utf-8", "ignore")
+    lines = text.splitlines()
+    for line_no, line in enumerate(lines, start=1):
+        if "re.compile(" in line or "pattern='" in line or 'pattern="' in line:
+            continue
+        if any(fragment in line for fragment in regex_literal_fragments):
+            continue
+        normalized_line = _normalize(line)
+        for label, pattern in normalized_patterns:
+            if pattern.search(normalized_line):
+                findings.append(f"{rel_path}:{line_no}:normalized-{label}")
+                break
+
+        match_count = 0
+        for match in base64_candidate_pattern.finditer(line):
+            token = match.group(0).strip()
+            if not token:
+                continue
+            padded = token + ("=" * ((4 - len(token) % 4) % 4))
+            try:
+                decoded = base64.b64decode(padded, validate=True)
+            except (binascii.Error, ValueError):
+                continue
+            if len(decoded) < 12:
+                continue
+            printable = sum(32 <= b < 127 or b in (9, 10, 13) for b in decoded)
+            if printable / len(decoded) < 0.85:
+                continue
+            decoded_text = decoded.decode("utf-8", "ignore")
+            if not decoded_text:
+                continue
+            decoded_normalized = _normalize(decoded_text)
+            hit = bool(high_signal_pattern.search(decoded_text))
+            if not hit:
+                for _, pattern in normalized_patterns:
+                    if pattern.search(decoded_normalized):
+                        hit = True
+                        break
+            if hit:
+                findings.append(f"{rel_path}:{line_no}:base64-decoded-secret-like-content")
+                break
+
+            match_count += 1
+            if match_count >= 8:
+                break
+
+if findings:
+    print("\n".join(findings))
+PY
+  )"
+
+  if [[ -n "$hits" ]]; then
+    fail "Potential obfuscated/encoded secret material detected in tracked content:\n$hits"
+  else
+    note "No obfuscated/encoded secret patterns detected in tracked content."
+  fi
+}
+
 if git -C "$PROJECT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   note "Git repository detected. Running tracked-secret checks."
   tracked_sensitive="$(
@@ -51,6 +175,7 @@ if git -C "$PROJECT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     note "No tracked secret files detected."
   fi
   scan_tracked_content_secrets
+  scan_tracked_content_obfuscated_and_encoded
 else
   warn "No git repository found at $PROJECT_DIR. Skipping tracked-secret checks."
 fi
