@@ -5,18 +5,18 @@
   "description": "Canonical lock for verification policy profiles and normative risk-tier decision matrix coverage.",
   "canonicalProfiles": [
     {
-      "profileId": "US_FMCSA_STRICT_V1",
-      "path": "profiles/verification/US_FMCSA_STRICT_V1.json",
+      "profileId": "US_VERIFICATION_STRICT_V1",
+      "path": "profiles/verification/US_VERIFICATION_STRICT_V1.json",
       "expectedDegradedMode": "HardBlock"
     },
     {
-      "profileId": "US_FMCSA_SOFTHOLD_V1",
-      "path": "profiles/verification/US_FMCSA_SOFTHOLD_V1.json",
+      "profileId": "US_VERIFICATION_SOFTHOLD_V1",
+      "path": "profiles/verification/US_VERIFICATION_SOFTHOLD_V1.json",
       "expectedDegradedMode": "SoftHold"
     },
     {
-      "profileId": "US_FMCSA_BALANCED_V1",
-      "path": "profiles/verification/US_FMCSA_BALANCED_V1.json",
+      "profileId": "US_VERIFICATION_BALANCED_V1",
+      "path": "profiles/verification/US_VERIFICATION_BALANCED_V1.json",
       "expectedDegradedMode": "GraceCache"
     }
   ],
