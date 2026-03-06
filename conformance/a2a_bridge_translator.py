@@ -7,6 +7,7 @@ from copy import deepcopy
 import hashlib
 from pathlib import Path
 import json
+import re
 
 
 DEFAULT_CONTRACT_PATH = Path(__file__).resolve().parent / "a2a_translator_contract.json"
@@ -54,6 +55,11 @@ def _validate_envelope(envelope: dict, contract: dict) -> None:
     required_body_fields = list((mappings[message_type] or {}).get("requiredBodyFields") or [])
     for field in required_body_fields:
         _assert(field in body, f"Missing required Body field for {message_type}: {field}")
+    if message_type == "ExecutionReport" and "VerificationResult" in body:
+        _assert(
+            isinstance(body.get("VerificationResult"), dict),
+            "ExecutionReport Body.VerificationResult must be an object when present.",
+        )
 
 
 def _a2a_task_type_to_message_type(contract: dict) -> dict[str, str]:
@@ -102,6 +108,30 @@ def _token_ref(value: object) -> str:
     return f"sha256:{digest[:24]}"
 
 
+def _normalize_key(key: object) -> str:
+    return re.sub(r"[^a-z0-9]", "", str(key).strip().lower())
+
+
+def _is_token_like_key(key: object) -> bool:
+    normalized = _normalize_key(key)
+    if not normalized:
+        return False
+    return normalized != "tokenref" and normalized.endswith("token")
+
+
+def _scrub_token_like_fields(value: object) -> object:
+    if isinstance(value, dict):
+        scrubbed: dict[object, object] = {}
+        for key, item in value.items():
+            if _is_token_like_key(key):
+                continue
+            scrubbed[key] = _scrub_token_like_fields(item)
+        return scrubbed
+    if isinstance(value, list):
+        return [_scrub_token_like_fields(item) for item in value]
+    return value
+
+
 def _sanitize_envelope_for_export(envelope: dict) -> dict:
     sanitized = deepcopy(envelope)
     sanitized["Nonce"] = "[REDACTED]"
@@ -113,6 +143,8 @@ def _sanitize_envelope_for_export(envelope: dict) -> dict:
         verification_result = body.get("VerificationResult")
         if isinstance(verification_result, dict):
             token = verification_result.pop("token", None)
+            verification_result = _scrub_token_like_fields(verification_result)
+            body["VerificationResult"] = verification_result
             if token and "tokenRef" not in verification_result:
                 verification_result["tokenRef"] = _token_ref(token)
     return sanitized

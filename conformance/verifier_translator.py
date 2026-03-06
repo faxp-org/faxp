@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 import hashlib
 import hmac
 import json
+import re
 
 
 ALLOWED_STATUSES = {"Success", "Fail", "Pending"}
@@ -43,10 +44,14 @@ def _sha256_ref(value: object) -> str:
     return f"sha256:{digest[:24]}"
 
 
+def _normalize_key(key: object) -> str:
+    return re.sub(r"[^a-z0-9]", "", str(key).strip().lower())
+
+
 def _contains_forbidden_biometric(value: object) -> bool:
     if isinstance(value, dict):
         for key, item in value.items():
-            if str(key).strip().lower() in FORBIDDEN_BIOMETRIC_FIELDS:
+            if _normalize_key(key) in FORBIDDEN_BIOMETRIC_FIELDS:
                 return True
             if _contains_forbidden_biometric(item):
                 return True
