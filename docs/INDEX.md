@@ -10,6 +10,7 @@ Project status note: FAXP is currently experimental and early-stage; use these d
 - Builder / TMS / load board implementer: `docs/BUILDERS_START_HERE.md`
 - Demo user: `docs/STREAMLIT_QUICKSTART.md`
 - Conformance / certification reviewer: `conformance/README.md`
+- Runtime boundary clarification: `REFERENCE_RUNTIME_BOUNDARY.md`
 
 ## Governance
 - `docs/governance/FAXP_GOVERNANCE_MODEL.md`
@@ -48,6 +49,8 @@ Project status note: FAXP is currently experimental and early-stage; use these d
 - `docs/roadmap/PHASE_2_IMPLEMENTATION_ROADMAP.md`
 - `docs/roadmap/V2_IMPLEMENTATION_CHECKLIST.md`
 - `docs/roadmap/TEST_MATRIX_v0.2.md`
+- `docs/roadmap/SCOPE_AUDIT_2026-03-06.md`
+- `docs/roadmap/BUILDER_RUNTIME_MIGRATION_PLAN.md`
 - `docs/roadmap/FAXP_DEFERRED_ITEMS.md`
 - `docs/roadmap/V0_2_1_PATCH_PLAN.md`
 - `docs/roadmap/V0_3_0_RFC_BACKLOG.md`
@@ -56,6 +59,7 @@ Project status note: FAXP is currently experimental and early-stage; use these d
 - `docs/roadmap/V0_3_0_SCENARIO_CATALOG.md`
 
 ## Releases
+- `docs/releases/RELEASE_NOTES_v0.2.1.md`
 - `docs/releases/RELEASE_NOTES_v0.2.0-alpha.1.md`
 - `docs/releases/RELEASE_CANDIDATE_v0.2.0-rc.1.md`
 - `docs/releases/RELEASE_CANDIDATE_v0.2.0-rc.2.md`
@@ -63,8 +67,8 @@ Project status note: FAXP is currently experimental and early-stage; use these d
 - `docs/releases/RELEASE_NOTES_v0.2.0.md`
 
 ## Adapter Guidance
-- `docs/adapters/ADAPTER_IMPLEMENTER_HANDOFF.md`
-- `docs/adapters/BUILDER_INTEGRATION_PROFILE.md`
+- `docs/builders/BUILDER_VERIFICATION_RUNTIME_HANDOFF.md`
+- `docs/builders/BUILDER_INTEGRATION_PROFILE.md`
 - `adapter/INTERFACE.md`
 
 ## Demo and Contributor Quick Start
@@ -74,5 +78,4 @@ Project status note: FAXP is currently experimental and early-stage; use these d
 - `scripts/bootstrap_demo_env.sh`
 
 ## Reference Assets
-- `docs/reference/Detailed Diagram.svg`
-- `docs/reference/openapi 3.1.0 YAML SAMPLE copy.txt`
+- No in-repo reference asset snapshots are currently published.

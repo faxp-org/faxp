@@ -7,10 +7,10 @@ If you are new to the repo, start with:
 - `docs/BUILDERS_START_HERE.md`
 
 If you need builder capability declarations, use:
-- `docs/adapters/BUILDER_INTEGRATION_PROFILE.md`
+- `docs/builders/BUILDER_INTEGRATION_PROFILE.md`
 
 If you need adapter-hosting implementation obligations, use:
-- `docs/adapters/ADAPTER_IMPLEMENTER_HANDOFF.md`
+- `docs/builders/BUILDER_VERIFICATION_RUNTIME_HANDOFF.md`
 
 This playbook defines how implementers submit adapter certification bundles and how FAXP evaluates them.
 
@@ -22,7 +22,7 @@ Purpose:
   - `docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md`
 
 Builder capability claim reference:
-- `docs/adapters/BUILDER_INTEGRATION_PROFILE.md`
+- `docs/builders/BUILDER_INTEGRATION_PROFILE.md`
 - `conformance/builder_integration_profile.v1.json`
 
 ## What This Document Answers
@@ -207,7 +207,7 @@ Mandatory gates:
 - `python3 tests/run_accessorial_terms.py`
 - `python3 tests/run_accessorial_terms_profile.py`
 - `python3 tests/run_booking_plane_commercial_terms_doc.py`
-- booking-plane accessorial semantics remain explicit, and settlement operations remain out of scope for protocol core.
+- booking-plane accessorial semantics remain explicit, and settlement operations remain out of scope for protocol-core.
 
 Additional gates for `TrustedProduction`:
 1. Operational evidence references are present in manifest.

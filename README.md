@@ -41,10 +41,13 @@ Out of scope:
 - POD/BOL custody lifecycle
 - invoicing, remittance, payment rails, and settlement operations
 - FAXP-hosted verifier operations
+- verifier business logic and provider-specific execution (for example: FMCSA checks, biometric matching, vendor scoring models)
 
 Canonical boundary docs:
 - `docs/governance/SCOPE_GUARDRAILS.md`
 - `docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md`
+- `docs/roadmap/BUILDER_RUNTIME_MIGRATION_PLAN.md`
+- `REFERENCE_RUNTIME_BOUNDARY.md`
 
 ## Repository Contents
 
@@ -54,6 +57,10 @@ Canonical boundary docs:
 - `docs/`: governance, RFCs, roadmap, and release material
 - `adapter/`: adapter interface and reference implementation components
 - `scripts/`: security, smoke, and interoperability helper scripts
+
+Note:
+- Simulation and Streamlit demo runtime artifacts are reference-runtime material.
+- Protocol-core ownership remains in schemas/governance/conformance contracts, and builder-side runtime behavior is being migrated to a dedicated builder-runtime workspace.
 
 ## Quick Start
 
@@ -126,7 +133,7 @@ Operational deployment details are kept in dedicated docs, not in this top-level
 Useful starting points:
 - `docs/governance/CERTIFICATION_PLAYBOOK.md`
 - `docs/governance/VENDOR_DIRECT_CERTIFICATION_RUNBOOK.md`
-- `deploy/vultr/README.md`
+- `deploy/README.md`
 
 ## Security
 

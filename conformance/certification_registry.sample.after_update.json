@@ -3,14 +3,14 @@
   "generatedAt": "2026-02-22T02:30:00Z",
   "entries": [
     {
-      "adapterId": "sample-fmcsa-adapter-us-prod",
+      "adapterId": "sample-compliance-adapter-us-prod",
       "providerType": "Compliance",
       "hostingModel": "ImplementerHosted",
       "certificationTier": "TrustedProduction",
       "status": "Active",
       "profilesSupported": [
-        "US_FMCSA_BALANCED_V1",
-        "US_FMCSA_STRICT_V1"
+        "US_VERIFICATION_BALANCED_V1",
+        "US_VERIFICATION_STRICT_V1"
       ],
       "securityAttestation": {
         "signedRequests": true,
@@ -26,4 +26,3 @@
     }
   ]
 }
-

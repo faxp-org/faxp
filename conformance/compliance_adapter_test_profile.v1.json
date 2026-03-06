@@ -1,0 +1,59 @@
+{
+  "profileId": "FAXP_COMPLIANCE_ADAPTER_TEST_V1",
+  "version": "1.0.0",
+  "provider": "ComplianceVerifier",
+  "providerId": "compliance.authority-record.adapter",
+  "requestContract": {
+    "method": "POST",
+    "path": "/v1/compliance/verify",
+    "contentType": "application/json",
+    "requiredBodyFields": [
+      "carrierReference"
+    ]
+  },
+  "responseContract": {
+    "wrapperRequired": true,
+    "signatureRequired": true,
+    "requiredTopLevelFields": [
+      "VerificationResult",
+      "ProviderExtensions"
+    ],
+    "verificationResultFields": [
+      "status",
+      "category",
+      "method",
+      "provider",
+      "assuranceLevel",
+      "score",
+      "token",
+      "evidenceRef",
+      "verifiedAt"
+    ],
+    "providerExtensionsFields": [
+      "carrierReference",
+      "sourceAuthority",
+      "carrier"
+    ],
+    "legacyNormalizedFields": [
+      "found",
+      "status",
+      "score",
+      "carrier_reference",
+      "carrier_name",
+      "authority_ok"
+    ]
+  },
+  "securityRequirements": {
+    "signedRequests": true,
+    "signedResponses": true,
+    "nonceReplayProtection": true,
+    "maxClockSkewSeconds": 60
+  },
+  "certificationChecks": [
+    "request_contract_shape",
+    "response_wrapper_signature",
+    "translator_neutral_fields",
+    "legacy_normalized_payload_shape",
+    "fail_closed_on_signature_error"
+  ]
+}

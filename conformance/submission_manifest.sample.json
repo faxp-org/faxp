@@ -2,7 +2,7 @@
   "submissionVersion": "1.0.0",
   "submissionId": "faxp-submission-20260222-0001",
   "submittedAt": "2026-02-22T00:00:00Z",
-  "adapterId": "sample-fmcsa-adapter-us-prod",
+  "adapterId": "sample-compliance-adapter-us-prod",
   "requestedTier": "Conformant",
   "submitter": {
     "organization": "Example Integrator",
@@ -13,7 +13,7 @@
     "adapterProfileRef": "conformance/adapter_profile.sample.json",
     "registryEntryRef": "conformance/certification_registry.sample.json",
     "adapterTestProfiles": [
-      "conformance/fmcsa_adapter_test_profile.v1.json"
+      "conformance/compliance_adapter_test_profile.v1.json"
     ],
     "attestationKeyringRef": "conformance/attestation_keys.sample.json",
     "conformanceReportRef": "conformance/sample_conformance_report.json"
@@ -29,14 +29,14 @@
     "runbookRef": "docs/governance/CERTIFICATION_PLAYBOOK.md",
     "incidentResponseRef": "scripts/incident_drill.sh",
     "securityReviewRef": "scripts/security_gate.sh",
-    "slaPolicyRef": "docs/adapters/ADAPTER_IMPLEMENTER_HANDOFF.md",
+    "slaPolicyRef": "docs/builders/BUILDER_VERIFICATION_RUNTIME_HANDOFF.md",
     "keyManagementRef": "scripts/rotate_faxp_keys.sh"
   },
   "submissionSignature": {
     "alg": "HMAC_SHA256",
     "kid": "faxp-submission-kid-2026q1",
-    "payloadDigestSha256": "sha256:f8deba9295641bebe71ed956747dfc5744b6454e71bc1bb6731e6c99da733475",
-    "sig": "e4afd82023024be759e666bbb62c172add05a099c64dd4a192cb6bc76d5895e4",
+    "payloadDigestSha256": "sha256:d038d1018efff14da4f782cf228e70ea109bc39a612107745d0e80033d9cb498",
+    "sig": "d7ec46b04a11a3719da86fd585aff4fbe5a688a5b0e661b96b8cad3b25c96ae8",
     "signedAt": "2026-02-22T00:00:00Z"
   },
   "notes": "Sample submission manifest for CI and onboarding verification."
