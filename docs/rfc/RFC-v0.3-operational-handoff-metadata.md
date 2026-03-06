@@ -23,7 +23,7 @@ Without a standard handoff shape, each implementation must invent its own post-b
 
 This RFC also clarifies an important boundary:
 - a valid booking must always identify the counterparty and the booking reference,
-- but downstream operational routing details do not need to be universally mandatory in protocol core.
+- but downstream operational routing details do not need to be universally mandatory in protocol-core.
 
 ## Scope Gate (Required)
 - Scope Classification: `In-Scope`
@@ -73,7 +73,7 @@ This RFC also clarifies an important boundary:
    - surface whether setup/onboarding is already complete or still required.
 7. Required/optional distinction:
    - booking identity/reference data remains required for a meaningful booked relationship,
-   - routing metadata remains optional in protocol core,
+   - routing metadata remains optional in protocol-core,
    - profiles/policies may require routing metadata for straight-through automation.
 8. Strict non-goals:
    - no dispatch packet payloads,
@@ -95,7 +95,7 @@ This RFC also clarifies an important boundary:
 4. If later implemented, require conformance profile/tests proving handoff metadata does not mutate booking-plane scope.
 
 ## Backward Compatibility
-1. Operational routing metadata must remain optional and additive in protocol core.
+1. Operational routing metadata must remain optional and additive in protocol-core.
 2. Existing `ExecutionReport` payloads must remain valid without operational routing fields.
 3. If mandatory booking counterparty/reference data is already satisfied elsewhere in existing envelope/body semantics, no breaking change is required.
 4. Implementations not using structured operational routing metadata must remain conformant, though local policy may still require manual fallback handling.

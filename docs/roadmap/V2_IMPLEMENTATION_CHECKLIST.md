@@ -11,7 +11,7 @@ Updated: 2026-02-21 (alpha evidence closure)
 - [ ] Run baseline checks before changes:
   - [ ] `./scripts/run_secure_demo.sh sim --use-kms-command`
   - [ ] `./scripts/incident_drill.sh`
-  - [ ] `./scripts/security_gate.sh /Users/zglitch009/.faxp-secrets/security.env.local`
+  - [ ] `./scripts/security_gate.sh ~/.faxp-secrets/security.env.local`
 
 ## Phase 1: Schema Updates (Provider-Agnostic Verification)
 

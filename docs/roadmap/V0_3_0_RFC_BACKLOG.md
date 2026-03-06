@@ -105,11 +105,11 @@ These remain scope expansions and require separate governance track beyond curre
 - Scope class: `In-Scope`
 - Status: `Deferred (Builder-side)`
 - Target: `v0.3.x`
-- Notes: Current decision is to keep benchmark/reference pricing on the builder side. FAXP will revisit only if a future interoperability case justifies standard transport.
+- Notes: Current decision is to keep benchmark/reference pricing on the builder-side. FAXP will revisit only if a future interoperability case justifies standard transport.
 - Draft file: `docs/rfc/RFC-v0.3-rate-oracle-extension.md`
 
 11. `RFC-v0.3-operational-handoff-metadata`
-- Goal: Define optional neutral post-booking handoff metadata so systems can route completed bookings into the correct downstream ops workflow without moving dispatch into protocol core.
+- Goal: Define optional neutral post-booking handoff metadata so systems can route completed bookings into the correct downstream ops workflow without moving dispatch into protocol-core.
 - Scope class: `In-Scope`
 - Status: `Accepted (Implemented)`
 - Target: `v0.4.x`
