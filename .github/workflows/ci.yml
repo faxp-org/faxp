@@ -10,7 +10,67 @@ permissions:
   contents: read
 
 jobs:
+  protocol_core_lane:
+    name: Protocol Core Lane
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Protocol-core guardrails
+        run: |
+          python tests/run_scope_guardrails.py
+
+      - name: Protocol-core schema compatibility
+        run: |
+          python tests/run_schema_compatibility.py
+
+      - name: Booking identity + handoff profile checks
+        run: |
+          python tests/run_booking_identity_terms.py
+          python tests/run_operational_handoff_terms.py
+
+  reference_runtime_lane:
+    name: Reference Runtime Lane
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Reference runtime smoke checks
+        run: |
+          python tests/run_streamlit_state_logic.py
+          python tests/run_verifier_translator.py
+          python tests/run_trusted_verifier_registry.py
+
   verify:
+    needs:
+      - protocol_core_lane
+      - reference_runtime_lane
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
@@ -403,14 +463,14 @@ jobs:
           rg -q "Booking completed successfully" "${{ steps.ci_run_id.outputs.log_dir }}/faxp-sim-${{ steps.ci_run_id.outputs.run_id }}.log"
           rg -q "\"provider\": \"identity.liveness-document.mock\"" "${{ steps.ci_run_id.outputs.log_dir }}/faxp-sim-${{ steps.ci_run_id.outputs.run_id }}.log"
 
-      - name: Neutrality smoke test (FMCSA mock provider)
+      - name: Neutrality smoke test (compliance mock provider)
         run: |
           set -a
           source "$RUNNER_TEMP/faxp-secrets/security.env.ci"
           set +a
-          python faxp_mvp_simulation.py --provider FMCSA --response Accept --verification-status Success | tee "${{ steps.ci_run_id.outputs.log_dir }}/faxp-neutrality-fmcsa-${{ steps.ci_run_id.outputs.run_id }}.log"
-          rg -q "Booking completed successfully" "${{ steps.ci_run_id.outputs.log_dir }}/faxp-neutrality-fmcsa-${{ steps.ci_run_id.outputs.run_id }}.log"
-          rg -q "\"provider\": \"compliance.authority-record.mock\"" "${{ steps.ci_run_id.outputs.log_dir }}/faxp-neutrality-fmcsa-${{ steps.ci_run_id.outputs.run_id }}.log"
+          python faxp_mvp_simulation.py --provider MockComplianceProvider --response Accept --verification-status Success | tee "${{ steps.ci_run_id.outputs.log_dir }}/faxp-neutrality-compliance-${{ steps.ci_run_id.outputs.run_id }}.log"
+          rg -q "Booking completed successfully" "${{ steps.ci_run_id.outputs.log_dir }}/faxp-neutrality-compliance-${{ steps.ci_run_id.outputs.run_id }}.log"
+          rg -q "\"provider\": \"compliance.authority-record.mock\"" "${{ steps.ci_run_id.outputs.log_dir }}/faxp-neutrality-compliance-${{ steps.ci_run_id.outputs.run_id }}.log"
 
       - name: Security self-test
         run: |
