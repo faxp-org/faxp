@@ -5,8 +5,20 @@ Describe what changed and why.
 ## Scope Check
 
 - [ ] I reviewed `docs/governance/SCOPE_GUARDRAILS.md`.
+- [ ] I reviewed `REFERENCE_RUNTIME_BOUNDARY.md`.
 - [ ] This change stays within booking-plane scope.
 - [ ] If this is scope-adjacent, I linked an RFC.
+
+## Change Classification
+
+- [ ] `protocol-core` (schema/contracts/governance semantics)
+- [ ] `reference-runtime` (demo/simulation/builder reference behavior only)
+- [ ] `governance` (policy/checklist/index/process)
+- [ ] `interop` (A2A/MCP compatibility profile surfaces)
+
+If this PR is `reference-runtime`, confirm:
+- [ ] No protocol wire-level semantics were introduced or changed.
+- [ ] Any provider-specific behavior is documented as builder-side/non-normative.
 
 ## Validation
 

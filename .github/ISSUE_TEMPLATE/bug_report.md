@@ -38,3 +38,10 @@ Paste relevant output or attach screenshots.
 ## Scope relevance
 
 Does this involve booking-plane scope, conformance tooling, or governance artifacts?
+
+## Classification
+
+- [ ] protocol-core
+- [ ] reference-runtime
+- [ ] governance
+- [ ] interop
