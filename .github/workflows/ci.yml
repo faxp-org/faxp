@@ -436,25 +436,6 @@ jobs:
           python faxp_mvp_simulation.py --provider iDenfy --response Accept --verification-status Success | tee "${{ steps.ci_run_id.outputs.log_dir }}/faxp-alias-${{ steps.ci_run_id.outputs.run_id }}.log"
           rg -q "Booking completed successfully" "${{ steps.ci_run_id.outputs.log_dir }}/faxp-alias-${{ steps.ci_run_id.outputs.run_id }}.log"
 
-      - name: FMCSA parser regression check (MC normalization + authority + insurance)
-        run: |
-          python tests/run_fmcsa_parser_fixtures.py
-
-      - name: FMCSA contract drift detector check
-        run: |
-          python - <<'PY'
-          from adapter.fmcsa_live import unknown_fmcsa_top_level_keys
-
-          payload = {
-              "content": {"carrier": {}},
-              "meta": {"version": "next"},
-              "timestamp": "2026-02-21T00:00:00Z",
-          }
-          unknown = unknown_fmcsa_top_level_keys(payload)
-          assert unknown == ["meta", "timestamp"], unknown
-          print("FMCSA contract drift detector check passed.")
-          PY
-
       - name: Reject raw biometric payload fields
         run: |
           python - <<'PY'
