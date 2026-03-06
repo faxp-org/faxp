@@ -1,14 +1,14 @@
 {
   "adapterProfileVersion": "1.0.0",
-  "adapterId": "sample-fmcsa-adapter-us-prod",
+  "adapterId": "sample-compliance-adapter-us-prod",
   "providerType": "Compliance",
   "hostingModel": "ImplementerHosted",
   "certificationTier": "Conformant",
   "status": "Active",
-  "endpointBaseUrl": "https://verifier.example/v1/fmcsa/verify",
+  "endpointBaseUrl": "https://verifier.example/v1/compliance/verify",
   "profilesSupported": [
-    "US_FMCSA_BALANCED_V1",
-    "US_FMCSA_STRICT_V1"
+    "US_VERIFICATION_BALANCED_V1",
+    "US_VERIFICATION_STRICT_V1"
   ],
   "securityCapabilities": {
     "signedRequests": true,
@@ -21,12 +21,12 @@
     "attestedBy": "Adapter Security Team",
     "attestorRole": "SecurityOfficer",
     "payload": {
-      "adapterId": "sample-fmcsa-adapter-us-prod",
+      "adapterId": "sample-compliance-adapter-us-prod",
       "providerType": "Compliance",
       "hostingModel": "ImplementerHosted",
       "profilesSupported": [
-        "US_FMCSA_BALANCED_V1",
-        "US_FMCSA_STRICT_V1"
+        "US_VERIFICATION_BALANCED_V1",
+        "US_VERIFICATION_STRICT_V1"
       ],
       "securityCapabilities": {
         "signedRequests": true,
@@ -36,11 +36,11 @@
         "clockSkewSeconds": 30
       }
     },
-    "payloadDigestSha256": "sha256:268a4d9fce15516f2a87b4971cceb3bbbbd2aaa14fc1e3e3ffc68d6218a1964b",
+    "payloadDigestSha256": "sha256:61644ef23c3521f8b7f6f9c00dc701fca5c18b57cd58a25c51f8ce7f498b348e",
     "alg": "HMAC_SHA256",
     "kid": "faxp-lab-selfattest-2026q1",
-    "sig": "522300fe43dac79fd886f56e9cbded2c125827134e371e20eb328bd8389c18c1",
-    "signedAt": "2026-02-22T20:01:26Z",
-    "expiresAt": "2026-08-21T20:01:26Z"
+    "sig": "4c2e312ebed3e2e51f596f19cdd24147934732a3b23948212edbedc5c621d39c",
+    "signedAt": "2026-03-06T17:25:30Z",
+    "expiresAt": "2026-09-02T17:25:30Z"
   }
 }

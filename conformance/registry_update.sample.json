@@ -15,7 +15,7 @@
     {
       "opId": "op-001",
       "action": "UPSERT",
-      "adapterId": "sample-fmcsa-adapter-us-prod",
+      "adapterId": "sample-compliance-adapter-us-prod",
       "reasonCode": "EXPIRY_RENEWAL",
       "effectiveAt": "2026-02-22T00:05:00Z",
       "expectedCurrentStatus": "Active",
@@ -28,7 +28,7 @@
     {
       "opId": "op-002",
       "action": "REVOKE",
-      "adapterId": "sample-fmcsa-adapter-us-prod",
+      "adapterId": "sample-compliance-adapter-us-prod",
       "reasonCode": "KEY_COMPROMISE",
       "effectiveAt": "2026-02-22T01:10:00Z",
       "expectedCurrentStatus": "Active",
@@ -37,7 +37,7 @@
     {
       "opId": "op-003",
       "action": "ROLLBACK",
-      "adapterId": "sample-fmcsa-adapter-us-prod",
+      "adapterId": "sample-compliance-adapter-us-prod",
       "reasonCode": "ERRONEOUS_ACTION",
       "effectiveAt": "2026-02-22T02:30:00Z",
       "expectedCurrentStatus": "Revoked",
@@ -50,8 +50,8 @@
   "requestSignature": {
     "alg": "HMAC_SHA256",
     "kid": "faxp-regops-kid-2026q1",
-    "payloadDigestSha256": "sha256:29095510f72e84cf263165ab34136810860e9bdf710f295b20f564ac0e9bc78d",
-    "sig": "a439fd252933e9283b9b2cc7b9cf272fbb14f4d0075f982ed85a8c4a6bafe778",
+    "payloadDigestSha256": "sha256:44f74393ac4fc95e0ace0f616643ebbf003e5e6580efc8c168b3c681005957a5",
+    "sig": "3458949fd75b7cfa527d3b26a680792080f85bc56fa085c8a702b8b7608cd412",
     "signedAt": "2026-02-22T00:00:00Z"
   },
   "auditTrailRef": "conformance/registry_update.sample.audit.log",
