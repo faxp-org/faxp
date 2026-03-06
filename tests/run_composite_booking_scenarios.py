@@ -41,7 +41,7 @@ def _build_execution_report() -> dict:
         },
         policy_decision={
             "VerificationMode": "Live",
-            "VerificationPolicyProfileID": "US_FMCSA_BALANCED_V1",
+            "VerificationPolicyProfileID": "US_VERIFICATION_BALANCED_V1",
             "DispatchAuthorization": "Allowed",
             "DecisionReasonCode": "Verified",
             "PolicyRuleID": "balanced-tier1",
@@ -145,7 +145,7 @@ def main() -> int:
             },
             policy_decision={
                 "VerificationMode": "Live",
-                "VerificationPolicyProfileID": "US_FMCSA_BALANCED_V1",
+                "VerificationPolicyProfileID": "US_VERIFICATION_BALANCED_V1",
                 "DispatchAuthorization": "Allowed",
                 "DecisionReasonCode": "Verified",
                 "PolicyRuleID": "balanced-tier1",
@@ -208,7 +208,7 @@ def main() -> int:
             },
             policy_decision={
                 "VerificationMode": "Live",
-                "VerificationPolicyProfileID": "US_FMCSA_BALANCED_V1",
+                "VerificationPolicyProfileID": "US_VERIFICATION_BALANCED_V1",
                 "DispatchAuthorization": "Allowed",
                 "DecisionReasonCode": "Verified",
                 "PolicyRuleID": "balanced-tier1",

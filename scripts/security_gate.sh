@@ -60,8 +60,7 @@ if [[ -f "$ENV_FILE" ]]; then
   check_env_equals "$ENV_FILE" "FAXP_REQUIRE_SIGNED_VERIFIER" "1"
   check_env_equals "$ENV_FILE" "FAXP_SIGNATURE_SCHEME" "ED25519"
   check_env_equals "$ENV_FILE" "FAXP_VERIFIER_SIGNATURE_SCHEME" "ED25519"
-  check_env_equals "$ENV_FILE" "FAXP_FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER" "1"
-  check_env_equals "$ENV_FILE" "FAXP_FMCSA_ADAPTER_SIGN_REQUESTS" "1"
+  check_env_equals "$ENV_FILE" "FAXP_ENFORCE_TRUSTED_VERIFIER_REGISTRY" "1"
 else
   warn "Env file not found for checks: $ENV_FILE"
 fi

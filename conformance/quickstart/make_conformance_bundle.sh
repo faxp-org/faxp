@@ -23,7 +23,7 @@ cp "${SCRIPT_DIR}/certification_registry.entry.template.json" "${REGISTRY_ENTRY_
 
 ADAPTER_ID="${FAXP_ADAPTER_ID:-quickstart-adapter-$(date -u +%Y%m%d%H%M%S)}"
 ENDPOINT_URL="${FAXP_ADAPTER_ENDPOINT_URL:-https://adapter.example/v1/verify}"
-PROFILE_NAME="${FAXP_VERIFICATION_PROFILE:-US_FMCSA_BALANCED_V1}"
+PROFILE_NAME="${FAXP_VERIFICATION_PROFILE:-US_VERIFICATION_BALANCED_V1}"
 ATTEST_KID="${FAXP_ATTESTATION_KID:-quickstart-kid-$(date -u +%Y%m%d)}"
 ATTEST_SECRET="${FAXP_ATTESTATION_SECRET:-}"
 ATTESTED_BY="${FAXP_ATTESTED_BY:-Quickstart Security}"

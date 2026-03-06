@@ -20,15 +20,17 @@ from conformance.registry_update_signing import verify_request_signature  # noqa
 from conformance.submission_manifest_signing import verify_submission_signature  # noqa: E402
 
 PROFILE_SCHEMA_PATH = PROJECT_ROOT / "profiles" / "verification" / "profile.schema.json"
-STRICT_PROFILE_PATH = PROJECT_ROOT / "profiles" / "verification" / "US_FMCSA_STRICT_V1.json"
-BALANCED_PROFILE_PATH = PROJECT_ROOT / "profiles" / "verification" / "US_FMCSA_BALANCED_V1.json"
-SOFTHOLD_PROFILE_PATH = PROJECT_ROOT / "profiles" / "verification" / "US_FMCSA_SOFTHOLD_V1.json"
+STRICT_PROFILE_PATH = PROJECT_ROOT / "profiles" / "verification" / "US_VERIFICATION_STRICT_V1.json"
+BALANCED_PROFILE_PATH = PROJECT_ROOT / "profiles" / "verification" / "US_VERIFICATION_BALANCED_V1.json"
+SOFTHOLD_PROFILE_PATH = PROJECT_ROOT / "profiles" / "verification" / "US_VERIFICATION_SOFTHOLD_V1.json"
 REGISTRY_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "certification_registry.schema.json"
 REGISTRY_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "certification_registry.sample.json"
 ADAPTER_PROFILE_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "adapter_profile.schema.json"
 ADAPTER_PROFILE_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "adapter_profile.sample.json"
 ADAPTER_TEST_PROFILE_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "adapter_test_profile.schema.json"
-FMCSA_ADAPTER_TEST_PROFILE_PATH = PROJECT_ROOT / "conformance" / "fmcsa_adapter_test_profile.v1.json"
+COMPLIANCE_ADAPTER_TEST_PROFILE_PATH = (
+    PROJECT_ROOT / "conformance" / "compliance_adapter_test_profile.v1.json"
+)
 SUBMISSION_MANIFEST_SCHEMA_PATH = PROJECT_ROOT / "conformance" / "submission_manifest.schema.json"
 SUBMISSION_MANIFEST_SAMPLE_PATH = PROJECT_ROOT / "conformance" / "submission_manifest.sample.json"
 SUBMISSION_MANIFEST_KEYS_SAMPLE_PATH = (
@@ -87,7 +89,7 @@ def main() -> int:
     adapter_profile_schema = _load_json(ADAPTER_PROFILE_SCHEMA_PATH)
     adapter_profile_sample = _load_json(ADAPTER_PROFILE_SAMPLE_PATH)
     adapter_test_profile_schema = _load_json(ADAPTER_TEST_PROFILE_SCHEMA_PATH)
-    fmcsa_adapter_test_profile = _load_json(FMCSA_ADAPTER_TEST_PROFILE_PATH)
+    compliance_adapter_test_profile = _load_json(COMPLIANCE_ADAPTER_TEST_PROFILE_PATH)
     submission_manifest_schema = _load_json(SUBMISSION_MANIFEST_SCHEMA_PATH)
     submission_manifest_sample = _load_json(SUBMISSION_MANIFEST_SAMPLE_PATH)
     submission_manifest_keyring = _load_json(SUBMISSION_MANIFEST_KEYS_SAMPLE_PATH)
@@ -110,8 +112,8 @@ def main() -> int:
     _validate(adapter_profile_schema, adapter_profile_sample, "adapter profile sample")
     _validate(
         adapter_test_profile_schema,
-        fmcsa_adapter_test_profile,
-        "fmcsa adapter test profile",
+        compliance_adapter_test_profile,
+        "compliance adapter test profile",
     )
     _validate(
         submission_manifest_schema,
@@ -275,16 +277,16 @@ def main() -> int:
         "registry adapterProfileRef must reference the sample adapter profile.",
     )
     _assert(
-        fmcsa_adapter_test_profile["provider"] == "FMCSA",
-        "FMCSA adapter test profile provider mismatch.",
+        compliance_adapter_test_profile["provider"] == "ComplianceVerifier",
+        "Compliance adapter test profile provider mismatch.",
     )
     _assert(
-        fmcsa_adapter_test_profile["responseContract"]["signatureRequired"] is True,
-        "FMCSA adapter test profile must require signed responses.",
+        compliance_adapter_test_profile["responseContract"]["signatureRequired"] is True,
+        "Compliance adapter test profile must require signed responses.",
     )
     _assert(
-        "translator_neutral_fields" in fmcsa_adapter_test_profile.get("certificationChecks", []),
-        "FMCSA adapter test profile must require neutral translator checks.",
+        "translator_neutral_fields" in compliance_adapter_test_profile.get("certificationChecks", []),
+        "Compliance adapter test profile must require neutral translator checks.",
     )
     _assert(
         submission_manifest_sample["adapterId"] == adapter_profile_sample["adapterId"],

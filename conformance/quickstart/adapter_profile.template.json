@@ -6,7 +6,7 @@
   "certificationTier": "SelfAttested",
   "status": "Active",
   "endpointBaseUrl": "https://replace-with-adapter-host.example/v1/verify",
-  "profilesSupported": ["US_FMCSA_BALANCED_V1"],
+  "profilesSupported": ["US_VERIFICATION_BALANCED_V1"],
   "securityCapabilities": {
     "signedRequests": true,
     "signedResponses": true,

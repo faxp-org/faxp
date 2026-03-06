@@ -62,7 +62,6 @@ elif _cloud_safe_setting in {"0", "false", "no", "off"}:
     CLOUD_SAFE_MODE = False
 else:
     CLOUD_SAFE_MODE = NON_LOCAL_MODE
-HOSTED_FMCSA_CONFIGURED = bool(os.getenv("FAXP_FMCSA_ADAPTER_BASE_URL", "").strip())
 MAX_AUTH_FAILURES = int(os.getenv("FAXP_AUTH_MAX_FAILURES", "5"))
 AUTH_LOCKOUT_SECONDS = int(os.getenv("FAXP_AUTH_LOCKOUT_SECONDS", "300"))
 GLOBAL_VERIFICATION_CALL_TIMES = []
@@ -70,14 +69,14 @@ DEFAULT_PER_MILE_BID = float(default_bid_amount("PerMile"))
 QUICK_PRESETS = build_quick_presets(DEFAULT_PER_MILE_BID)
 SIDEBAR_DEFAULTS = default_sidebar_state(DEFAULT_PER_MILE_BID)
 POLICY_PROFILE_OPTIONS = [
-    "US_FMCSA_BALANCED_V1",
-    "US_FMCSA_SOFTHOLD_V1",
-    "US_FMCSA_STRICT_V1",
+    "US_VERIFICATION_BALANCED_V1",
+    "US_VERIFICATION_SOFTHOLD_V1",
+    "US_VERIFICATION_STRICT_V1",
 ]
 POLICY_PROFILE_LABELS = {
-    "US_FMCSA_BALANCED_V1": "US Compliance Balanced v1 (GraceCache)",
-    "US_FMCSA_SOFTHOLD_V1": "US Compliance SoftHold v1",
-    "US_FMCSA_STRICT_V1": "US Compliance Strict v1 (HardBlock)",
+    "US_VERIFICATION_BALANCED_V1": "US Verification Balanced v1 (GraceCache)",
+    "US_VERIFICATION_SOFTHOLD_V1": "US Verification SoftHold v1",
+    "US_VERIFICATION_STRICT_V1": "US Verification Strict v1 (HardBlock)",
 }
 MILEAGE_POLICY_OPTIONS = ["balanced", "strict"]
 MILEAGE_POLICY_LABELS = {
@@ -87,16 +86,8 @@ MILEAGE_POLICY_LABELS = {
 DEFAULT_POLICY_PROFILE = (
     VERIFICATION_POLICY_PROFILE_ID
     if VERIFICATION_POLICY_PROFILE_ID in POLICY_PROFILE_OPTIONS
-    else "US_FMCSA_BALANCED_V1"
+    else "US_VERIFICATION_BALANCED_V1"
 )
-COMPLIANCE_SOURCE_LABELS = {
-    "authority-mock": "authority-mock",
-    "implementer-adapter": "implementer-adapter",
-    "vendor-direct": "vendor-direct",
-    # Backward-compatible alias.
-    "hosted-adapter": "implementer-adapter (legacy alias: hosted-adapter)",
-}
-
 
 def now_utc():
     return (
@@ -141,7 +132,6 @@ def apply_quick_preset(preset_name):
         st.session_state,
         QUICK_PRESETS,
         preset_name,
-        hosted_fmcsa_configured=HOSTED_FMCSA_CONFIGURED,
     )
 
 
@@ -396,8 +386,6 @@ def run_flow(
     no_match,
     rate_model,
     bid_amount,
-    mc_number,
-    fmcsa_source,
     policy_profile_id,
     risk_tier,
     mileage_dispute_policy,
@@ -421,8 +409,7 @@ def run_flow(
         "run_id": run_id,
         "provider": provider,
         "flow_mode": "ShipperOrigin" if shipper_flow else "BrokerOrigin",
-        "fmcsa_source": fmcsa_source if provider == "FMCSA" else "n/a",
-        "mc_number": (mc_number or "").strip() if provider == "FMCSA" else "",
+        "compliance_source": "authority-mock" if provider == "MockComplianceProvider" else "n/a",
         "policy_profile_id": policy_profile_id,
         "risk_tier": int(risk_tier),
         "mileage_dispute_policy": effective_mileage_policy.get("policy", "balanced"),
@@ -430,7 +417,6 @@ def run_flow(
         "mileage_rel_tolerance_ratio": effective_mileage_policy.get("relToleranceRatio", 0.0),
         "exception_approved": bool(exception_approved),
         "exception_approval_ref": str(exception_approval_ref or "").strip(),
-        "hosted_fmcsa_configured": HOSTED_FMCSA_CONFIGURED,
         "cloud_safe_mode": CLOUD_SAFE_MODE,
         "result_status": "NotStarted",
         "result_source": "n/a",
@@ -513,8 +499,6 @@ def run_flow(
         verification_result, verified_badge = run_verification(
             provider=provider,
             status=verification_status,
-            mc_number=(mc_number.strip() or None),
-            fmcsa_source=fmcsa_source,
         )
     except Exception:
         st.session_state.status_line = "Verification process error."
@@ -601,15 +585,13 @@ if parsed_risk_tier not in {0, 1, 2, 3}:
     parsed_risk_tier = DEFAULT_RISK_TIER
 st.session_state.risk_tier_select = max(0, min(parsed_risk_tier, 3))
 if NON_LOCAL_MODE:
-    st.session_state.provider_cloud_select = "ComplianceVerifier (Trusted Adapter)"
-    st.session_state.provider_local_select = "FMCSA"
-    st.session_state.fmcsa_source_select_cloud = "implementer-adapter"
-    st.session_state.fmcsa_source_select_local = "implementer-adapter"
+    st.session_state.provider_cloud_select = "ComplianceVerifier (Mock)"
+    st.session_state.provider_local_select = "ComplianceVerifier (Mock)"
 elif CLOUD_SAFE_MODE and st.session_state.get("provider_cloud_select") not in {
-    "ComplianceVerifier (Authority Mock)",
+    "ComplianceVerifier (Mock)",
     "IdentityVerifier (Mock)",
 }:
-    st.session_state.provider_cloud_select = "ComplianceVerifier (Authority Mock)"
+    st.session_state.provider_cloud_select = "ComplianceVerifier (Mock)"
 
 if NON_LOCAL_MODE and not ACCESS_KEY:
     st.error("Secure mode requires FAXP_STREAMLIT_ACCESS_KEY.")
@@ -712,102 +694,37 @@ with st.sidebar:
     if NON_LOCAL_MODE:
         st.selectbox(
             "Verification Provider",
-            ["ComplianceVerifier (Trusted Adapter)"],
+            ["ComplianceVerifier (Mock)"],
             key="provider_cloud_select",
             disabled=True,
-            help="Non-local mode permits only trusted external compliance attestations.",
+            help="Non-local mode runs mock verification in this demo.",
         )
-        provider = "FMCSA"
+        provider = "MockComplianceProvider"
     elif CLOUD_SAFE_MODE:
         provider_choice = st.selectbox(
             "Verification Provider",
-            ["ComplianceVerifier (Authority Mock)", "IdentityVerifier (Mock)"],
+            ["ComplianceVerifier (Mock)", "IdentityVerifier (Mock)"],
             key="provider_cloud_select",
-            help="Cloud-safe mode disables local-only verifier paths.",
+            help="Cloud-safe mode keeps verification mock-only.",
         )
         provider = (
-            "FMCSA"
+            "MockComplianceProvider"
             if provider_choice.startswith("ComplianceVerifier")
             else "MockBiometricProvider"
         )
     else:
         provider = st.selectbox(
             "Verification Provider",
-            ["ComplianceVerifier (FMCSA)", "IdentityVerifier (Mock)", "iDenfy (Legacy Alias)"],
+            ["ComplianceVerifier (Mock)", "IdentityVerifier (Mock)", "iDenfy (Legacy Alias)"],
             key="provider_local_select",
             help="iDenfy label is maintained as a legacy alias.",
         )
-        if provider == "ComplianceVerifier (FMCSA)":
-            provider = "FMCSA"
+        if provider == "ComplianceVerifier (Mock)":
+            provider = "MockComplianceProvider"
         if provider == "IdentityVerifier (Mock)":
             provider = "MockBiometricProvider"
         if provider == "iDenfy (Legacy Alias)":
             provider = "iDenfy"
-
-    if provider == "FMCSA":
-        if NON_LOCAL_MODE:
-            fmcsa_source = "implementer-adapter"
-            mc_number = st.text_input("MC Number", key="mc_number_input")
-            if HOSTED_FMCSA_CONFIGURED:
-                st.caption("Trusted external compliance endpoint mode is active.")
-            else:
-                st.caption("Missing FAXP_FMCSA_ADAPTER_BASE_URL; verification fails closed in non-local mode.")
-        elif CLOUD_SAFE_MODE:
-            options = []
-            if HOSTED_FMCSA_CONFIGURED:
-                options.extend(["implementer-adapter", "vendor-direct"])
-            options.append("authority-mock")
-            if st.session_state.get("fmcsa_source_select_cloud") == "hosted-adapter":
-                st.session_state.fmcsa_source_select_cloud = "implementer-adapter"
-            if st.session_state.get("fmcsa_source_select_cloud") not in options:
-                st.session_state.fmcsa_source_select_cloud = options[0]
-            cloud_fmcsa_mode = st.selectbox(
-                "Compliance Source",
-                options,
-                key="fmcsa_source_select_cloud",
-                format_func=lambda key: COMPLIANCE_SOURCE_LABELS.get(key, key),
-                help=(
-                    "authority-mock uses local mock compliance scoring only. "
-                    "implementer-adapter and vendor-direct require a configured trusted endpoint."
-                ),
-            )
-            if cloud_fmcsa_mode in {"implementer-adapter", "vendor-direct"}:
-                fmcsa_source = cloud_fmcsa_mode
-                mc_number = st.text_input("MC Number", key="mc_number_input")
-                st.caption("Trusted compliance endpoint mode enabled via FAXP_FMCSA_ADAPTER_BASE_URL.")
-            else:
-                fmcsa_source = "authority-mock"
-                mc_number = ""
-                st.caption("Compliance authority-mock mode (no external API call).")
-        else:
-            local_fmcsa_options = ["authority-mock", "implementer-adapter", "vendor-direct"]
-            if st.session_state.get("fmcsa_source_select_local") == "hosted-adapter":
-                st.session_state.fmcsa_source_select_local = "implementer-adapter"
-            if st.session_state.get("fmcsa_source_select_local") not in local_fmcsa_options:
-                st.session_state.fmcsa_source_select_local = local_fmcsa_options[0]
-            fmcsa_source = st.selectbox(
-                "Compliance Source",
-                local_fmcsa_options,
-                key="fmcsa_source_select_local",
-                format_func=lambda key: COMPLIANCE_SOURCE_LABELS.get(key, key),
-                help=(
-                    "authority-mock uses local mock compliance scoring only; "
-                    "implementer-adapter and vendor-direct call your trusted compliance endpoint."
-                ),
-            )
-            mc_number = st.text_input("MC Number", key="mc_number_input")
-            if fmcsa_source in {"implementer-adapter", "vendor-direct"}:
-                if HOSTED_FMCSA_CONFIGURED:
-                    st.caption("Trusted compliance endpoint mode enabled via FAXP_FMCSA_ADAPTER_BASE_URL.")
-                else:
-                    st.caption(
-                        "Missing FAXP_FMCSA_ADAPTER_BASE_URL; external compliance calls will fail closed."
-                    )
-            else:
-                st.caption("Compliance authority-mock mode (no external API call).")
-    else:
-        fmcsa_source = "authority-mock"
-        mc_number = ""
 
     verification_status = st.selectbox(
         "Mock Verification Status", ["Success", "Fail"], key="verification_status_select"
@@ -824,11 +741,6 @@ if run_clicked:
             st.session_state.status_line = f"Unauthorized. Locked for {wait_seconds}s."
         else:
             st.session_state.status_line = "Unauthorized."
-    elif NON_LOCAL_MODE and not HOSTED_FMCSA_CONFIGURED:
-        st.session_state.status_line = (
-            "Trusted compliance endpoint is required in non-local mode "
-            "(set FAXP_FMCSA_ADAPTER_BASE_URL)."
-        )
     else:
         run_flow(
             response_type=response_type,
@@ -837,8 +749,6 @@ if run_clicked:
             no_match=no_match,
             rate_model=rate_model,
             bid_amount=bid_amount,
-            mc_number=mc_number,
-            fmcsa_source=fmcsa_source,
             policy_profile_id=policy_profile_id,
             risk_tier=int(risk_tier),
             mileage_dispute_policy=mileage_dispute_policy,
@@ -905,9 +815,7 @@ else:
             "runId": diag.get("run_id", "n/a"),
             "provider": diag.get("provider", "n/a"),
             "flowMode": diag.get("flow_mode", "n/a"),
-            "complianceSource": diag.get("fmcsa_source", "n/a"),
-            "fmcsaSource": diag.get("fmcsa_source", "n/a"),
-            "hostedFmcsaConfigured": diag.get("hosted_fmcsa_configured"),
+            "complianceSource": diag.get("compliance_source", "n/a"),
             "cloudSafeMode": diag.get("cloud_safe_mode"),
             "resultStatus": diag.get("result_status", "n/a"),
             "resultProvider": diag.get("result_provider", "n/a"),
@@ -922,17 +830,16 @@ else:
             "policyDecisionReasonCode": diag.get("policy_decision_reason_code", "n/a"),
             "policyRuleID": diag.get("policy_rule_id", "n/a"),
             "policyShouldBook": diag.get("policy_should_book", "n/a"),
-            "mcNumber": diag.get("mc_number", ""),
             "timestamp": diag.get("timestamp", "n/a"),
         },
         indent=2,
     )
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Configured Provider", diag.get("provider", "n/a"))
-    c2.metric("Compliance Source", diag.get("fmcsa_source", "n/a"))
+    c2.metric("Compliance Source", diag.get("compliance_source", "n/a"))
     c3.metric(
-        "FMCSA Adapter",
-        "Configured" if diag.get("hosted_fmcsa_configured") else "Missing",
+        "Verification Mode",
+        "Mock-only",
     )
     c4.metric("Last Result", diag.get("result_status", "n/a"))
     st.caption(
@@ -965,7 +872,6 @@ else:
         "runtime": {
             "appMode": APP_MODE,
             "cloudSafeMode": CLOUD_SAFE_MODE,
-            "hostedFmcsaConfigured": HOSTED_FMCSA_CONFIGURED,
             "maxVerificationsPerHour": MAX_VERIFICATION_CALLS_PER_HOUR,
         },
         "diagnostics": json.loads(diag_json),
@@ -974,8 +880,7 @@ else:
                 "runId": row.get("run_id", "n/a"),
                 "status": row.get("result_status", "n/a"),
                 "provider": row.get("result_provider", row.get("provider", "n/a")),
-                "source": row.get("result_source", row.get("fmcsa_source", "n/a")),
-                "mcNumber": row.get("mc_number", ""),
+                "source": row.get("result_source", row.get("compliance_source", "n/a")),
                 "timestamp": row.get("timestamp", "n/a"),
                 "error": row.get("result_error", ""),
             }
@@ -1013,7 +918,7 @@ else:
             {"Check": "SIGNED_VERIFIER_REQUIRED", "Value": SIGNED_VERIFIER_REQUIRED},
             {"Check": "SIGNATURE_SCHEME", "Value": SIGNATURE_SCHEME},
             {"Check": "VERIFIER_SIGNATURE_SCHEME", "Value": VERIFIER_SIGNATURE_SCHEME},
-            {"Check": "FMCSA_ADAPTER_CONFIGURED", "Value": HOSTED_FMCSA_CONFIGURED},
+            {"Check": "VERIFICATION_ADAPTER_MODE", "Value": "mock-only"},
             {"Check": "CLOUD_SAFE_MODE", "Value": CLOUD_SAFE_MODE},
             {"Check": "APP_MODE", "Value": APP_MODE},
         ]
@@ -1032,8 +937,7 @@ else:
                     "RunID": row.get("run_id", "n/a"),
                     "Status": row.get("result_status", "n/a"),
                     "Provider": row.get("result_provider", row.get("provider", "n/a")),
-                    "Source": row.get("result_source", row.get("fmcsa_source", "n/a")),
-                    "MC": row.get("mc_number", ""),
+                    "Source": row.get("result_source", row.get("compliance_source", "n/a")),
                     "Updated": row.get("timestamp", "n/a"),
                     "Error": row.get("result_error", ""),
                 }
