@@ -27,9 +27,9 @@ This document defines booking-time degraded-mode semantics for verification poli
 - Human approval rules can escalate or deny exceptions by tier.
 
 ## Profile Catalog
-- `US_FMCSA_STRICT_V1` -> `HardBlock`
-- `US_FMCSA_SOFTHOLD_V1` -> `SoftHold`
-- `US_FMCSA_BALANCED_V1` -> `GraceCache`
+- `US_VERIFICATION_STRICT_V1` -> `HardBlock`
+- `US_VERIFICATION_SOFTHOLD_V1` -> `SoftHold`
+- `US_VERIFICATION_BALANCED_V1` -> `GraceCache`
 
 ## Verification Source Labels
 - Canonical verifier source classes are:
@@ -46,7 +46,7 @@ The following matrix is normative and consumed by conformance tests.
 [
   {
     "id": "balanced_success_t1",
-    "profileId": "US_FMCSA_BALANCED_V1",
+    "profileId": "US_VERIFICATION_BALANCED_V1",
     "riskTier": 1,
     "verification": {
       "status": "Success",
@@ -61,7 +61,7 @@ The following matrix is normative and consumed by conformance tests.
   },
   {
     "id": "balanced_negative_fail_t0",
-    "profileId": "US_FMCSA_BALANCED_V1",
+    "profileId": "US_VERIFICATION_BALANCED_V1",
     "riskTier": 0,
     "verification": {
       "status": "Fail",
@@ -76,7 +76,7 @@ The following matrix is normative and consumed by conformance tests.
   },
   {
     "id": "balanced_gracecache_outage_t0",
-    "profileId": "US_FMCSA_BALANCED_V1",
+    "profileId": "US_VERIFICATION_BALANCED_V1",
     "riskTier": 0,
     "verification": {
       "status": "Fail",
@@ -91,7 +91,7 @@ The following matrix is normative and consumed by conformance tests.
   },
   {
     "id": "balanced_gracecache_outage_t2_pending",
-    "profileId": "US_FMCSA_BALANCED_V1",
+    "profileId": "US_VERIFICATION_BALANCED_V1",
     "riskTier": 2,
     "verification": {
       "status": "Fail",
@@ -106,7 +106,7 @@ The following matrix is normative and consumed by conformance tests.
   },
   {
     "id": "balanced_gracecache_outage_t2_approved",
-    "profileId": "US_FMCSA_BALANCED_V1",
+    "profileId": "US_VERIFICATION_BALANCED_V1",
     "riskTier": 2,
     "exceptionApproved": true,
     "exceptionApprovalRef": "APPROVAL-123",
@@ -124,7 +124,7 @@ The following matrix is normative and consumed by conformance tests.
   },
   {
     "id": "strict_hardblock_outage_t1",
-    "profileId": "US_FMCSA_STRICT_V1",
+    "profileId": "US_VERIFICATION_STRICT_V1",
     "riskTier": 1,
     "verification": {
       "status": "Fail",
@@ -139,7 +139,7 @@ The following matrix is normative and consumed by conformance tests.
   },
   {
     "id": "softhold_outage_t1",
-    "profileId": "US_FMCSA_SOFTHOLD_V1",
+    "profileId": "US_VERIFICATION_SOFTHOLD_V1",
     "riskTier": 1,
     "verification": {
       "status": "Fail",
@@ -154,7 +154,7 @@ The following matrix is normative and consumed by conformance tests.
   },
   {
     "id": "balanced_gracecache_outage_t3_approved_denied",
-    "profileId": "US_FMCSA_BALANCED_V1",
+    "profileId": "US_VERIFICATION_BALANCED_V1",
     "riskTier": 3,
     "exceptionApproved": true,
     "exceptionApprovalRef": "APPROVAL-CRITICAL-1",
