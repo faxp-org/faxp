@@ -205,6 +205,32 @@ def main() -> int:
     else:
         raise AssertionError("Expected failure for non-object wrapper signature.")
 
+    deep_node = {"ok": "value"}
+    for _ in range(1200):
+        deep_node = {"nest": deep_node}
+    try:
+        translate_verifier_payload(
+            "generic",
+            {
+                "status": "Success",
+                "category": "Identity",
+                "method": "DocumentOnly",
+                "provider": "identity.vendor",
+                "assuranceLevel": "AAL1",
+                "score": 88,
+                "token": "opaque-token",
+                "providerExtensions": deep_node,
+            },
+            source="generic",
+        )
+    except TranslationError as exc:
+        _assert(
+            "exceeded max traversal depth" in str(exc),
+            "Expected bounded traversal rejection for deep ProviderExtensions payload.",
+        )
+    else:
+        raise AssertionError("Expected failure for deeply nested ProviderExtensions payload.")
+
     print("Verifier translator regression checks passed.")
     return 0
 

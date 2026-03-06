@@ -11,6 +11,8 @@ import re
 
 
 ALLOWED_STATUSES = {"Success", "Fail", "Pending"}
+MAX_TRANSLATOR_DEPTH = 256
+MAX_TRANSLATOR_NODES = 20000
 FORBIDDEN_BIOMETRIC_FIELDS = {
     "faceimage",
     "selfieimage",
@@ -48,28 +50,55 @@ def _normalize_key(key: object) -> str:
     return re.sub(r"[^a-z0-9]", "", str(key).strip().lower())
 
 
+def _assert_traversal_bounds(depth: int, seen_nodes: int, context: str) -> None:
+    if depth > MAX_TRANSLATOR_DEPTH:
+        raise TranslationError(
+            f"{context} exceeded max traversal depth ({MAX_TRANSLATOR_DEPTH})."
+        )
+    if seen_nodes > MAX_TRANSLATOR_NODES:
+        raise TranslationError(
+            f"{context} exceeded max traversal nodes ({MAX_TRANSLATOR_NODES})."
+        )
+
+
 def _assert_ascii_keys(value: object, context: str) -> None:
-    if isinstance(value, dict):
-        for key, item in value.items():
-            if not str(key).isascii():
-                raise TranslationError(f"{context} contains non-ASCII key name: {key!r}")
-            _assert_ascii_keys(item, context)
-        return
-    if isinstance(value, list):
-        for item in value:
-            _assert_ascii_keys(item, context)
+    stack: list[tuple[object, int]] = [(value, 0)]
+    seen_nodes = 0
+    while stack:
+        node, depth = stack.pop()
+        seen_nodes += 1
+        _assert_traversal_bounds(depth, seen_nodes, context)
+        if isinstance(node, dict):
+            for key, item in node.items():
+                if not str(key).isascii():
+                    raise TranslationError(
+                        f"{context} contains non-ASCII key name: {key!r}"
+                    )
+                if isinstance(item, (dict, list)):
+                    stack.append((item, depth + 1))
+        elif isinstance(node, list):
+            for item in node:
+                if isinstance(item, (dict, list)):
+                    stack.append((item, depth + 1))
 
 
 def _contains_forbidden_biometric(value: object) -> bool:
-    if isinstance(value, dict):
-        for key, item in value.items():
-            if _normalize_key(key) in FORBIDDEN_BIOMETRIC_FIELDS:
-                return True
-            if _contains_forbidden_biometric(item):
-                return True
-        return False
-    if isinstance(value, list):
-        return any(_contains_forbidden_biometric(item) for item in value)
+    stack: list[tuple[object, int]] = [(value, 0)]
+    seen_nodes = 0
+    while stack:
+        node, depth = stack.pop()
+        seen_nodes += 1
+        _assert_traversal_bounds(depth, seen_nodes, "Biometric field scan")
+        if isinstance(node, dict):
+            for key, item in node.items():
+                if _normalize_key(key) in FORBIDDEN_BIOMETRIC_FIELDS:
+                    return True
+                if isinstance(item, (dict, list)):
+                    stack.append((item, depth + 1))
+        elif isinstance(node, list):
+            for item in node:
+                if isinstance(item, (dict, list)):
+                    stack.append((item, depth + 1))
     return False
 
 
