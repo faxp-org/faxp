@@ -26,6 +26,18 @@ check_env_equals() {
   fi
 }
 
+scan_tracked_content_secrets() {
+  local pattern
+  pattern='AKIA[0-9A-Z]{16}|ASIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{60,}|xox[baprs]-[A-Za-z0-9-]{10,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|AIza[0-9A-Za-z_-]{35}|sk_live_[0-9A-Za-z]{24,}|sk_test_[0-9A-Za-z]{24,}'
+  local hits
+  hits="$(git -C "$PROJECT_DIR" grep -nE "$pattern" -- . ':!security.env.template' || true)"
+  if [[ -n "$hits" ]]; then
+    fail "Potential secret material detected in tracked content:\n$hits"
+  else
+    note "No high-signal secret patterns detected in tracked content."
+  fi
+}
+
 if git -C "$PROJECT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   note "Git repository detected. Running tracked-secret checks."
   tracked_sensitive="$(
@@ -38,6 +50,7 @@ if git -C "$PROJECT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   else
     note "No tracked secret files detected."
   fi
+  scan_tracked_content_secrets
 else
   warn "No git repository found at $PROJECT_DIR. Skipping tracked-secret checks."
 fi

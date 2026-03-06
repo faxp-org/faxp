@@ -11,6 +11,8 @@ import re
 
 
 DEFAULT_CONTRACT_PATH = Path(__file__).resolve().parent / "a2a_translator_contract.json"
+MAX_SANITIZE_DEPTH = 256
+MAX_SANITIZE_NODES = 20000
 
 
 class A2ABridgeError(ValueError):
@@ -119,17 +121,71 @@ def _is_token_like_key(key: object) -> bool:
     return normalized != "tokenref" and normalized.endswith("token")
 
 
-def _scrub_token_like_fields(value: object) -> object:
-    if isinstance(value, dict):
-        scrubbed: dict[object, object] = {}
-        for key, item in value.items():
-            if _is_token_like_key(key):
-                continue
-            scrubbed[key] = _scrub_token_like_fields(item)
-        return scrubbed
-    if isinstance(value, list):
-        return [_scrub_token_like_fields(item) for item in value]
+def _assert_ascii_keys(value: object, context: str) -> None:
+    stack: list[tuple[object, int]] = [(value, 0)]
+    seen_nodes = 0
+    while stack:
+        node, depth = stack.pop()
+        seen_nodes += 1
+        if seen_nodes > MAX_SANITIZE_NODES:
+            raise A2ABridgeError(f"{context} exceeded max traversal nodes ({MAX_SANITIZE_NODES}).")
+        if depth > MAX_SANITIZE_DEPTH:
+            raise A2ABridgeError(f"{context} exceeded max traversal depth ({MAX_SANITIZE_DEPTH}).")
+        if isinstance(node, dict):
+            for key, item in node.items():
+                if not str(key).isascii():
+                    raise A2ABridgeError(f"{context} contains non-ASCII key name: {key!r}")
+                if isinstance(item, (dict, list)):
+                    stack.append((item, depth + 1))
+        elif isinstance(node, list):
+            for item in node:
+                if isinstance(item, (dict, list)):
+                    stack.append((item, depth + 1))
+
+
+def _scrub_token_like_fields(value: object, context: str) -> object:
+    stack: list[tuple[object, int]] = [(value, 0)]
+    seen_nodes = 0
+    while stack:
+        node, depth = stack.pop()
+        seen_nodes += 1
+        if seen_nodes > MAX_SANITIZE_NODES:
+            raise A2ABridgeError(f"{context} exceeded max traversal nodes ({MAX_SANITIZE_NODES}).")
+        if depth > MAX_SANITIZE_DEPTH:
+            raise A2ABridgeError(f"{context} exceeded max traversal depth ({MAX_SANITIZE_DEPTH}).")
+        if isinstance(node, dict):
+            for key in list(node.keys()):
+                if _is_token_like_key(key):
+                    node.pop(key, None)
+                    continue
+                item = node.get(key)
+                if isinstance(item, (dict, list)):
+                    stack.append((item, depth + 1))
+        elif isinstance(node, list):
+            for item in node:
+                if isinstance(item, (dict, list)):
+                    stack.append((item, depth + 1))
     return value
+
+
+def _assert_bounded_structure(value: object, context: str) -> None:
+    stack: list[tuple[object, int]] = [(value, 0)]
+    seen_nodes = 0
+    while stack:
+        node, depth = stack.pop()
+        seen_nodes += 1
+        if seen_nodes > MAX_SANITIZE_NODES:
+            raise A2ABridgeError(f"{context} exceeded max traversal nodes ({MAX_SANITIZE_NODES}).")
+        if depth > MAX_SANITIZE_DEPTH:
+            raise A2ABridgeError(f"{context} exceeded max traversal depth ({MAX_SANITIZE_DEPTH}).")
+        if isinstance(node, dict):
+            for item in node.values():
+                if isinstance(item, (dict, list)):
+                    stack.append((item, depth + 1))
+        elif isinstance(node, list):
+            for item in node:
+                if isinstance(item, (dict, list)):
+                    stack.append((item, depth + 1))
 
 
 def _sanitize_envelope_for_export(envelope: dict) -> dict:
@@ -142,8 +198,15 @@ def _sanitize_envelope_for_export(envelope: dict) -> dict:
     if isinstance(body, dict):
         verification_result = body.get("VerificationResult")
         if isinstance(verification_result, dict):
+            _assert_ascii_keys(
+                verification_result,
+                "ExecutionReport Body.VerificationResult",
+            )
             token = verification_result.pop("token", None)
-            verification_result = _scrub_token_like_fields(verification_result)
+            verification_result = _scrub_token_like_fields(
+                verification_result,
+                "ExecutionReport Body.VerificationResult",
+            )
             body["VerificationResult"] = verification_result
             if token and "tokenRef" not in verification_result:
                 verification_result["tokenRef"] = _token_ref(token)
@@ -152,6 +215,7 @@ def _sanitize_envelope_for_export(envelope: dict) -> dict:
 
 def faxp_to_a2a_task_sanitized_export(envelope: dict, *, contract: dict | None = None) -> dict:
     """Translate envelope for external/shared artifacts with sensitive fields redacted."""
+    _assert_bounded_structure(envelope, "FAXP envelope")
     task = faxp_to_a2a_task(envelope, contract=contract)
     sanitized_task = deepcopy(task)
     payload = sanitized_task.get("payload")
