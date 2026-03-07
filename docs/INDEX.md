@@ -84,6 +84,7 @@ Local CI-aligned check baseline:
 - `docs/builders/BUILDER_INTEGRATION_PROFILE.md`
 - `docs/builders/PUBLIC_ANONYMIZED_ADAPTER_PACKAGE.md`
 - `docs/builders/PUBLIC_OUTREACH_EVALUATION_PACKET.md`
+- `docs/builders/ADOPTION_EXECUTION_RUNBOOK.md`
 - `docs/builders/examples/public_adapter_contract/README.md`
 - `adapter/INTERFACE.md`
 

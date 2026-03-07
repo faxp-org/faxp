@@ -92,6 +92,7 @@ If you want a deeper capability declaration after that, look at:
 - `conformance/builder_integration_profile.v1.json`
 - `docs/builders/PUBLIC_ANONYMIZED_ADAPTER_PACKAGE.md`
 - `docs/builders/PUBLIC_OUTREACH_EVALUATION_PACKET.md`
+- `docs/builders/ADOPTION_EXECUTION_RUNBOOK.md`
 
 ## 6) Fastest Local Evaluation Path
 
