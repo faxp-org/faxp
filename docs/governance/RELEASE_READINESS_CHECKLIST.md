@@ -22,6 +22,7 @@ Use this checklist as the final go/no-go gate before a tagged release.
   "requiredArtifacts": [
     "faxp.schema.json",
     "faxp.v0.2.schema.json",
+    ".gitleaks.toml",
     "CODE_OF_CONDUCT.md",
     "SUPPORT.md",
     ".github/ISSUE_TEMPLATE/config.yml",

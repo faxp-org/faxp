@@ -2,6 +2,7 @@
   "indexVersion": "1.0.0",
   "generatedAt": "2026-02-27T13:05:00Z",
   "policyArtifacts": [
+    ".gitleaks.toml",
     "CODE_OF_CONDUCT.md",
     "SUPPORT.md",
     ".github/ISSUE_TEMPLATE/config.yml",

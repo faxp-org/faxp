@@ -1,0 +1,10 @@
+title = "FAXP gitleaks config"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Allow scanner pattern definitions in security gate script."
+paths = [
+  '''scripts/security_gate\.sh''',
+]

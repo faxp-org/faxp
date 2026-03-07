@@ -23,6 +23,7 @@ def main() -> int:
         PROJECT_ROOT / "CODE_OF_CONDUCT.md",
         PROJECT_ROOT / "SUPPORT.md",
         PROJECT_ROOT / "SECURITY.md",
+        PROJECT_ROOT / ".gitleaks.toml",
         PROJECT_ROOT / ".github" / "ISSUE_TEMPLATE" / "config.yml",
         PROJECT_ROOT / "tests" / "run_public_redaction_guardrails.py",
     ]
@@ -50,6 +51,19 @@ def main() -> int:
     _assert("SECURITY.md" in readme, "README.md must reference SECURITY.md.")
     _assert("CODE_OF_CONDUCT.md" in readme, "README.md must reference CODE_OF_CONDUCT.md.")
     _assert("SUPPORT.md" in readme, "README.md must reference SUPPORT.md.")
+
+    security = _read(PROJECT_ROOT / "SECURITY.md")
+    _assert("Secret scanning" in security, "SECURITY.md must document Secret scanning requirement.")
+    _assert("Push protection" in security, "SECURITY.md must document Push protection requirement.")
+    _assert("Dependabot alerts" in security, "SECURITY.md must document Dependabot alerts requirement.")
+    _assert(
+        "Dependabot security updates" in security,
+        "SECURITY.md must document Dependabot security updates requirement.",
+    )
+
+    ci = _read(PROJECT_ROOT / ".github" / "workflows" / "ci.yml")
+    _assert("Gitleaks secret scan" in ci, "CI workflow must include gitleaks secret scan step.")
+    _assert("gitleaks/gitleaks-action" in ci, "CI workflow must run gitleaks action.")
 
     print("Open-source guardrails checks passed.")
     return 0

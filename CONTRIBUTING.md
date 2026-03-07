@@ -69,6 +69,7 @@ Public artifact hygiene rules:
 
 - Never commit private keys, tokens, or local secret bundles.
 - Follow `SECURITY.md` for vulnerability reporting.
+- CI runs both `scripts/security_gate.sh` and `gitleaks`; secret leaks should be fixed before requesting review.
 
 ## Community Conduct and Support
 

@@ -43,5 +43,19 @@ Target timelines may be adjusted based on severity, exploitability, and operatio
 - Replay and TTL enforcement.
 - Role-capability policy validation.
 - Conformance and governance release gates in CI.
+- `security_gate.sh` static and obfuscated/encoded secret scanning.
+- `gitleaks` repository secret scanning in CI using `.gitleaks.toml`.
 
 Operational verifier hosting and credentials remain outside protocol-core responsibilities.
+
+## GitHub Repository Security Settings (Required)
+
+Maintainers should keep these GitHub settings enabled:
+
+1. Secret scanning.
+2. Push protection for secrets.
+3. Dependabot alerts.
+4. Dependabot security updates.
+5. Branch protection requiring passing `verify` checks before merge.
+
+If any of these are disabled, treat it as a security regression and restore immediately.
