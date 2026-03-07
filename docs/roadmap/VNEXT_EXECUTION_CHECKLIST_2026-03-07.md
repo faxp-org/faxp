@@ -20,6 +20,17 @@ Close the remaining execution gap between:
 | D. Security and Governance Continuation | Ongoing | Continuous CI/ruleset/guardrail maintenance. |
 | E. Adoption Execution | In Progress | Outreach now runs off the public-safe packet set and runbook. |
 
+## Checkpoint Closeout (Current)
+
+Completed this cycle:
+1. Workstream A (Roadmap and Status Hygiene).
+2. Workstream C (Public Anonymized Adapter Spec Package).
+
+Remaining active execution items:
+1. Workstream B (Private Partner Demo Finalization).
+2. Workstream D (Security and Governance Continuation).
+3. Workstream E (Adoption Execution via public-safe packet).
+
 ## Local Verification Baseline
 
 Use repo venv Python to avoid interpreter drift:
@@ -115,8 +126,6 @@ Exit criteria:
 
 ## Sequencing
 
-1. Complete Workstream A.
-2. Complete Workstream B.
-3. Complete Workstream C.
-4. Run Workstream D continuously.
-5. Execute Workstream E after C is published.
+1. Complete Workstream B.
+2. Run Workstream D continuously.
+3. Execute Workstream E using the public packet and runbook.
