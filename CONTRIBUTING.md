@@ -35,6 +35,16 @@ python3 tests/run_public_redaction_guardrails.py
 python3 tests/run_open_source_guardrails.py
 ```
 
+Recommended local hook install (one time):
+
+```bash
+./scripts/install_precommit.sh
+pre-commit run --all-files
+```
+
+Hook config file:
+- `.pre-commit-config.yaml`
+
 If you need the fastest local demo/testing setup first, use:
 - `docs/BUILDERS_START_HERE.md`
 - `docs/STREAMLIT_QUICKSTART.md`
@@ -70,6 +80,8 @@ Public artifact hygiene rules:
 - Never commit private keys, tokens, or local secret bundles.
 - Follow `SECURITY.md` for vulnerability reporting.
 - CI runs both `scripts/security_gate.sh` and `gitleaks`; secret leaks should be fixed before requesting review.
+- Pre-commit hooks run `security_gate`, `run_public_redaction_guardrails.py`, and
+  `run_open_source_guardrails.py` before local commits when installed.
 
 ## Community Conduct and Support
 

@@ -152,6 +152,13 @@ Contributor workflow and scope expectations:
 - `CONTRIBUTING.md`
 - `docs/BUILDERS_START_HERE.md`
 
+Recommended local guardrail hook setup:
+
+```bash
+./scripts/install_precommit.sh
+pre-commit run --all-files
+```
+
 Before opening a PR:
 1. read the scope guardrails
 2. keep changes within booking-plane and governance boundaries

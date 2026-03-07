@@ -133,6 +133,7 @@ jobs:
             scripts/generate_faxp_keys.sh \
             scripts/rotate_faxp_keys.sh \
             scripts/incident_drill.sh \
+            scripts/install_precommit.sh \
             scripts/run_a2a_conformance.sh \
             scripts/run_mcp_conformance.sh \
             scripts/run_release_smoke_local.sh \
@@ -146,6 +147,7 @@ jobs:
             scripts/generate_faxp_keys.sh \
             scripts/rotate_faxp_keys.sh \
             scripts/incident_drill.sh \
+            scripts/install_precommit.sh \
             scripts/run_a2a_conformance.sh \
             scripts/run_mcp_conformance.sh \
             scripts/run_release_smoke_local.sh \
