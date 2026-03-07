@@ -16,7 +16,7 @@ Close the remaining execution gap between:
 | --- | --- | --- |
 | A. Roadmap and Status Hygiene | Done | Roadmap/index/checklist alignment completed on `main`. |
 | B. Private Partner Demo Finalization | In Progress | Active in private partner thread and local private scripts. |
-| C. Public Anonymized Adapter Spec Package | Next | Starts after B artifact set is finalized. |
+| C. Public Anonymized Adapter Spec Package | In Progress | Public-safe scaffold added; final outreach packet still pending. |
 | D. Security and Governance Continuation | Ongoing | Continuous CI/ruleset/guardrail maintenance. |
 | E. Adoption Execution | Blocked on C | Outreach packet depends on C deliverables. |
 
@@ -70,7 +70,7 @@ Exit criteria:
 
 Owner: Maintainer  
 Priority: P1
-Status: Next
+Status: In Progress
 
 Tasks:
 1. Create synthetic, vendor-neutral request/response examples.

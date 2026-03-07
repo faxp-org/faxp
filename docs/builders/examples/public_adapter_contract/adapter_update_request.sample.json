@@ -1,0 +1,32 @@
+{
+  "builderLoadId": "LOAD-SAMPLE-1001",
+  "bookingStatus": "Confirmed",
+  "carrierReference": "CARRIER-SAMPLE-201",
+  "agreedRate": {
+    "amount": 2250.0,
+    "currency": "USD",
+    "model": "Flat"
+  },
+  "confirmationReference": "CONF-SAMPLE-3001",
+  "stops": [
+    {
+      "id": "STOP-SAMPLE-1",
+      "type": "shipper",
+      "date": "03/10/2026",
+      "time": "08:00",
+      "locationId": "LOCATION-SAMPLE-ORIGIN"
+    },
+    {
+      "id": "STOP-SAMPLE-2",
+      "type": "consignee",
+      "date": "03/13/2026",
+      "time": "11:00",
+      "locationId": "LOCATION-SAMPLE-DEST"
+    }
+  ],
+  "sourceMessage": {
+    "messageType": "ExecutionReport",
+    "messageId": "c48efc31-f668-4716-a138-c9ec4dc9f838"
+  }
+}
+

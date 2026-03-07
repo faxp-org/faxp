@@ -1,0 +1,23 @@
+{
+  "MessageID": "c48efc31-f668-4716-a138-c9ec4dc9f838",
+  "Timestamp": "2026-03-07T18:05:00Z",
+  "SenderID": "CARRIER_AGENT_SAMPLE",
+  "ReceiverID": "BROKER_AGENT_SAMPLE",
+  "MessageType": "ExecutionReport",
+  "SchemaVersion": "0.2.0",
+  "Body": {
+    "ExecutionID": "EXEC-SAMPLE-7001",
+    "LoadID": "LOAD-SAMPLE-1001",
+    "BidID": "BID-SAMPLE-5001",
+    "Status": "Confirmed",
+    "ConfirmedRate": {
+      "RateModel": "Flat",
+      "Amount": 2250.0,
+      "Currency": "USD",
+      "UnitBasis": "load"
+    },
+    "ConfirmationRef": "CONF-SAMPLE-3001",
+    "Notes": "Confirmed by carrier agent under sample terms."
+  }
+}
+
