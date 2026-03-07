@@ -13,7 +13,7 @@ Close the remaining execution gap between:
 ## Constraints
 
 1. Keep FAXP within booking-plane scope.
-2. Keep partner-specific Diesel artifacts private unless explicitly approved.
+2. Keep partner-specific artifacts private unless explicitly approved.
 3. Do not block contributor usability while reference-runtime migration decisions remain open.
 
 ## Workstream A: Roadmap and Status Hygiene
@@ -30,21 +30,21 @@ Exit criteria:
 1. No roadmap document implies that already-completed work is still unstarted.
 2. New contributors can identify one current execution plan in under 2 minutes.
 
-## Workstream B: Diesel Private Demo Finalization
+## Workstream B: Private Partner Demo Finalization
 
 Owner: Maintainer  
 Priority: P0
 
 Tasks:
 1. Freeze one deterministic private smoke run and outputs.
-2. Produce a concise "protocol vs adapter" handoff explanation for the Diesel demo.
-3. Lock a stable request/response packet set for Jamie review.
+2. Produce a concise "protocol vs adapter" handoff explanation for the private demo.
+3. Lock a stable request/response packet set for partner review.
 4. Confirm deterministic stop update contract using stop IDs from GET response.
 
 Exit criteria:
 1. Private runbook can be replayed end-to-end without ad hoc fixes.
 2. Demo packet clearly separates FAXP responsibilities from adapter responsibilities.
-3. Jamie has a single clean artifact set to review.
+3. Partner has a single clean artifact set to review.
 
 ## Workstream C: Public Anonymized Adapter Spec Package
 
@@ -57,7 +57,7 @@ Tasks:
 3. Add explicit experimental maturity notice on those pages.
 
 Exit criteria:
-1. Public contributors can understand adapter contract shape without Diesel access.
+1. Public contributors can understand adapter contract shape without private partner access.
 2. No partner-specific names, domains, tokens, IDs, or local environment details appear.
 
 ## Workstream D: Security and Governance Continuation
@@ -95,4 +95,3 @@ Exit criteria:
 3. Complete Workstream C.
 4. Run Workstream D continuously.
 5. Execute Workstream E after C is published.
-
