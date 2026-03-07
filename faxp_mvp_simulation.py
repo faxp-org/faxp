@@ -1162,7 +1162,8 @@ VERIFIER_ED25519_PRIVATE_KEY_PATH = VERIFIER_ED25519_PRIVATE_KEYS.get(
 
 
 def _resolved_replay_db_path():
-    return os.path.abspath(os.path.expanduser(REPLAY_DB_PATH))
+    expanded = os.path.expandvars(os.path.expanduser(REPLAY_DB_PATH))
+    return os.path.abspath(expanded)
 
 
 def _replay_db_marker_path():
@@ -1178,16 +1179,17 @@ def _is_within_temp_directory(path):
 def _validate_replay_db_security():
     replay_db_path = _resolved_replay_db_path()
     replay_db_dir = os.path.dirname(replay_db_path) or "."
-    os.makedirs(replay_db_dir, mode=0o700, exist_ok=True)
+    try:
+        os.makedirs(replay_db_dir, mode=0o700, exist_ok=True)
+    except PermissionError as exc:
+        raise RuntimeError(
+            f"Unable to create replay DB directory '{replay_db_dir}'."
+        ) from exc
     if not NON_LOCAL_MODE:
         return
     if _is_within_temp_directory(replay_db_path):
         raise RuntimeError(
             "FAXP_REPLAY_DB_PATH must not point to a temporary directory in non-local mode."
-        )
-    if not os.path.exists(replay_db_path) and not ALLOW_REPLAY_DB_BOOTSTRAP:
-        raise RuntimeError(
-            "Replay DB missing in non-local mode. Set FAXP_ALLOW_REPLAY_DB_BOOTSTRAP=1 for one-time initialization."
         )
     if os.name != "nt":
         dir_mode = os.stat(replay_db_dir).st_mode & 0o777
