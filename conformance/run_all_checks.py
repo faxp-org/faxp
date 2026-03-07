@@ -127,6 +127,28 @@ def _suite_commands() -> list[tuple[str, list[str]]]:
     ]
 
 
+def _sanitize_command_for_report(command: list[str]) -> list[str]:
+    sanitized: list[str] = []
+    for part in command:
+        value = str(part)
+        candidate = Path(value).expanduser()
+        if candidate.is_absolute():
+            try:
+                sanitized.append(str(candidate.resolve().relative_to(PROJECT_ROOT)))
+            except ValueError:
+                sanitized.append(candidate.name or "<path>")
+        else:
+            sanitized.append(value)
+    return sanitized
+
+
+def _relative_or_name(path: Path, base: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(base.resolve()))
+    except ValueError:
+        return path.name
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run FAXP certification/conformance checks and emit a summary report."
@@ -190,6 +212,9 @@ def main() -> int:
         log_dir = Path("/tmp") / f"faxp-conformance-{run_id}"
     log_dir.mkdir(parents=True, exist_ok=True)
 
+    output_path = Path(args.output).expanduser().resolve()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
     checks: list[dict] = []
     suite_started = time.monotonic()
     failed = False
@@ -213,12 +238,12 @@ def main() -> int:
         checks.append(
             {
                 "name": name,
-                "command": cmd,
+                "command": _sanitize_command_for_report(cmd),
                 "passed": passed,
                 "exitCode": completed.returncode,
                 "durationMs": duration_ms,
-                "stdoutLog": str(stdout_path),
-                "stderrLog": str(stderr_path),
+                "stdoutLog": str(stdout_path.name),
+                "stderrLog": str(stderr_path.name),
             }
         )
         if not passed:
@@ -234,8 +259,8 @@ def main() -> int:
         "runId": run_id,
         "startedAt": started_at,
         "finishedAt": _now_utc(),
-        "projectRoot": str(PROJECT_ROOT),
-        "logDir": str(log_dir),
+        "projectRoot": ".",
+        "logDir": _relative_or_name(log_dir, output_path.parent),
         "summary": {
             "totalChecks": len(checks),
             "passedChecks": passed_count,
@@ -246,8 +271,6 @@ def main() -> int:
         "checks": checks,
     }
 
-    output_path = Path(args.output).expanduser().resolve()
-    output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 
     print(json.dumps(report["summary"], indent=2))

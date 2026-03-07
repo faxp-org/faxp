@@ -5,12 +5,15 @@ on:
     - cron: "0 14 * * 1"
   workflow_dispatch:
 
-permissions:
-  contents: read
-  issues: write
-
 jobs:
   watch:
+    permissions:
+      contents: read
+    outputs:
+      has_drift: ${{ steps.watch.outputs.has_drift }}
+      watch_failed: ${{ steps.watch.outputs.watch_failed }}
+      issue_title: ${{ steps.watch.outputs.issue_title }}
+      issue_body: ${{ steps.watch.outputs.issue_body }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -62,22 +65,36 @@ jobs:
             echo "watch_failed=false" >> "$GITHUB_OUTPUT"
           fi
 
+          if [ -f /tmp/a2a_watch_issue.md ]; then
+            issue_body="$(cat /tmp/a2a_watch_issue.md)"
+          else
+            issue_body='A2A watch detected an actionable change. See workflow logs.'
+          fi
+          {
+            echo "issue_body<<EOF"
+            printf '%s\n' "$issue_body"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
           exit 0
 
+  open_issue:
+    if: needs.watch.outputs.has_drift == 'true' || needs.watch.outputs.watch_failed == 'true'
+    needs: watch
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
       - name: Open tracking issue when drift/failure is detected
-        if: steps.watch.outputs.has_drift == 'true' || steps.watch.outputs.watch_failed == 'true'
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd
         env:
-          ISSUE_TITLE: ${{ steps.watch.outputs.issue_title }}
-          ISSUE_BODY_PATH: /tmp/a2a_watch_issue.md
+          ISSUE_TITLE: ${{ needs.watch.outputs.issue_title }}
+          ISSUE_BODY: ${{ needs.watch.outputs.issue_body }}
         with:
           script: |
-            const fs = require('fs');
             const title = process.env.ISSUE_TITLE || '[A2A Watch] Upstream drift detected';
-            const bodyPath = process.env.ISSUE_BODY_PATH || '/tmp/a2a_watch_issue.md';
-            const body = fs.existsSync(bodyPath)
-              ? fs.readFileSync(bodyPath, 'utf8')
-              : 'A2A watch detected an actionable change. See workflow logs.';
+            const body = process.env.ISSUE_BODY || 'A2A watch detected an actionable change. See workflow logs.';
 
             const { owner, repo } = context.repo;
             const openIssues = await github.paginate(github.rest.issues.listForRepo, {
