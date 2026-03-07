@@ -155,7 +155,6 @@ jobs:
       - name: Open-source governance guardrails
         run: |
           python tests/run_open_source_guardrails.py
-
       - name: Streamlit state regression checks
         run: |
           python tests/run_streamlit_state_logic.py

@@ -9,6 +9,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
+# Public-facing surfaces only.
 PUBLIC_ROOTS = [
     REPO_ROOT / "README.md",
     REPO_ROOT / "docs",
