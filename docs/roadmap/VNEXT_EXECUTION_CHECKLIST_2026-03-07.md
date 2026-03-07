@@ -10,6 +10,24 @@ Close the remaining execution gap between:
 1. protocol-core readiness (already passing), and
 2. builder adoption readiness (private partner demo polish + public anonymized guidance).
 
+## Status Matrix (2026-03-07)
+
+| Workstream | Status | Notes |
+| --- | --- | --- |
+| A. Roadmap and Status Hygiene | Done | Roadmap/index/checklist alignment completed on `main`. |
+| B. Private Partner Demo Finalization | In Progress | Active in private partner thread and local private scripts. |
+| C. Public Anonymized Adapter Spec Package | Next | Starts after B artifact set is finalized. |
+| D. Security and Governance Continuation | Ongoing | Continuous CI/ruleset/guardrail maintenance. |
+| E. Adoption Execution | Blocked on C | Outreach packet depends on C deliverables. |
+
+## Local Verification Baseline
+
+Use repo venv Python to avoid interpreter drift:
+
+1. `.venv/bin/python tests/run_open_source_guardrails.py`
+2. `.venv/bin/python tests/run_release_readiness.py`
+3. `.venv/bin/python tests/run_conformance_suite.py`
+
 ## Constraints
 
 1. Keep FAXP within booking-plane scope.
@@ -20,6 +38,7 @@ Close the remaining execution gap between:
 
 Owner: Maintainer  
 Priority: P0
+Status: Done
 
 Tasks:
 1. Update Phase 2 roadmap status from planned to active close-out.
@@ -34,6 +53,7 @@ Exit criteria:
 
 Owner: Maintainer  
 Priority: P0
+Status: In Progress
 
 Tasks:
 1. Freeze one deterministic private smoke run and outputs.
@@ -50,6 +70,7 @@ Exit criteria:
 
 Owner: Maintainer  
 Priority: P1
+Status: Next
 
 Tasks:
 1. Create synthetic, vendor-neutral request/response examples.
@@ -64,6 +85,7 @@ Exit criteria:
 
 Owner: Maintainer  
 Priority: P1
+Status: Ongoing
 
 Tasks:
 1. Keep CI/release-readiness green on main.
@@ -78,6 +100,7 @@ Exit criteria:
 
 Owner: Maintainer  
 Priority: P2
+Status: Blocked on Workstream C
 
 Tasks:
 1. Use final anonymized package as the default outreach artifact.
