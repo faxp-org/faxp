@@ -4,6 +4,18 @@ This index keeps governance, roadmap, and release artifacts discoverable while k
 
 Project status note: FAXP is currently experimental and early-stage; use these docs for pilot/evaluation work unless a specific release document states otherwise.
 
+Current execution snapshot (2026-03-07):
+- Workstream A (roadmap/status hygiene): Done
+- Workstream B (private partner demo finalization): In Progress
+- Workstream C (public anonymized adapter package): Next
+- Workstream D (security/governance continuation): Ongoing
+- Workstream E (adoption execution): Blocked on C
+
+Local CI-aligned check baseline:
+- `.venv/bin/python tests/run_open_source_guardrails.py`
+- `.venv/bin/python tests/run_release_readiness.py`
+- `.venv/bin/python tests/run_conformance_suite.py`
+
 ## Start Here
 
 - New reader: `README.md`

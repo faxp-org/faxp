@@ -15,6 +15,18 @@ Project maturity note: this roadmap tracks experimental-to-production hardening;
 Current execution plan:
 - `docs/roadmap/VNEXT_EXECUTION_CHECKLIST_2026-03-07.md`
 
+Execution state matrix:
+- Workstream A (roadmap hygiene): Done
+- Workstream B (private partner demo): In Progress
+- Workstream C (public anonymized adapter package): Next
+- Workstream D (security/governance continuation): Ongoing
+- Workstream E (adoption execution): Blocked on C
+
+Local check baseline (CI-aligned):
+- `.venv/bin/python tests/run_open_source_guardrails.py`
+- `.venv/bin/python tests/run_release_readiness.py`
+- `.venv/bin/python tests/run_conformance_suite.py`
+
 ## Phase 2 Goal
 
 Turn FAXP from a well-scoped booking protocol into a practical implementation standard that outside builders can integrate without expanding FAXP into dispatch, tracking, document custody, or settlement.
