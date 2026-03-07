@@ -18,9 +18,9 @@ Current execution plan:
 Execution state matrix:
 - Workstream A (roadmap hygiene): Done
 - Workstream B (private partner demo): In Progress
-- Workstream C (public anonymized adapter package): In Progress
+- Workstream C (public anonymized adapter package): Done
 - Workstream D (security/governance continuation): Ongoing
-- Workstream E (adoption execution): Blocked on C
+- Workstream E (adoption execution): In Progress
 
 Local check baseline (CI-aligned):
 - `.venv/bin/python tests/run_open_source_guardrails.py`

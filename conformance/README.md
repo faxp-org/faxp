@@ -74,6 +74,7 @@ Human-readable adapter contract:
 - `adapter/INTERFACE.md`: implementer handoff contract for request/response, security, and conformance expectations.
 - `docs/builders/BUILDER_INTEGRATION_PROFILE.md`: plain-English explainer for builder capability claims and implementation matrices.
 - `docs/builders/PUBLIC_ANONYMIZED_ADAPTER_PACKAGE.md`: public-safe, synthetic adapter handoff examples for external evaluation.
+- `docs/builders/PUBLIC_OUTREACH_EVALUATION_PACKET.md`: default public-safe artifact packet for outreach and first-pass builder evaluation.
 - `docs/governance/CERTIFICATION_PLAYBOOK.md`: certification intake workflow and tier decision rules.
 - `docs/governance/REGISTRY_OPERATIONS_RUNBOOK.md`: operational process for update/revoke/rollback and rollback safety.
 

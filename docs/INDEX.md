@@ -7,9 +7,9 @@ Project status note: FAXP is currently experimental and early-stage; use these d
 Current execution snapshot (2026-03-07):
 - Workstream A (roadmap/status hygiene): Done
 - Workstream B (private partner demo finalization): In Progress
-- Workstream C (public anonymized adapter package): In Progress
+- Workstream C (public anonymized adapter package): Done
 - Workstream D (security/governance continuation): Ongoing
-- Workstream E (adoption execution): Blocked on C
+- Workstream E (adoption execution): In Progress
 
 Local CI-aligned check baseline:
 - `.venv/bin/python tests/run_open_source_guardrails.py`
@@ -83,6 +83,7 @@ Local CI-aligned check baseline:
 - `docs/builders/BUILDER_VERIFICATION_RUNTIME_HANDOFF.md`
 - `docs/builders/BUILDER_INTEGRATION_PROFILE.md`
 - `docs/builders/PUBLIC_ANONYMIZED_ADAPTER_PACKAGE.md`
+- `docs/builders/PUBLIC_OUTREACH_EVALUATION_PACKET.md`
 - `docs/builders/examples/public_adapter_contract/README.md`
 - `adapter/INTERFACE.md`
 

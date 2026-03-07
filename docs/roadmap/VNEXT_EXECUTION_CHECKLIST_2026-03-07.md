@@ -16,9 +16,9 @@ Close the remaining execution gap between:
 | --- | --- | --- |
 | A. Roadmap and Status Hygiene | Done | Roadmap/index/checklist alignment completed on `main`. |
 | B. Private Partner Demo Finalization | In Progress | Active in private partner thread and local private scripts. |
-| C. Public Anonymized Adapter Spec Package | In Progress | Public-safe scaffold added; final outreach packet still pending. |
+| C. Public Anonymized Adapter Spec Package | Done | Public-safe scaffold and outreach packet are now published. |
 | D. Security and Governance Continuation | Ongoing | Continuous CI/ruleset/guardrail maintenance. |
-| E. Adoption Execution | Blocked on C | Outreach packet depends on C deliverables. |
+| E. Adoption Execution | In Progress | Outreach now runs off the public-safe packet set. |
 
 ## Local Verification Baseline
 
@@ -70,12 +70,13 @@ Exit criteria:
 
 Owner: Maintainer  
 Priority: P1
-Status: In Progress
+Status: Done
 
 Tasks:
 1. Create synthetic, vendor-neutral request/response examples.
 2. Publish "reference adapter contract" docs with no partner identifiers.
 3. Add explicit experimental maturity notice on those pages.
+4. Publish a default public-safe outreach packet.
 
 Exit criteria:
 1. Public contributors can understand adapter contract shape without private partner access.
@@ -100,7 +101,7 @@ Exit criteria:
 
 Owner: Maintainer  
 Priority: P2
-Status: Blocked on Workstream C
+Status: In Progress
 
 Tasks:
 1. Use final anonymized package as the default outreach artifact.
