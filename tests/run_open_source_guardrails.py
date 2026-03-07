@@ -24,6 +24,8 @@ def main() -> int:
         PROJECT_ROOT / "SUPPORT.md",
         PROJECT_ROOT / "SECURITY.md",
         PROJECT_ROOT / ".gitleaks.toml",
+        PROJECT_ROOT / ".pre-commit-config.yaml",
+        PROJECT_ROOT / "scripts" / "install_precommit.sh",
         PROJECT_ROOT / ".github" / "ISSUE_TEMPLATE" / "config.yml",
         PROJECT_ROOT / "tests" / "run_public_redaction_guardrails.py",
     ]
@@ -41,6 +43,8 @@ def main() -> int:
     _assert("SECURITY.md" in contributing, "CONTRIBUTING.md must reference SECURITY.md.")
     _assert("CODE_OF_CONDUCT.md" in contributing, "CONTRIBUTING.md must reference CODE_OF_CONDUCT.md.")
     _assert("SUPPORT.md" in contributing, "CONTRIBUTING.md must reference SUPPORT.md.")
+    _assert("scripts/install_precommit.sh" in contributing, "CONTRIBUTING.md must reference pre-commit installer.")
+    _assert(".pre-commit-config.yaml" in contributing, "CONTRIBUTING.md must reference pre-commit config.")
     _assert(
         "tests/run_public_redaction_guardrails.py" in contributing,
         "CONTRIBUTING.md must include public redaction guardrails check.",
@@ -51,6 +55,7 @@ def main() -> int:
     _assert("SECURITY.md" in readme, "README.md must reference SECURITY.md.")
     _assert("CODE_OF_CONDUCT.md" in readme, "README.md must reference CODE_OF_CONDUCT.md.")
     _assert("SUPPORT.md" in readme, "README.md must reference SUPPORT.md.")
+    _assert("scripts/install_precommit.sh" in readme, "README.md must reference pre-commit installer.")
 
     security = _read(PROJECT_ROOT / "SECURITY.md")
     _assert("Secret scanning" in security, "SECURITY.md must document Secret scanning requirement.")
@@ -60,10 +65,22 @@ def main() -> int:
         "Dependabot security updates" in security,
         "SECURITY.md must document Dependabot security updates requirement.",
     )
+    _assert("pre-commit" in security, "SECURITY.md must mention local pre-commit guardrails.")
 
     ci = _read(PROJECT_ROOT / ".github" / "workflows" / "ci.yml")
     _assert("Gitleaks secret scan" in ci, "CI workflow must include gitleaks secret scan step.")
     _assert("gitleaks detect" in ci, "CI workflow must run gitleaks detect command.")
+
+    precommit = _read(PROJECT_ROOT / ".pre-commit-config.yaml")
+    _assert("faxp-security-gate" in precommit, "pre-commit config must include security gate hook.")
+    _assert(
+        "tests/run_public_redaction_guardrails.py" in precommit,
+        "pre-commit config must include public redaction guardrails hook.",
+    )
+    _assert(
+        "tests/run_open_source_guardrails.py" in precommit,
+        "pre-commit config must include open-source guardrails hook.",
+    )
 
     print("Open-source guardrails checks passed.")
     return 0

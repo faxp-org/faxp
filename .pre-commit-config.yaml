@@ -1,0 +1,21 @@
+repos:
+  - repo: local
+    hooks:
+      - id: faxp-security-gate
+        name: FAXP security gate
+        entry: ./scripts/security_gate.sh security.env.template
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+      - id: faxp-public-redaction-guardrails
+        name: FAXP public redaction guardrails
+        entry: python3 tests/run_public_redaction_guardrails.py
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+      - id: faxp-open-source-guardrails
+        name: FAXP open-source guardrails
+        entry: python3 tests/run_open_source_guardrails.py
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]

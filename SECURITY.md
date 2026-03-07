@@ -45,6 +45,7 @@ Target timelines may be adjusted based on severity, exploitability, and operatio
 - Conformance and governance release gates in CI.
 - `security_gate.sh` static and obfuscated/encoded secret scanning.
 - `gitleaks` repository secret scanning in CI using `.gitleaks.toml`.
+- Local pre-commit guardrails via `.pre-commit-config.yaml` (`security_gate`, public redaction checks, open-source guardrails).
 
 Operational verifier hosting and credentials remain outside protocol-core responsibilities.
 
