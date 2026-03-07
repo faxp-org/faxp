@@ -5,6 +5,7 @@ This packet is the default public-safe artifact set for outbound FAXP evaluation
 Maturity status:
 - Experimental and early-stage.
 - Intended for sandbox/test evaluation first.
+- Not production-ready as a universal standard at this stage.
 
 ## Why This Exists
 
@@ -57,4 +58,3 @@ Use:
 1. `.venv/bin/python tests/run_open_source_guardrails.py`
 2. `.venv/bin/python tests/run_release_readiness.py`
 3. `.venv/bin/python tests/run_conformance_suite.py`
-

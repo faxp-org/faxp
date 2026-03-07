@@ -18,7 +18,7 @@ Close the remaining execution gap between:
 | B. Private Partner Demo Finalization | In Progress | Active in private partner thread and local private scripts. |
 | C. Public Anonymized Adapter Spec Package | Done | Public-safe scaffold and outreach packet are now published. |
 | D. Security and Governance Continuation | Ongoing | Continuous CI/ruleset/guardrail maintenance. |
-| E. Adoption Execution | In Progress | Outreach now runs off the public-safe packet set. |
+| E. Adoption Execution | In Progress | Outreach now runs off the public-safe packet set and runbook. |
 
 ## Local Verification Baseline
 
@@ -107,6 +107,7 @@ Tasks:
 1. Use final anonymized package as the default outreach artifact.
 2. Keep partner-specific implementation details in private channels.
 3. Track outreach progress separately from protocol-core changes.
+4. Use `docs/builders/ADOPTION_EXECUTION_RUNBOOK.md` as the default public outreach playbook.
 
 Exit criteria:
 1. Outreach conversations can start from a consistent, public-safe technical packet.
