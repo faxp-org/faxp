@@ -140,6 +140,12 @@ Useful starting points:
 Security policy and vulnerability reporting:
 - `SECURITY.md`
 
+Community behavior expectations:
+- `CODE_OF_CONDUCT.md`
+
+Support and maintainer response guidance:
+- `SUPPORT.md`
+
 ## Contributing
 
 Contributor workflow and scope expectations:

@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability report (private)
+    url: mailto:info@faxp.org
+    about: Do not post suspected vulnerabilities publicly. Report privately per SECURITY.md.
+  - name: Security policy
+    url: https://github.com/faxp-org/faxp/blob/main/SECURITY.md
+    about: Read vulnerability reporting and disclosure process.
+  - name: Maintainer support
+    url: https://github.com/faxp-org/faxp/blob/main/SUPPORT.md
+    about: Questions and support expectations for this open-source project.

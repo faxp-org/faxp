@@ -40,6 +40,8 @@ List commands run and outcomes.
 
 - [ ] No secrets or key material were added.
 - [ ] Security-sensitive behavior was reviewed.
+- [ ] No partner-specific identifiers were added to public files.
+- [ ] No local absolute filesystem paths were added to public files.
 
 ## Related
 
