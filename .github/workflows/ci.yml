@@ -148,6 +148,10 @@ jobs:
         run: |
           python tests/run_scope_guardrails.py
 
+      - name: Public redaction guardrails
+        run: |
+          python tests/run_public_redaction_guardrails.py
+
       - name: Streamlit state regression checks
         run: |
           python tests/run_streamlit_state_logic.py
