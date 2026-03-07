@@ -286,15 +286,18 @@ def main() -> int:
         report = _load_json(output_path)
         summary = report.get("summary") or {}
         checks = report.get("checks") or []
+        report_log_dir = output_path.parent / str(report.get("logDir") or "")
+        if not report_log_dir.exists():
+            report_log_dir = log_dir
         _assert(summary.get("passed") is True, "conformance suite summary did not pass")
         _assert(summary.get("failedChecks") == 0, "conformance suite reported failures")
         _assert(len(checks) == 3, "conformance suite did not execute expected subset of checks")
         _assert(
-            all(Path(item.get("stdoutLog", "")).exists() for item in checks),
+            all((report_log_dir / str(item.get("stdoutLog", ""))).exists() for item in checks),
             "one or more stdout log files are missing",
         )
         _assert(
-            all(Path(item.get("stderrLog", "")).exists() for item in checks),
+            all((report_log_dir / str(item.get("stderrLog", ""))).exists() for item in checks),
             "one or more stderr log files are missing",
         )
 

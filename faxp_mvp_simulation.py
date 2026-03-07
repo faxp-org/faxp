@@ -118,10 +118,17 @@ REQUIRE_SIGNED_VERIFIER = os.getenv("FAXP_REQUIRE_SIGNED_VERIFIER", "1") == "1"
 MESSAGE_TTL_SECONDS = int(os.getenv("FAXP_MESSAGE_TTL_SECONDS", "300"))
 MAX_CLOCK_SKEW_SECONDS = int(os.getenv("FAXP_MAX_CLOCK_SKEW_SECONDS", "30"))
 SIGNATURE_SCHEME = os.getenv("FAXP_SIGNATURE_SCHEME", "HMAC_SHA256").strip().upper()
+DEFAULT_REPLAY_DB_PATH = os.path.join(
+    os.path.expanduser("~"),
+    ".faxp",
+    "replay",
+    "faxp_replay.db",
+)
 REPLAY_DB_PATH = os.getenv(
     "FAXP_REPLAY_DB_PATH",
-    os.path.join(tempfile.gettempdir(), "faxp_replay.db"),
-)
+    DEFAULT_REPLAY_DB_PATH,
+).strip()
+ALLOW_REPLAY_DB_BOOTSTRAP = os.getenv("FAXP_ALLOW_REPLAY_DB_BOOTSTRAP", "0") == "1"
 REPLAY_RETENTION_SECONDS = int(os.getenv("FAXP_REPLAY_RETENTION_SECONDS", "86400"))
 MAX_TRACKED_ENTITY_STATES = int(os.getenv("FAXP_MAX_TRACKED_ENTITY_STATES", "50000"))
 IMMUTABLE_AUDIT_PATH = os.getenv("FAXP_IMMUTABLE_AUDIT_PATH", "").strip()
@@ -1154,8 +1161,65 @@ VERIFIER_ED25519_PRIVATE_KEY_PATH = VERIFIER_ED25519_PRIVATE_KEYS.get(
 )
 
 
+def _resolved_replay_db_path():
+    return os.path.abspath(os.path.expanduser(REPLAY_DB_PATH))
+
+
+def _replay_db_marker_path():
+    return _resolved_replay_db_path() + ".marker"
+
+
+def _is_within_temp_directory(path):
+    temp_dir = os.path.abspath(tempfile.gettempdir())
+    absolute = os.path.abspath(path)
+    return absolute == temp_dir or absolute.startswith(temp_dir + os.sep)
+
+
+def _validate_replay_db_security():
+    replay_db_path = _resolved_replay_db_path()
+    replay_db_dir = os.path.dirname(replay_db_path) or "."
+    os.makedirs(replay_db_dir, mode=0o700, exist_ok=True)
+    if not NON_LOCAL_MODE:
+        return
+    if _is_within_temp_directory(replay_db_path):
+        raise RuntimeError(
+            "FAXP_REPLAY_DB_PATH must not point to a temporary directory in non-local mode."
+        )
+    if not os.path.exists(replay_db_path) and not ALLOW_REPLAY_DB_BOOTSTRAP:
+        raise RuntimeError(
+            "Replay DB missing in non-local mode. Set FAXP_ALLOW_REPLAY_DB_BOOTSTRAP=1 for one-time initialization."
+        )
+    if os.name != "nt":
+        dir_mode = os.stat(replay_db_dir).st_mode & 0o777
+        if dir_mode & 0o022:
+            raise RuntimeError(
+                "Replay DB directory must not be group/world writable in non-local mode."
+            )
+        if os.path.exists(replay_db_path):
+            file_mode = os.stat(replay_db_path).st_mode & 0o777
+            if file_mode & 0o077:
+                raise RuntimeError(
+                    "Replay DB file must not be group/world accessible in non-local mode."
+                )
+
+
 def _init_replay_db():
-    with sqlite3.connect(REPLAY_DB_PATH, timeout=5) as conn:
+    replay_db_path = _resolved_replay_db_path()
+    marker_path = _replay_db_marker_path()
+    replay_db_exists = os.path.exists(replay_db_path)
+    marker_exists = os.path.exists(marker_path)
+    if not replay_db_exists and marker_exists and not ALLOW_REPLAY_DB_BOOTSTRAP:
+        raise RuntimeError(
+            "Replay DB is missing while replay marker exists. Set FAXP_ALLOW_REPLAY_DB_BOOTSTRAP=1 for explicit re-initialization."
+        )
+    with sqlite3.connect(replay_db_path, timeout=5) as conn:
+        table_exists = conn.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='replay_cache' LIMIT 1"
+        ).fetchone()
+        if marker_exists and not table_exists and not ALLOW_REPLAY_DB_BOOTSTRAP:
+            raise RuntimeError(
+                "Replay cache schema is missing while replay marker exists. Set FAXP_ALLOW_REPLAY_DB_BOOTSTRAP=1 for explicit re-initialization."
+            )
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS replay_cache (
@@ -1170,6 +1234,13 @@ def _init_replay_db():
             "CREATE INDEX IF NOT EXISTS idx_replay_seen_at ON replay_cache(seen_at)"
         )
         conn.commit()
+    if os.name != "nt":
+        os.chmod(replay_db_path, 0o600)
+    if not marker_exists:
+        with open(marker_path, "w", encoding="utf-8") as handle:
+            handle.write("initialized\n")
+        if os.name != "nt":
+            os.chmod(marker_path, 0o600)
 
 
 def _cleanup_replay_db(conn, now_epoch):
@@ -2568,6 +2639,7 @@ def enforce_security_baseline():
         SIGNATURE_SCHEME == "ED25519" or VERIFIER_SIGNATURE_SCHEME == "ED25519"
     ) and not shutil.which("openssl"):
         raise RuntimeError("ED25519 signature scheme requires openssl binary.")
+    _validate_replay_db_security()
     _init_replay_db()
     _enforce_external_secret_source()
     _enforce_dual_control()
@@ -4351,7 +4423,7 @@ def _track_unique_value(seen_set, value, label):
         attempts += 1
         with REPLAY_DB_LOCK:
             try:
-                with sqlite3.connect(REPLAY_DB_PATH, timeout=5) as conn:
+                with sqlite3.connect(_resolved_replay_db_path(), timeout=5) as conn:
                     try:
                         conn.execute(
                             "INSERT INTO replay_cache(kind, value, seen_at) VALUES (?, ?, ?)",
@@ -4367,6 +4439,10 @@ def _track_unique_value(seen_set, value, label):
                 last_error = exc
                 # Recover from cold-start race where replay table/index is not initialized yet.
                 if "no such table" in str(exc).lower():
+                    if NON_LOCAL_MODE:
+                        raise RuntimeError(
+                            "Replay cache table is unavailable in non-local mode."
+                        ) from exc
                     _init_replay_db()
                     continue
                 # Retry once for transient sqlite lock contention.

@@ -2,8 +2,8 @@
   "runId": "5f545389-f9a8-403b-bd4d-ff993fc071bc",
   "startedAt": "2026-02-23T01:32:05Z",
   "finishedAt": "2026-02-23T01:32:06Z",
-  "projectRoot": "/Users/zglitch009/projects/logistics-ai/FAXP",
-  "logDir": "/private/tmp/faxp-rc1-logs",
+  "projectRoot": ".",
+  "logDir": "faxp-rc1-logs",
   "summary": {
     "totalChecks": 16,
     "passedChecks": 16,
@@ -15,194 +15,194 @@
     {
       "name": "adapter_test_profile",
       "command": [
-        "/Users/zglitch009/projects/logistics-ai/FAXP/.venv/bin/python",
-        "/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_adapter_test_profile.py"
+        ".venv/bin/python",
+        "tests/run_adapter_test_profile.py"
       ],
       "passed": true,
       "exitCode": 0,
       "durationMs": 69,
-      "stdoutLog": "/private/tmp/faxp-rc1-logs/adapter_test_profile.stdout.log",
-      "stderrLog": "/private/tmp/faxp-rc1-logs/adapter_test_profile.stderr.log"
+      "stdoutLog": "adapter_test_profile.stdout.log",
+      "stderrLog": "adapter_test_profile.stderr.log"
     },
     {
       "name": "submission_create",
       "command": [
-        "/Users/zglitch009/projects/logistics-ai/FAXP/.venv/bin/python",
-        "/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_create_submission_manifest.py"
+        ".venv/bin/python",
+        "tests/run_create_submission_manifest.py"
       ],
       "passed": true,
       "exitCode": 0,
       "durationMs": 155,
-      "stdoutLog": "/private/tmp/faxp-rc1-logs/submission_create.stdout.log",
-      "stderrLog": "/private/tmp/faxp-rc1-logs/submission_create.stderr.log"
+      "stdoutLog": "submission_create.stdout.log",
+      "stderrLog": "submission_create.stderr.log"
     },
     {
       "name": "submission_manifest",
       "command": [
-        "/Users/zglitch009/projects/logistics-ai/FAXP/.venv/bin/python",
-        "/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_submission_manifest.py"
+        ".venv/bin/python",
+        "tests/run_submission_manifest.py"
       ],
       "passed": true,
       "exitCode": 0,
       "durationMs": 62,
-      "stdoutLog": "/private/tmp/faxp-rc1-logs/submission_manifest.stdout.log",
-      "stderrLog": "/private/tmp/faxp-rc1-logs/submission_manifest.stderr.log"
+      "stdoutLog": "submission_manifest.stdout.log",
+      "stderrLog": "submission_manifest.stderr.log"
     },
     {
       "name": "key_lifecycle_policy",
       "command": [
-        "/Users/zglitch009/projects/logistics-ai/FAXP/.venv/bin/python",
-        "/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_key_lifecycle_policy.py"
+        ".venv/bin/python",
+        "tests/run_key_lifecycle_policy.py"
       ],
       "passed": true,
       "exitCode": 0,
       "durationMs": 58,
-      "stdoutLog": "/private/tmp/faxp-rc1-logs/key_lifecycle_policy.stdout.log",
-      "stderrLog": "/private/tmp/faxp-rc1-logs/key_lifecycle_policy.stderr.log"
+      "stdoutLog": "key_lifecycle_policy.stdout.log",
+      "stderrLog": "key_lifecycle_policy.stderr.log"
     },
     {
       "name": "registry_create",
       "command": [
-        "/Users/zglitch009/projects/logistics-ai/FAXP/.venv/bin/python",
-        "/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_create_registry_update.py"
+        ".venv/bin/python",
+        "tests/run_create_registry_update.py"
       ],
       "passed": true,
       "exitCode": 0,
       "durationMs": 149,
-      "stdoutLog": "/private/tmp/faxp-rc1-logs/registry_create.stdout.log",
-      "stderrLog": "/private/tmp/faxp-rc1-logs/registry_create.stderr.log"
+      "stdoutLog": "registry_create.stdout.log",
+      "stderrLog": "registry_create.stderr.log"
     },
     {
       "name": "registry_ops",
       "command": [
-        "/Users/zglitch009/projects/logistics-ai/FAXP/.venv/bin/python",
-        "/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_registry_ops_artifacts.py"
+        ".venv/bin/python",
+        "tests/run_registry_ops_artifacts.py"
       ],
       "passed": true,
       "exitCode": 0,
       "durationMs": 62,
-      "stdoutLog": "/private/tmp/faxp-rc1-logs/registry_ops.stdout.log",
-      "stderrLog": "/private/tmp/faxp-rc1-logs/registry_ops.stderr.log"
+      "stdoutLog": "registry_ops.stdout.log",
+      "stderrLog": "registry_ops.stderr.log"
     },
     {
       "name": "registry_admission_policy",
       "command": [
-        "/Users/zglitch009/projects/logistics-ai/FAXP/.venv/bin/python",
-        "/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_registry_admission_policy.py"
+        ".venv/bin/python",
+        "tests/run_registry_admission_policy.py"
       ],
       "passed": true,
       "exitCode": 0,
       "durationMs": 19,
-      "stdoutLog": "/private/tmp/faxp-rc1-logs/registry_admission_policy.stdout.log",
-      "stderrLog": "/private/tmp/faxp-rc1-logs/registry_admission_policy.stderr.log"
+      "stdoutLog": "registry_admission_policy.stdout.log",
+      "stderrLog": "registry_admission_policy.stderr.log"
     },
     {
       "name": "registry_changelog_artifacts",
       "command": [
-        "/Users/zglitch009/projects/logistics-ai/FAXP/.venv/bin/python",
-        "/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_registry_changelog_artifacts.py"
+        ".venv/bin/python",
+        "tests/run_registry_changelog_artifacts.py"
       ],
       "passed": true,
       "exitCode": 0,
       "durationMs": 19,
-      "stdoutLog": "/private/tmp/faxp-rc1-logs/registry_changelog_artifacts.stdout.log",
-      "stderrLog": "/private/tmp/faxp-rc1-logs/registry_changelog_artifacts.stderr.log"
+      "stdoutLog": "registry_changelog_artifacts.stdout.log",
+      "stderrLog": "registry_changelog_artifacts.stderr.log"
     },
     {
       "name": "decision_record_template",
       "command": [
-        "/Users/zglitch009/projects/logistics-ai/FAXP/.venv/bin/python",
-        "/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_decision_record_template.py"
+        ".venv/bin/python",
+        "tests/run_decision_record_template.py"
       ],
       "passed": true,
       "exitCode": 0,
       "durationMs": 18,
-      "stdoutLog": "/private/tmp/faxp-rc1-logs/decision_record_template.stdout.log",
-      "stderrLog": "/private/tmp/faxp-rc1-logs/decision_record_template.stderr.log"
+      "stdoutLog": "decision_record_template.stdout.log",
+      "stderrLog": "decision_record_template.stderr.log"
     },
     {
       "name": "decision_record_artifacts",
       "command": [
-        "/Users/zglitch009/projects/logistics-ai/FAXP/.venv/bin/python",
-        "/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_decision_record_artifacts.py"
+        ".venv/bin/python",
+        "tests/run_decision_record_artifacts.py"
       ],
       "passed": true,
       "exitCode": 0,
       "durationMs": 18,
-      "stdoutLog": "/private/tmp/faxp-rc1-logs/decision_record_artifacts.stdout.log",
-      "stderrLog": "/private/tmp/faxp-rc1-logs/decision_record_artifacts.stderr.log"
+      "stdoutLog": "decision_record_artifacts.stdout.log",
+      "stderrLog": "decision_record_artifacts.stderr.log"
     },
     {
       "name": "governance_index",
       "command": [
-        "/Users/zglitch009/projects/logistics-ai/FAXP/.venv/bin/python",
-        "/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_governance_index.py"
+        ".venv/bin/python",
+        "tests/run_governance_index.py"
       ],
       "passed": true,
       "exitCode": 0,
       "durationMs": 53,
-      "stdoutLog": "/private/tmp/faxp-rc1-logs/governance_index.stdout.log",
-      "stderrLog": "/private/tmp/faxp-rc1-logs/governance_index.stderr.log"
+      "stdoutLog": "governance_index.stdout.log",
+      "stderrLog": "governance_index.stderr.log"
     },
     {
       "name": "release_readiness",
       "command": [
-        "/Users/zglitch009/projects/logistics-ai/FAXP/.venv/bin/python",
-        "/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_release_readiness.py"
+        ".venv/bin/python",
+        "tests/run_release_readiness.py"
       ],
       "passed": true,
       "exitCode": 0,
       "durationMs": 53,
-      "stdoutLog": "/private/tmp/faxp-rc1-logs/release_readiness.stdout.log",
-      "stderrLog": "/private/tmp/faxp-rc1-logs/release_readiness.stderr.log"
+      "stdoutLog": "release_readiness.stdout.log",
+      "stderrLog": "release_readiness.stderr.log"
     },
     {
       "name": "registry_apply",
       "command": [
-        "/Users/zglitch009/projects/logistics-ai/FAXP/.venv/bin/python",
-        "/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_apply_registry_update.py"
+        ".venv/bin/python",
+        "tests/run_apply_registry_update.py"
       ],
       "passed": true,
       "exitCode": 0,
       "durationMs": 119,
-      "stdoutLog": "/private/tmp/faxp-rc1-logs/registry_apply.stdout.log",
-      "stderrLog": "/private/tmp/faxp-rc1-logs/registry_apply.stderr.log"
+      "stdoutLog": "registry_apply.stdout.log",
+      "stderrLog": "registry_apply.stderr.log"
     },
     {
       "name": "certification_artifacts",
       "command": [
-        "/Users/zglitch009/projects/logistics-ai/FAXP/.venv/bin/python",
-        "/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_certification_artifacts.py"
+        ".venv/bin/python",
+        "tests/run_certification_artifacts.py"
       ],
       "passed": true,
       "exitCode": 0,
       "durationMs": 61,
-      "stdoutLog": "/private/tmp/faxp-rc1-logs/certification_artifacts.stdout.log",
-      "stderrLog": "/private/tmp/faxp-rc1-logs/certification_artifacts.stderr.log"
+      "stdoutLog": "certification_artifacts.stdout.log",
+      "stderrLog": "certification_artifacts.stderr.log"
     },
     {
       "name": "policy_profile_sync",
       "command": [
-        "/Users/zglitch009/projects/logistics-ai/FAXP/.venv/bin/python",
-        "/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_policy_profile_sync.py"
+        ".venv/bin/python",
+        "tests/run_policy_profile_sync.py"
       ],
       "passed": true,
       "exitCode": 0,
       "durationMs": 19,
-      "stdoutLog": "/private/tmp/faxp-rc1-logs/policy_profile_sync.stdout.log",
-      "stderrLog": "/private/tmp/faxp-rc1-logs/policy_profile_sync.stderr.log"
+      "stdoutLog": "policy_profile_sync.stdout.log",
+      "stderrLog": "policy_profile_sync.stderr.log"
     },
     {
       "name": "conformance_bundle",
       "command": [
-        "/Users/zglitch009/projects/logistics-ai/FAXP/.venv/bin/python",
-        "/Users/zglitch009/projects/logistics-ai/FAXP/tests/run_conformance_bundle.py"
+        ".venv/bin/python",
+        "tests/run_conformance_bundle.py"
       ],
       "passed": true,
       "exitCode": 0,
       "durationMs": 61,
-      "stdoutLog": "/private/tmp/faxp-rc1-logs/conformance_bundle.stdout.log",
-      "stderrLog": "/private/tmp/faxp-rc1-logs/conformance_bundle.stderr.log"
+      "stdoutLog": "conformance_bundle.stdout.log",
+      "stderrLog": "conformance_bundle.stderr.log"
     }
   ]
 }
