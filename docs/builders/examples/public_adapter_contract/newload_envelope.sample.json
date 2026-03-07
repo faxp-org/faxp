@@ -1,0 +1,42 @@
+{
+  "MessageID": "9e06718d-1c52-4f56-95ee-8f64c6f5f721",
+  "Timestamp": "2026-03-07T18:00:00Z",
+  "SenderID": "BROKER_AGENT_SAMPLE",
+  "ReceiverID": "CARRIER_AGENT_SAMPLE",
+  "MessageType": "NewLoad",
+  "SchemaVersion": "0.2.0",
+  "Body": {
+    "LoadID": "LOAD-SAMPLE-1001",
+    "Origin": {
+      "city": "Fresno",
+      "state": "CA",
+      "zip": "93721"
+    },
+    "Destination": {
+      "city": "Dallas",
+      "state": "TX",
+      "zip": "75201"
+    },
+    "PickupEarliest": "2026-03-10",
+    "PickupLatest": "2026-03-10",
+    "DeliveryEarliest": "2026-03-13",
+    "DeliveryLatest": "2026-03-13",
+    "LoadType": "Full",
+    "EquipmentType": "DryVan",
+    "TrailerLength": 53,
+    "Weight": 42000.0,
+    "Commodity": "Fresh Produce",
+    "RequireTracking": false,
+    "Rate": {
+      "RateModel": "Flat",
+      "Amount": 2250.0,
+      "Currency": "USD",
+      "UnitBasis": "load"
+    },
+    "LoadReferenceNumbers": {
+      "PrimaryReferenceNumber": "REF-1001"
+    },
+    "EquipmentClass": "Van"
+  }
+}
+

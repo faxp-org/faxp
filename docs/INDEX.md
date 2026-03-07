@@ -7,7 +7,7 @@ Project status note: FAXP is currently experimental and early-stage; use these d
 Current execution snapshot (2026-03-07):
 - Workstream A (roadmap/status hygiene): Done
 - Workstream B (private partner demo finalization): In Progress
-- Workstream C (public anonymized adapter package): Next
+- Workstream C (public anonymized adapter package): In Progress
 - Workstream D (security/governance continuation): Ongoing
 - Workstream E (adoption execution): Blocked on C
 
@@ -82,6 +82,8 @@ Local CI-aligned check baseline:
 ## Adapter Guidance
 - `docs/builders/BUILDER_VERIFICATION_RUNTIME_HANDOFF.md`
 - `docs/builders/BUILDER_INTEGRATION_PROFILE.md`
+- `docs/builders/PUBLIC_ANONYMIZED_ADAPTER_PACKAGE.md`
+- `docs/builders/examples/public_adapter_contract/README.md`
 - `adapter/INTERFACE.md`
 
 ## Demo and Contributor Quick Start

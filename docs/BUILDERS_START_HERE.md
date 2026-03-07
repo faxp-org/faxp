@@ -52,6 +52,7 @@ Read:
 - `docs/governance/BOOKING_PLANE_COMMERCIAL_TERMS.md`
 - `conformance/README.md`
 - `docs/builders/BUILDER_INTEGRATION_PROFILE.md`
+- `docs/builders/PUBLIC_ANONYMIZED_ADAPTER_PACKAGE.md`
 
 Important existing protocol/profile areas:
 1. booking identity
@@ -89,6 +90,7 @@ A practical minimum first implementation is:
 
 If you want a deeper capability declaration after that, look at:
 - `conformance/builder_integration_profile.v1.json`
+- `docs/builders/PUBLIC_ANONYMIZED_ADAPTER_PACKAGE.md`
 
 ## 6) Fastest Local Evaluation Path
 

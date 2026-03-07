@@ -18,7 +18,7 @@ Current execution plan:
 Execution state matrix:
 - Workstream A (roadmap hygiene): Done
 - Workstream B (private partner demo): In Progress
-- Workstream C (public anonymized adapter package): Next
+- Workstream C (public anonymized adapter package): In Progress
 - Workstream D (security/governance continuation): Ongoing
 - Workstream E (adoption execution): Blocked on C
 
