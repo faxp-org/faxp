@@ -446,7 +446,7 @@ result = translate_verifier_payload(
         "method": "AuthorityRecordCheck",
         "assuranceLevel": "AAL1",
         "score": 90,
-        "token": "compliance-abc123",
+        "token": "opaque-token",
         "source": "authority-mock",
         "providerExtensions": {"carrierReference": "carrier-123"}
       },

@@ -62,7 +62,7 @@ def main() -> int:
         "method": "AuthorityRecordCheck",
         "assuranceLevel": "AAL1",
         "score": 93,
-        "token": "compliance-abc123",
+        "token": "opaque-token",
         "source": "authority-mock",
         "providerExtensions": {
             "carrierReference": "carrier-498282",

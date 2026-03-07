@@ -5,7 +5,7 @@
   "provenance": "vendor-direct",
   "assuranceLevel": "AAL1",
   "score": 91,
-  "token": "vendor-direct-attest-20260226-0001",
+  "token": "opaque-token",
   "evidenceRef": "sha256:e390eb1c40cd29626b362f47",
   "verifiedAt": "2026-02-26T00:00:00Z",
   "category": "Compliance",
