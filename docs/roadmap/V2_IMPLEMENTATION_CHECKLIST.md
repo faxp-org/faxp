@@ -1,8 +1,17 @@
-# FAXP v0.2 Implementation Checklist (From RFC Verification Neutrality)
+# FAXP v0.2 Implementation Checklist (Historical Record)
 
-Status: Alpha Candidate  
+Status: Completed (Historical Record)  
 Source RFC: `docs/rfc/RFC-v0.2-verification-neutrality.md`  
-Updated: 2026-02-21 (alpha evidence closure)
+Updated: 2026-03-07 (reclassified as historical)
+
+This checklist is retained for implementation traceability only.
+
+Use these for current planning and execution:
+1. `docs/roadmap/PHASE_2_IMPLEMENTATION_ROADMAP.md`
+2. `docs/roadmap/VNEXT_EXECUTION_CHECKLIST_2026-03-07.md`
+
+Note:
+- Unchecked items in Phase 0 are preserved from the original implementation kickoff log and do not represent current delivery gaps.
 
 ## Phase 0: Branch + Baseline
 

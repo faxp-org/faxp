@@ -47,7 +47,8 @@ Project status note: FAXP is currently experimental and early-stage; use these d
 
 ## Roadmap
 - `docs/roadmap/PHASE_2_IMPLEMENTATION_ROADMAP.md`
-- `docs/roadmap/V2_IMPLEMENTATION_CHECKLIST.md`
+- `docs/roadmap/VNEXT_EXECUTION_CHECKLIST_2026-03-07.md`
+- `docs/roadmap/V2_IMPLEMENTATION_CHECKLIST.md` (historical)
 - `docs/roadmap/TEST_MATRIX_v0.2.md`
 - `docs/roadmap/SCOPE_AUDIT_2026-03-06.md`
 - `docs/roadmap/BUILDER_RUNTIME_MIGRATION_PLAN.md`

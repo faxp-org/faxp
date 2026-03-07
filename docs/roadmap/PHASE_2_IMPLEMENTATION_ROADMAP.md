@@ -1,10 +1,19 @@
 # FAXP Phase 2 Implementation Roadmap
 
-Status: Planned  
+Status: Active (Close-out Execution)  
 Scope Class: Booking-plane implementation maturity  
-Updated: 2026-03-01
+Updated: 2026-03-07
 
 Project maturity note: this roadmap tracks experimental-to-production hardening; items should be treated as pilot-stage until release readiness gates are met.
+
+## Progress Snapshot (2026-03-07)
+
+1. Protocol-core and conformance baseline are stable (`conformance/run_all_checks.py` passing on main).
+2. Security/governance hardening workstreams are active and now part of normal CI enforcement.
+3. Remaining Phase 2 risk is primarily adoption packaging, roadmap hygiene, and builder-facing clarity.
+
+Current execution plan:
+- `docs/roadmap/VNEXT_EXECUTION_CHECKLIST_2026-03-07.md`
 
 ## Phase 2 Goal
 
