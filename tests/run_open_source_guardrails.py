@@ -63,7 +63,7 @@ def main() -> int:
 
     ci = _read(PROJECT_ROOT / ".github" / "workflows" / "ci.yml")
     _assert("Gitleaks secret scan" in ci, "CI workflow must include gitleaks secret scan step.")
-    _assert("gitleaks/gitleaks-action" in ci, "CI workflow must run gitleaks action.")
+    _assert("gitleaks detect" in ci, "CI workflow must run gitleaks detect command.")
 
     print("Open-source guardrails checks passed.")
     return 0
