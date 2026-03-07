@@ -28,7 +28,9 @@ check_env_equals() {
 
 scan_tracked_content_secrets() {
   local pattern
+  # SECURITY_GATE_SELFSCAN_IGNORE_BEGIN
   pattern='AKIA[0-9A-Z]{16}|ASIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{60,}|xox[baprs]-[A-Za-z0-9-]{10,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|AIza[0-9A-Za-z_-]{35}|sk_live_[0-9A-Za-z]{24,}|sk_test_[0-9A-Za-z]{24,}'
+  # SECURITY_GATE_SELFSCAN_IGNORE_END
   local hits
   hits="$(git -C "$PROJECT_DIR" grep -nE "$pattern" -- . ':!security.env.template' || true)"
   if [[ -n "$hits" ]]; then
@@ -51,6 +53,7 @@ import sys
 
 project_dir = Path(sys.argv[1]).resolve()
 
+# SECURITY_GATE_SELFSCAN_IGNORE_BEGIN
 high_signal_pattern = re.compile(
     r"AKIA[0-9A-Z]{16}|ASIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{60,}|xox[baprs]-[A-Za-z0-9-]{10,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|AIza[0-9A-Za-z_-]{35}|sk_live_[0-9A-Za-z]{24,}|sk_test_[0-9A-Za-z]{24,}",
     re.IGNORECASE,
@@ -68,6 +71,7 @@ normalized_patterns = [
 ]
 
 base64_candidate_pattern = re.compile(r"(?<![A-Za-z0-9+/])[A-Za-z0-9+/]{24,}={0,2}(?![A-Za-z0-9+/])")
+# SECURITY_GATE_SELFSCAN_IGNORE_END
 max_base64_candidates_per_file = 50000
 max_base64_decoded_bytes_per_file = 8 * 1024 * 1024
 
@@ -95,15 +99,23 @@ for rel_path in tracked_files:
         continue
     if b"\x00" in raw_bytes:
         continue
-    # Avoid scanner self-matches from this script regex literals.
-    if rel_path == "scripts/security_gate.sh":
-        continue
     text = raw_bytes.decode("utf-8", "ignore")
     lines = text.splitlines()
     candidate_count = 0
     decoded_bytes = 0
     budget_exhausted = False
+    in_selfscan_ignore_block = False
     for line_no, line in enumerate(lines, start=1):
+        if rel_path == "scripts/security_gate.sh":
+            if "SECURITY_GATE_SELFSCAN_IGNORE_BEGIN" in line:
+                in_selfscan_ignore_block = True
+                continue
+            if "SECURITY_GATE_SELFSCAN_IGNORE_END" in line:
+                in_selfscan_ignore_block = False
+                continue
+            if in_selfscan_ignore_block:
+                continue
+
         normalized_line = _normalize(line)
         for label, pattern in normalized_patterns:
             if pattern.search(normalized_line):
