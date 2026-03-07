@@ -22,6 +22,9 @@ Use this checklist as the final go/no-go gate before a tagged release.
   "requiredArtifacts": [
     "faxp.schema.json",
     "faxp.v0.2.schema.json",
+    "CODE_OF_CONDUCT.md",
+    "SUPPORT.md",
+    ".github/ISSUE_TEMPLATE/config.yml",
     "faxp_mvp_simulation.py",
     "scripts/security_gate.sh",
     "scripts/incident_drill.sh",
@@ -73,6 +76,8 @@ Use this checklist as the final go/no-go gate before a tagged release.
   ],
   "requiredTests": [
     "tests/run_scope_guardrails.py",
+    "tests/run_public_redaction_guardrails.py",
+    "tests/run_open_source_guardrails.py",
     "tests/run_adapter_certification_profile_v2.py",
     "tests/run_verification_policy_profile.py",
     "tests/run_policy_decisions.py",
@@ -125,6 +130,8 @@ Use this checklist as the final go/no-go gate before a tagged release.
     "tests/run_release_readiness.py"
   ],
   "requiredSuiteChecks": [
+    "public_redaction_guardrails",
+    "open_source_guardrails",
     "policy_profile_sync",
     "verification_policy_profile",
     "policy_decisions",

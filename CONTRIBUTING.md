@@ -31,6 +31,8 @@ Recommended local checks:
 ./scripts/run_mcp_conformance.sh
 python3 conformance/run_all_checks.py --output /tmp/faxp_conformance_suite_report.local.json
 python3 tests/run_release_readiness.py
+python3 tests/run_public_redaction_guardrails.py
+python3 tests/run_open_source_guardrails.py
 ```
 
 If you need the fastest local demo/testing setup first, use:
@@ -57,10 +59,21 @@ Template:
 - Include validation commands and results.
 - Keep sensitive material out of commits.
 
+Public artifact hygiene rules:
+1. Do not include partner-specific names in public docs or templates.
+2. Do not include local machine absolute paths.
+3. Use neutral identifiers and synthetic examples in public-facing artifacts.
+4. Use one branch per PR; do not reuse merged branch names.
+
 ## Security and Secrets
 
 - Never commit private keys, tokens, or local secret bundles.
 - Follow `SECURITY.md` for vulnerability reporting.
+
+## Community Conduct and Support
+
+- `CODE_OF_CONDUCT.md` defines expected contributor behavior.
+- `SUPPORT.md` defines support channels and maintainer expectations.
 
 ## Review and Merge
 

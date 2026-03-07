@@ -42,3 +42,8 @@ Link RFCs/issues/docs.
 - [ ] reference-runtime
 - [ ] governance
 - [ ] interop
+
+## Public hygiene check
+
+- [ ] No partner-specific identifiers are required to understand this request.
+- [ ] No local absolute filesystem paths are included.

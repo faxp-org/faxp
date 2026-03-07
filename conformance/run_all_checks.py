@@ -48,6 +48,14 @@ def _suite_commands() -> list[tuple[str, list[str]]]:
         ("governance_index", [python, str(TESTS_DIR / "run_governance_index.py")]),
         ("release_readiness", [python, str(TESTS_DIR / "run_release_readiness.py")]),
         (
+            "public_redaction_guardrails",
+            [python, str(TESTS_DIR / "run_public_redaction_guardrails.py")],
+        ),
+        (
+            "open_source_guardrails",
+            [python, str(TESTS_DIR / "run_open_source_guardrails.py")],
+        ),
+        (
             "booking_plane_commercial_terms_doc",
             [python, str(TESTS_DIR / "run_booking_plane_commercial_terms_doc.py")],
         ),

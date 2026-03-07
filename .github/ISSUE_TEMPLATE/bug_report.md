@@ -35,6 +35,12 @@ What happened instead?
 
 Paste relevant output or attach screenshots.
 
+## Public hygiene check
+
+- [ ] I removed secrets/tokens/key material.
+- [ ] I removed partner-specific identifiers not suitable for public issues.
+- [ ] I removed local absolute filesystem paths.
+
 ## Scope relevance
 
 Does this involve booking-plane scope, conformance tooling, or governance artifacts?

@@ -2,6 +2,9 @@
   "indexVersion": "1.0.0",
   "generatedAt": "2026-02-27T13:05:00Z",
   "policyArtifacts": [
+    "CODE_OF_CONDUCT.md",
+    "SUPPORT.md",
+    ".github/ISSUE_TEMPLATE/config.yml",
     "docs/governance/SCOPE_GUARDRAILS.md",
     "docs/rfc/RFC_TEMPLATE.md",
     "docs/governance/POLICY_PROFILES.md",
@@ -24,6 +27,8 @@
   ],
   "requiredTests": [
     "tests/run_scope_guardrails.py",
+    "tests/run_public_redaction_guardrails.py",
+    "tests/run_open_source_guardrails.py",
     "tests/run_adapter_certification_profile_v2.py",
     "tests/run_verification_policy_profile.py",
     "tests/run_policy_decisions.py",
@@ -76,6 +81,8 @@
     "tests/run_release_readiness.py"
   ],
   "requiredSuiteChecks": [
+    "public_redaction_guardrails",
+    "open_source_guardrails",
     "policy_profile_sync",
     "verification_policy_profile",
     "policy_decisions",
@@ -128,6 +135,8 @@
     "release_readiness"
   ],
   "suiteCheckToTest": {
+    "public_redaction_guardrails": "tests/run_public_redaction_guardrails.py",
+    "open_source_guardrails": "tests/run_open_source_guardrails.py",
     "policy_profile_sync": "tests/run_policy_profile_sync.py",
     "verification_policy_profile": "tests/run_verification_policy_profile.py",
     "policy_decisions": "tests/run_policy_decisions.py",
