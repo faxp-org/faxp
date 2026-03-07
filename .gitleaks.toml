@@ -1,0 +1,24 @@
+title = "FAXP gitleaks config"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Allow scanner pattern definitions in security gate script."
+paths = [
+  '''scripts/security_gate\.sh''',
+]
+
+[[allowlists]]
+description = "Ignore local virtualenv files."
+regexTarget = "path"
+regexes = [
+  '''^\.venv/''',
+]
+
+[[allowlists]]
+description = "Allow false-positive key variable reference in runtime config wiring."
+regexTarget = "match"
+regexes = [
+  '''FAXP_VERIFIER_ED25519_PRIVATE_KEYS",\s*VERIFIER_ED25519_PRIVATE_KEYS_RAW''',
+]

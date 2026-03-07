@@ -5,8 +5,8 @@
   "provenance": "vendor-direct",
   "assuranceLevel": "AAL1",
   "score": 91,
-  "token": "vendor-direct-attest-20260226-0001",
-  "evidenceRef": "sha256:e390eb1c40cd29626b362f47",
+  "token": "opaque-token",
+  "evidenceRef": "sha256:84d3f23da9b5f51b3269566e",
   "verifiedAt": "2026-02-26T00:00:00Z",
   "category": "Compliance",
   "method": "AuthorityRecordCheck",
@@ -15,6 +15,6 @@
   "attestation": {
     "alg": "HMAC_SHA256",
     "kid": "faxp-lab-selfattest-2026q1",
-    "sig": "bd6591f92c1f0a0ee576409a9348d87925b41a903ab8b208f08f2da2b54ef92f"
+    "sig": "87a231092921de9b82d42d40382d36f6db93a6d8b01a5060d9dbc03116947bd8"
   }
 }
