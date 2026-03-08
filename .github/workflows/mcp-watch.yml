@@ -70,11 +70,7 @@ jobs:
           else
             issue_body='MCP watch detected an actionable change. See workflow logs.'
           fi
-          delimiter="ISSUE_BODY_$(python - <<'PY'
-import uuid
-print(uuid.uuid4().hex)
-PY
-)"
+          delimiter="ISSUE_BODY_$(python -c 'import uuid; print(uuid.uuid4().hex)')"
           {
             echo "issue_body<<${delimiter}"
             printf '%s\n' "$issue_body"
