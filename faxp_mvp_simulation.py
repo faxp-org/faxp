@@ -141,6 +141,13 @@ REPLAY_REDIS_URL = os.getenv("FAXP_REPLAY_REDIS_URL", "").strip()
 REPLAY_REDIS_KEY_PREFIX = (
     os.getenv("FAXP_REPLAY_REDIS_KEY_PREFIX", "faxp:replay").strip() or "faxp:replay"
 )
+REPLAY_ENFORCE_REDIS_DURABILITY = (
+    os.getenv("FAXP_REPLAY_ENFORCE_REDIS_DURABILITY", "1") == "1"
+)
+REPLAY_VOLATILE_REDIS_OVERRIDE_RAW = os.getenv(
+    "FAXP_REPLAY_VOLATILE_REDIS_OVERRIDE", ""
+).strip()
+REPLAY_VOLATILE_REDIS_OVERRIDE_MAX_SECONDS = 86400
 REPLAY_SINGLE_INSTANCE_OVERRIDE_RAW = os.getenv(
     "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE", ""
 ).strip()
@@ -239,6 +246,7 @@ SEEN_NONCES = set()
 LAST_AUDIT_HASH = ""
 REPLAY_DB_LOCK = threading.Lock()
 REPLAY_REDIS_CLIENT = None
+REPLAY_REDIS_DURABILITY_CHECKED = False
 REPLAY_CLAIM_LUA_SCRIPT = """
 if redis.call("EXISTS", KEYS[1]) == 1 or redis.call("EXISTS", KEYS[2]) == 1 then
   return 0
@@ -1368,10 +1376,137 @@ def _parse_single_instance_override():
     return normalized
 
 
+def _parse_volatile_redis_override():
+    raw_value = REPLAY_VOLATILE_REDIS_OVERRIDE_RAW.strip()
+    if not raw_value:
+        raise RuntimeError(
+            "redis_shared backend is volatile by configuration. Set FAXP_REPLAY_VOLATILE_REDIS_OVERRIDE JSON for explicit temporary risk acceptance."
+        )
+    try:
+        payload = json.loads(raw_value)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(
+            "FAXP_REPLAY_VOLATILE_REDIS_OVERRIDE must be valid JSON."
+        ) from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError(
+            "FAXP_REPLAY_VOLATILE_REDIS_OVERRIDE must be a JSON object."
+        )
+    required_fields = ("reason", "owner", "expires_at_utc", "ticket_id")
+    normalized = {}
+    for field_name in required_fields:
+        text_value = str(payload.get(field_name) or "").strip()
+        if not text_value:
+            raise RuntimeError(
+                f"FAXP_REPLAY_VOLATILE_REDIS_OVERRIDE missing required field '{field_name}'."
+            )
+        normalized[field_name] = text_value
+    try:
+        expires_dt = datetime.fromisoformat(
+            normalized["expires_at_utc"].replace("Z", "+00:00")
+        )
+    except ValueError as exc:
+        raise RuntimeError(
+            "FAXP_REPLAY_VOLATILE_REDIS_OVERRIDE.expires_at_utc must be ISO-8601 UTC."
+        ) from exc
+    if expires_dt.tzinfo is None:
+        raise RuntimeError(
+            "FAXP_REPLAY_VOLATILE_REDIS_OVERRIDE.expires_at_utc must include timezone information."
+        )
+    if expires_dt.utcoffset() != timedelta(0):
+        raise RuntimeError(
+            "FAXP_REPLAY_VOLATILE_REDIS_OVERRIDE.expires_at_utc must be UTC (Z or +00:00)."
+        )
+    expires_utc = expires_dt.astimezone(timezone.utc)
+    now_dt = datetime.now(timezone.utc)
+    if expires_utc <= now_dt:
+        raise RuntimeError(
+            "FAXP_REPLAY_VOLATILE_REDIS_OVERRIDE is expired."
+        )
+    max_expiry = now_dt + timedelta(seconds=REPLAY_VOLATILE_REDIS_OVERRIDE_MAX_SECONDS)
+    if expires_utc > max_expiry:
+        raise RuntimeError(
+            "FAXP_REPLAY_VOLATILE_REDIS_OVERRIDE exceeds max duration (24h)."
+        )
+    normalized["expires_at_utc"] = (
+        expires_utc.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    )
+    normalized["duration_seconds"] = int((expires_utc - now_dt).total_seconds())
+    return normalized
+
+
+def _is_redis_persistence_enabled(client):
+    details = {
+        "verification_mode": "config_get",
+        "appendonly": "",
+        "save": "",
+    }
+    try:
+        appendonly_config = client.config_get("appendonly") or {}
+        save_config = client.config_get("save") or {}
+    except Exception as exc:
+        details["verification_mode"] = "config_get_error"
+        details["error"] = str(exc)
+        return False, details
+
+    appendonly_value = str(appendonly_config.get("appendonly") or "").strip().lower()
+    save_value = str(save_config.get("save") or "").strip()
+    details["appendonly"] = appendonly_value
+    details["save"] = save_value
+
+    aof_enabled = appendonly_value in {"yes", "1", "true", "on"}
+    rdb_enabled = bool(save_value)
+    durable = aof_enabled or rdb_enabled
+    details["durable"] = durable
+    return durable, details
+
+
+def _enforce_redis_durability(client):
+    if (
+        not NON_LOCAL_MODE
+        or REPLAY_BACKEND != "redis_shared"
+        or REPLAY_DEPLOYMENT_MODE not in {"multi_instance", "auto_scaling"}
+        or not REPLAY_ENFORCE_REDIS_DURABILITY
+    ):
+        return
+
+    durable, details = _is_redis_persistence_enabled(client)
+    audit_details = {
+        "runtime_hostname": RUNTIME_HOSTNAME,
+        "replay_deployment_mode": REPLAY_DEPLOYMENT_MODE,
+        "appendonly": details.get("appendonly"),
+        "save": details.get("save"),
+        "verification_mode": details.get("verification_mode"),
+        "durable": bool(durable),
+    }
+    if details.get("error"):
+        audit_details["verification_error"] = str(details.get("error"))
+
+    if durable:
+        _append_startup_audit_event("replay_redis_durability_verified", audit_details)
+        return
+
+    override = _parse_volatile_redis_override()
+    audit_details.update(
+        {
+            "reason": override["reason"],
+            "owner": override["owner"],
+            "expires_at_utc": override["expires_at_utc"],
+            "ticket_id": override["ticket_id"],
+            "duration_seconds": override["duration_seconds"],
+            "max_duration_seconds": REPLAY_VOLATILE_REDIS_OVERRIDE_MAX_SECONDS,
+        }
+    )
+    _append_startup_audit_event("replay_redis_volatile_override_active", audit_details)
+
+
 def _get_redis_replay_client():
-    global REPLAY_REDIS_CLIENT
+    global REPLAY_REDIS_CLIENT, REPLAY_REDIS_DURABILITY_CHECKED
     with REPLAY_DB_LOCK:
         if REPLAY_REDIS_CLIENT is not None:
+            if not REPLAY_REDIS_DURABILITY_CHECKED:
+                _enforce_redis_durability(REPLAY_REDIS_CLIENT)
+                REPLAY_REDIS_DURABILITY_CHECKED = True
             return REPLAY_REDIS_CLIENT
         try:
             import redis  # type: ignore
@@ -1389,7 +1524,9 @@ def _get_redis_replay_client():
             raise RuntimeError(
                 "Unable to connect to FAXP_REPLAY_REDIS_URL for replay backend."
             ) from exc
+        _enforce_redis_durability(client)
         REPLAY_REDIS_CLIENT = client
+        REPLAY_REDIS_DURABILITY_CHECKED = True
         return REPLAY_REDIS_CLIENT
 
 

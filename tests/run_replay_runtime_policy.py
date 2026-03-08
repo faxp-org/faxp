@@ -206,6 +206,122 @@ def _validate_redis_lua_atomic_contract() -> None:
     )
 
 
+def _validate_redis_durability_guard() -> None:
+    code = textwrap.dedent(
+        """
+        import json
+        import tempfile
+        from datetime import datetime, timedelta, timezone
+        import faxp_mvp_simulation as sim
+
+        original_client = sim.REPLAY_REDIS_CLIENT
+        original_checked = sim.REPLAY_REDIS_DURABILITY_CHECKED
+        original_backend = sim.REPLAY_BACKEND
+        original_mode = sim.APP_MODE
+        original_nonlocal = sim.NON_LOCAL_MODE
+        original_deployment = sim.REPLAY_DEPLOYMENT_MODE
+        original_enforce = sim.REPLAY_ENFORCE_REDIS_DURABILITY
+        original_override = sim.REPLAY_VOLATILE_REDIS_OVERRIDE_RAW
+        original_audit = sim.AUDIT_LOG_PATH
+        try:
+            class VolatileRedis:
+                def ping(self):
+                    return True
+                def config_get(self, key):
+                    if key == "appendonly":
+                        return {"appendonly": "no"}
+                    if key == "save":
+                        return {"save": ""}
+                    return {}
+
+            class DurableRedis:
+                def ping(self):
+                    return True
+                def config_get(self, key):
+                    if key == "appendonly":
+                        return {"appendonly": "no"}
+                    if key == "save":
+                        return {"save": "900 1 300 10 60 10000"}
+                    return {}
+
+            sim.REPLAY_BACKEND = "redis_shared"
+            sim.APP_MODE = "production"
+            sim.NON_LOCAL_MODE = True
+            sim.REPLAY_DEPLOYMENT_MODE = "multi_instance"
+            sim.REPLAY_ENFORCE_REDIS_DURABILITY = True
+
+            # Volatile Redis must fail closed without explicit override.
+            sim.REPLAY_REDIS_CLIENT = VolatileRedis()
+            sim.REPLAY_REDIS_DURABILITY_CHECKED = False
+            sim.REPLAY_VOLATILE_REDIS_OVERRIDE_RAW = ""
+            try:
+                sim._get_redis_replay_client()
+                raise SystemExit("UNEXPECTED_VOLATILE_ACCEPT")
+            except RuntimeError as exc:
+                if "redis_shared backend is volatile by configuration" not in str(exc):
+                    raise
+
+            # Volatile Redis can be allowed only with explicit time-bound override + audit event.
+            with tempfile.TemporaryDirectory() as temp_dir:
+                audit_path = temp_dir + "/redis_durability_audit.log"
+                expires_at = (
+                    datetime.now(timezone.utc) + timedelta(hours=1)
+                ).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+                override = {
+                    "reason": "temporary replay-risk acceptance",
+                    "owner": "secops@example.org",
+                    "expires_at_utc": expires_at,
+                    "ticket_id": "SEC-REDIS-001",
+                }
+                sim.AUDIT_LOG_PATH = audit_path
+                sim.REPLAY_REDIS_CLIENT = VolatileRedis()
+                sim.REPLAY_REDIS_DURABILITY_CHECKED = False
+                sim.REPLAY_VOLATILE_REDIS_OVERRIDE_RAW = json.dumps(override)
+                sim._get_redis_replay_client()
+                lines = [line for line in open(audit_path, "r", encoding="utf-8").read().splitlines() if line.strip()]
+                payload = json.loads(lines[-1])
+                if payload.get("event_type") != "replay_redis_volatile_override_active":
+                    raise SystemExit("missing volatile override startup audit event")
+                details = payload.get("details") or {}
+                if details.get("ticket_id") != override["ticket_id"]:
+                    raise SystemExit("volatile override audit ticket mismatch")
+                if details.get("durable") is not False:
+                    raise SystemExit("volatile override audit durable flag mismatch")
+
+            # Durable Redis should pass without volatile override.
+            sim.AUDIT_LOG_PATH = tempfile.gettempdir() + "/redis_durability_verified.log"
+            sim.REPLAY_REDIS_CLIENT = DurableRedis()
+            sim.REPLAY_REDIS_DURABILITY_CHECKED = False
+            sim.REPLAY_VOLATILE_REDIS_OVERRIDE_RAW = ""
+            sim._get_redis_replay_client()
+        finally:
+            sim.REPLAY_REDIS_CLIENT = original_client
+            sim.REPLAY_REDIS_DURABILITY_CHECKED = original_checked
+            sim.REPLAY_BACKEND = original_backend
+            sim.APP_MODE = original_mode
+            sim.NON_LOCAL_MODE = original_nonlocal
+            sim.REPLAY_DEPLOYMENT_MODE = original_deployment
+            sim.REPLAY_ENFORCE_REDIS_DURABILITY = original_enforce
+            sim.REPLAY_VOLATILE_REDIS_OVERRIDE_RAW = original_override
+            sim.AUDIT_LOG_PATH = original_audit
+
+        print(json.dumps({"ok": True}))
+        """
+    )
+    completed = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=str(PROJECT_ROOT),
+        env=_base_env(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    _assert(
+        completed.returncode == 0,
+        f"Redis durability guard check failed:\nSTDOUT:\n{completed.stdout}\nSTDERR:\n{completed.stderr}",
+    )
+
+
 def main() -> int:
     _expect_failure(
         {
@@ -386,6 +502,7 @@ def main() -> int:
 
     _validate_override_and_audit_event()
     _validate_redis_lua_atomic_contract()
+    _validate_redis_durability_guard()
 
     print("Replay runtime policy checks passed.")
     return 0

@@ -32,6 +32,18 @@ Configured replay backend by `FAXP_REPLAY_BACKEND`:
 2. Non-local `multi_instance` or `auto_scaling`:
 - `redis_shared` is required.
 - `FAXP_REPLAY_REDIS_URL` is required.
+- Redis durability verification is required by default (`FAXP_REPLAY_ENFORCE_REDIS_DURABILITY=1`).
+- Startup fails closed when Redis is configured as volatile (no AOF and empty RDB save policy), unless explicit temporary override is provided in `FAXP_REPLAY_VOLATILE_REDIS_OVERRIDE`.
+
+4. Temporary volatile Redis override (emergency only):
+- `FAXP_REPLAY_VOLATILE_REDIS_OVERRIDE` must be valid JSON.
+- Override must include:
+  - `reason`
+  - `owner`
+  - `expires_at_utc`
+  - `ticket_id`
+- Override max lifetime is 24h from process start validation.
+- Startup fails closed on malformed, missing-field, non-UTC, expired, or >24h override.
 
 3. Non-local `single_instance` using `sqlite_local`:
 - Allowed only with explicit temporary override in `FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE`.
@@ -72,6 +84,22 @@ When a non-local single-instance override is accepted, startup emits a structure
 - `details.max_duration_seconds`
 
 This event is written to the configured audit sink and is intended to make temporary exceptions explicit and reviewable.
+
+When a volatile Redis override is accepted, startup emits:
+
+- `event_type`: `replay_redis_volatile_override_active`
+- `details.reason`
+- `details.owner`
+- `details.expires_at_utc`
+- `details.ticket_id`
+- `details.runtime_hostname`
+- `details.appendonly`
+- `details.save`
+- `details.durable`
+
+When Redis durability is verified without override, startup emits:
+
+- `event_type`: `replay_redis_durability_verified`
 
 ## Atomic Shared Replay Claim
 
