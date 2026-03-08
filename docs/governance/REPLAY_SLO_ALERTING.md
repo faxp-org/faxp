@@ -23,3 +23,9 @@ Defines service-level expectations for replay key claims in non-local environmen
 - Executable monitoring profile: `docs/governance/REPLAY_OPS_MONITORING_PROFILE.json`
 - Executable evaluator: `scripts/evaluate_replay_ops.py`
 - Executable threshold checks: `tests/run_replay_ops_monitoring.py`
+
+## Clear/Recovery Enforcement
+
+Use evaluator state mode to enforce clear/recovery transitions:
+
+`python3 scripts/evaluate_replay_ops.py --profile docs/governance/REPLAY_OPS_MONITORING_PROFILE.json --metrics /tmp/replay_metrics.json --state /tmp/replay_ops_state.json`

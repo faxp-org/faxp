@@ -40,6 +40,32 @@ def _evaluate(metrics: dict) -> dict:
     return json.loads(completed.stdout.strip())
 
 
+def _evaluate_with_state(metrics_sequence: list[dict]) -> list[dict]:
+    outputs: list[dict] = []
+    with tempfile.TemporaryDirectory(prefix="faxp-replay-ops-state-") as temp_dir:
+        state_path = Path(temp_dir) / "state.json"
+        for metrics in metrics_sequence:
+            metrics_path = Path(temp_dir) / "metrics.json"
+            metrics_path.write_text(json.dumps(metrics), encoding="utf-8")
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(EVALUATOR),
+                    "--profile",
+                    str(PROFILE),
+                    "--metrics",
+                    str(metrics_path),
+                    "--state",
+                    str(state_path),
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            outputs.append(json.loads(completed.stdout.strip()))
+    return outputs
+
+
 def main() -> int:
     _assert(EVALUATOR.exists(), "Missing replay ops evaluator script.")
     _assert(PROFILE.exists(), "Missing replay ops monitoring profile.")
@@ -96,6 +122,54 @@ def main() -> int:
     _assert(
         ("backend_unavailable", "critical") in critical_types,
         "Expected backend_unavailable critical alert.",
+    )
+
+    transition_outputs = _evaluate_with_state(
+        [
+            {
+                "availability_percent": 99.0,
+                "failure_rate_percent": 3.0,
+                "reject_rate_percent": 6.0,
+                "p95_latency_ms": 100,
+                "p99_latency_ms": 600,
+                "backend_unavailable_seconds": 180,
+                "sample_window_minutes": 1,
+            },
+            {
+                "availability_percent": 100.0,
+                "failure_rate_percent": 0.0,
+                "reject_rate_percent": 0.0,
+                "p95_latency_ms": 20,
+                "p99_latency_ms": 40,
+                "backend_unavailable_seconds": 0,
+                "sample_window_minutes": 1,
+            },
+        ]
+    )
+    first, second = transition_outputs
+    _assert(first.get("status") == "critical", f"Expected initial critical status, got {first}")
+    _assert(
+        second.get("rawStatus") == "ok" and second.get("status") == "critical",
+        f"Expected critical hold before clear window, got {second}",
+    )
+    _assert(second.get("clearPending") is True, "Expected clearPending=true during recovery hold.")
+
+    stable_samples = [
+        {
+            "availability_percent": 100.0,
+            "failure_rate_percent": 0.0,
+            "reject_rate_percent": 0.0,
+            "p95_latency_ms": 20,
+            "p99_latency_ms": 40,
+            "backend_unavailable_seconds": 0,
+            "sample_window_minutes": 1,
+        }
+        for _ in range(16)
+    ]
+    settled = _evaluate_with_state(stable_samples)[-1]
+    _assert(
+        settled.get("status") == "ok" and settled.get("clearPending") is False,
+        f"Expected clear after stable window, got {settled}",
     )
 
     print("Replay ops monitoring checks passed.")
