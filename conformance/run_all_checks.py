@@ -37,6 +37,7 @@ def _suite_commands() -> list[tuple[str, list[str]]]:
         ("submission_create", [python, str(TESTS_DIR / "run_create_submission_manifest.py")]),
         ("submission_manifest", [python, str(TESTS_DIR / "run_submission_manifest.py")]),
         ("key_lifecycle_policy", [python, str(TESTS_DIR / "run_key_lifecycle_policy.py")]),
+        ("replay_runtime_policy", [python, str(TESTS_DIR / "run_replay_runtime_policy.py")]),
         ("registry_create", [python, str(TESTS_DIR / "run_create_registry_update.py")]),
         ("registry_ops", [python, str(TESTS_DIR / "run_registry_ops_artifacts.py")]),
         ("registry_admission_policy", [python, str(TESTS_DIR / "run_registry_admission_policy.py")]),

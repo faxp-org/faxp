@@ -1333,6 +1333,10 @@ def _parse_single_instance_override():
         raise RuntimeError(
             "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE.expires_at_utc must include timezone information."
         )
+    if expires_dt.utcoffset() != timedelta(0):
+        raise RuntimeError(
+            "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE.expires_at_utc must be UTC (Z or +00:00)."
+        )
     expires_utc = expires_dt.astimezone(timezone.utc)
     now_dt = datetime.now(timezone.utc)
     if expires_utc <= now_dt:
@@ -1347,6 +1351,7 @@ def _parse_single_instance_override():
     normalized["expires_at_utc"] = (
         expires_utc.replace(microsecond=0).isoformat().replace("+00:00", "Z")
     )
+    normalized["duration_seconds"] = int((expires_utc - now_dt).total_seconds())
     return normalized
 
 
@@ -1433,6 +1438,7 @@ def _validate_replay_runtime_policy():
                 "owner": override["owner"],
                 "expires_at_utc": override["expires_at_utc"],
                 "ticket_id": override["ticket_id"],
+                "duration_seconds": override["duration_seconds"],
                 "max_duration_seconds": REPLAY_SINGLE_INSTANCE_OVERRIDE_MAX_SECONDS,
             },
         )

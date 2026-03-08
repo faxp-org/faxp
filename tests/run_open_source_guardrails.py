@@ -23,6 +23,7 @@ def main() -> int:
         PROJECT_ROOT / "CODE_OF_CONDUCT.md",
         PROJECT_ROOT / "SUPPORT.md",
         PROJECT_ROOT / "SECURITY.md",
+        PROJECT_ROOT / "docs" / "governance" / "REPLAY_RUNTIME_POLICY.md",
         PROJECT_ROOT / ".gitleaks.toml",
         PROJECT_ROOT / ".pre-commit-config.yaml",
         PROJECT_ROOT / "scripts" / "install_precommit.sh",
@@ -53,6 +54,10 @@ def main() -> int:
     readme = _read(PROJECT_ROOT / "README.md")
     _assert("CONTRIBUTING.md" in readme, "README.md must reference CONTRIBUTING.md.")
     _assert("SECURITY.md" in readme, "README.md must reference SECURITY.md.")
+    _assert(
+        "docs/governance/REPLAY_RUNTIME_POLICY.md" in readme,
+        "README.md must reference replay runtime policy.",
+    )
     _assert("CODE_OF_CONDUCT.md" in readme, "README.md must reference CODE_OF_CONDUCT.md.")
     _assert("SUPPORT.md" in readme, "README.md must reference SUPPORT.md.")
     _assert("scripts/install_precommit.sh" in readme, "README.md must reference pre-commit installer.")
@@ -66,6 +71,18 @@ def main() -> int:
         "SECURITY.md must document Dependabot security updates requirement.",
     )
     _assert("pre-commit" in security, "SECURITY.md must mention local pre-commit guardrails.")
+    _assert(
+        "replay_single_instance_override_active" in security,
+        "SECURITY.md must document single-instance replay override startup audit event.",
+    )
+    _assert(
+        "redis_shared" in security,
+        "SECURITY.md must document shared replay backend requirement.",
+    )
+    _assert(
+        "24" in security and "hour" in security.lower(),
+        "SECURITY.md must document max 24-hour replay override lifetime.",
+    )
 
     ci = _read(PROJECT_ROOT / ".github" / "workflows" / "ci.yml")
     _assert("Gitleaks secret scan" in ci, "CI workflow must include gitleaks secret scan step.")
