@@ -29,3 +29,4 @@
 
 - Publish incident summary with root cause, timeline, and corrective actions.
 - Update gate status in `REPLAY_OPERATIONS_GATES.md`.
+- Generate machine-checkable incident artifact via `scripts/incident_drill.sh` and validate with `tests/run_replay_incident_artifacts.py`.

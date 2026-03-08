@@ -3,7 +3,7 @@
 ## Primary Ownership
 
 - Primary on-call: truckingadvantage
-- Backup on-call: designate before production scale-out
+- Backup on-call: truckingadvantage-backup
 
 ## Responsibilities
 

@@ -1,0 +1,48 @@
+{
+  "profileVersion": "1.0.0",
+  "slo": {
+    "availability_target_percent": 99.9,
+    "error_budget_percent": 0.1,
+    "latency_ms": {
+      "p95_max": 75,
+      "p99_max": 150
+    }
+  },
+  "alerts": {
+    "reject_rate": {
+      "warn": {
+        "threshold_percent": 1.0,
+        "window_minutes": 15
+      },
+      "critical": {
+        "threshold_percent": 5.0,
+        "window_minutes": 5
+      }
+    },
+    "failure_rate": {
+      "critical": {
+        "threshold_percent": 2.0,
+        "window_minutes": 5
+      }
+    },
+    "latency": {
+      "warn_p95_ms": {
+        "threshold_ms": 75,
+        "window_minutes": 30
+      },
+      "critical_p99_ms": {
+        "threshold_ms": 500,
+        "window_minutes": 10
+      }
+    },
+    "backend_unavailable": {
+      "critical": {
+        "max_seconds": 120
+      }
+    }
+  },
+  "clearConditions": {
+    "stable_minutes_required": 15,
+    "critical_to_warn_requires_below_warn_thresholds": true
+  }
+}

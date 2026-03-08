@@ -20,3 +20,6 @@ Defines service-level expectations for replay key claims in non-local environmen
 
 - Runtime policy: `docs/governance/REPLAY_RUNTIME_POLICY.md`
 - Policy test: `tests/run_replay_runtime_policy.py`
+- Executable monitoring profile: `docs/governance/REPLAY_OPS_MONITORING_PROFILE.json`
+- Executable evaluator: `scripts/evaluate_replay_ops.py`
+- Executable threshold checks: `tests/run_replay_ops_monitoring.py`
