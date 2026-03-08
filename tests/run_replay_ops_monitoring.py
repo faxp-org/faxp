@@ -225,6 +225,40 @@ def main() -> int:
         f"Expected invalid sample window alert, got {bypass_probe}",
     )
 
+    nan_window_probe = _evaluate_with_state(
+        [
+            {
+                "availability_percent": 99.0,
+                "failure_rate_percent": 3.0,
+                "reject_rate_percent": 6.0,
+                "p95_latency_ms": 100,
+                "p99_latency_ms": 600,
+                "backend_unavailable_seconds": 180,
+                "sample_window_minutes": 1,
+            },
+            {
+                "availability_percent": 100.0,
+                "failure_rate_percent": 0.0,
+                "reject_rate_percent": 0.0,
+                "p95_latency_ms": 20,
+                "p99_latency_ms": 40,
+                "backend_unavailable_seconds": 0,
+                "sample_window_minutes": "nan",
+            },
+        ]
+    )[-1]
+    _assert(
+        nan_window_probe.get("status") == "critical" and nan_window_probe.get("clearPending") is True,
+        f"Expected hold for non-finite sample_window_minutes, got {nan_window_probe}",
+    )
+    nan_window_alerts = {
+        (item.get("type"), item.get("severity")) for item in nan_window_probe.get("alerts", [])
+    }
+    _assert(
+        ("invalid_sample_window", "critical") in nan_window_alerts,
+        f"Expected invalid sample window alert for NaN window, got {nan_window_probe}",
+    )
+
     partial_metrics = _evaluate({"sample_window_minutes": 1})
     _assert(
         partial_metrics.get("status") == "critical",
@@ -265,6 +299,33 @@ def main() -> int:
         _assert(
             ("state_load_error", "critical") in state_alerts,
             f"Expected state_load_error alert for corrupt state file, got {state_result}",
+        )
+
+    with tempfile.TemporaryDirectory(prefix="faxp-replay-ops-state-shape-") as temp_dir:
+        state_path = Path(temp_dir) / "state.json"
+        state_path.write_text("[]", encoding="utf-8")
+        state_result = _evaluate_single_with_state(
+            {
+                "availability_percent": 100.0,
+                "failure_rate_percent": 0.0,
+                "reject_rate_percent": 0.0,
+                "p95_latency_ms": 20,
+                "p99_latency_ms": 40,
+                "backend_unavailable_seconds": 0,
+                "sample_window_minutes": 1,
+            },
+            state_path,
+        )
+        _assert(
+            state_result.get("status") == "critical" and state_result.get("clearPending") is True,
+            f"Expected fail-closed state handling for non-object state payload, got {state_result}",
+        )
+        state_alerts = {
+            (item.get("type"), item.get("severity")) for item in state_result.get("alerts", [])
+        }
+        _assert(
+            ("state_load_error", "critical") in state_alerts,
+            f"Expected state_load_error alert for non-object state payload, got {state_result}",
         )
 
     print("Replay ops monitoring checks passed.")

@@ -45,15 +45,22 @@ def _load_state(path: Path) -> dict:
             "_state_load_error": "state file is not valid JSON",
         }
     if not isinstance(payload, dict):
-        return {}
+        return {
+            "effective_status": "critical",
+            "stable_minutes_below_warn": 0.0,
+            "_state_load_error": "state payload must be a JSON object",
+        }
     return payload
 
 
 def _to_float(value: object, default: float = 0.0) -> float:
     try:
-        return float(value)
+        parsed = float(value)
     except (TypeError, ValueError):
         return default
+    if not math.isfinite(parsed):
+        return default
+    return parsed
 
 
 def _extract_metric(metrics: dict, key: str) -> tuple[float | None, str | None]:
@@ -308,7 +315,10 @@ def main() -> int:
             prior_state = _load_state(state_path)
             result, state = _apply_clear_conditions(profile, metrics, result, prior_state)
             state_path.parent.mkdir(parents=True, exist_ok=True)
-            state_path.write_text(json.dumps(state, sort_keys=True) + "\n", encoding="utf-8")
+            state_path.write_text(
+                json.dumps(state, sort_keys=True, allow_nan=False) + "\n",
+                encoding="utf-8",
+            )
         print(json.dumps(result, sort_keys=True))
         return 0
     except (AssertionError, RuntimeError, ValueError, json.JSONDecodeError) as exc:

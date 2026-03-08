@@ -34,4 +34,4 @@ Evaluator hardening notes:
 
 - Requires all core metrics (`availability_percent`, `failure_rate_percent`, `reject_rate_percent`, `p95_latency_ms`, `p99_latency_ms`, `backend_unavailable_seconds`).
 - Treats missing/invalid metric snapshots as `critical` with explicit input-validation breaches.
-- Enforces `clearConditions.max_sample_window_minutes` (`1` by default) to prevent de-escalation bypass by inflated sample windows.
+- Enforces `clearConditions.max_sample_window_minutes` (`1` by default) and rejects non-finite values (`nan`, `inf`) to prevent de-escalation bypass.
