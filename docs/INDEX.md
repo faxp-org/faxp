@@ -34,6 +34,7 @@ Local CI-aligned check baseline:
 - `docs/governance/DECISION_RECORD_a2a-bridge-translator-only_2026-02-23.md`
 - `docs/governance/DECISION_RECORD_a2a-mcp-interop-boundary_2026-02-23.md`
 - `docs/governance/POLICY_PROFILES.md`
+- `docs/governance/REPLAY_RUNTIME_POLICY.md`
 - `docs/governance/REGISTRY_ADMISSION_POLICY.md`
 - `docs/governance/REGISTRY_CHANGELOG_POLICY.md`
 - `docs/governance/REGISTRY_OPERATIONS_RUNBOOK.md`

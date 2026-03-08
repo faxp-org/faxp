@@ -41,6 +41,7 @@ Target timelines may be adjusted based on severity, exploitability, and operatio
 
 - Signed envelopes and verifier attestations.
 - Replay and TTL enforcement.
+- Replay backend policy gates for deployment topology (`sqlite_local` vs `redis_shared`).
 - Role-capability policy validation.
 - Conformance and governance release gates in CI.
 - `security_gate.sh` static and obfuscated/encoded secret scanning.
@@ -48,6 +49,24 @@ Target timelines may be adjusted based on severity, exploitability, and operatio
 - Local pre-commit guardrails via `.pre-commit-config.yaml` (`security_gate`, public redaction checks, open-source guardrails).
 
 Operational verifier hosting and credentials remain outside protocol-core responsibilities.
+
+## Replay Runtime Policy (Non-Local)
+
+Replay runtime policy reference:
+- `docs/governance/REPLAY_RUNTIME_POLICY.md`
+
+Key requirements:
+1. Non-local `multi_instance` and `auto_scaling` deployments must use `FAXP_REPLAY_BACKEND=redis_shared`.
+2. Shared replay claims are atomic across `MessageID + Nonce` using one Lua `eval` operation.
+3. Non-local `single_instance` use of `sqlite_local` requires explicit temporary override with:
+- `reason`
+- `owner`
+- `expires_at_utc`
+- `ticket_id`
+4. Override lifetime is capped at 24 hours and fails closed when malformed, non-UTC, expired, or above max duration.
+5. Accepted single-instance non-local override emits structured startup audit event:
+- `event_type = replay_single_instance_override_active`
+- override metadata and expiry fields for auditability.
 
 ## GitHub Repository Security Settings (Required)
 

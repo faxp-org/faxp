@@ -46,6 +46,7 @@ Out of scope:
 Canonical boundary docs:
 - `docs/governance/SCOPE_GUARDRAILS.md`
 - `docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md`
+- `docs/governance/REPLAY_RUNTIME_POLICY.md`
 - `docs/roadmap/BUILDER_RUNTIME_MIGRATION_PLAN.md`
 - `REFERENCE_RUNTIME_BOUNDARY.md`
 

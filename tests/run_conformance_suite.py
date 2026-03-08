@@ -60,6 +60,10 @@ def main() -> int:
         "conformance suite must include policy_decisions in default checks",
     )
     _assert(
+        "replay_runtime_policy" in listed_checks.stdout.splitlines(),
+        "conformance suite must include replay_runtime_policy in default checks",
+    )
+    _assert(
         "registry_changelog_artifacts" in listed_checks.stdout.splitlines(),
         "conformance suite must include registry_changelog_artifacts in default checks",
     )
@@ -269,7 +273,7 @@ def main() -> int:
                 sys.executable,
                 str(SCRIPT_PATH),
                 "--checks",
-                "adapter_test_profile,submission_manifest,key_lifecycle_policy",
+                "adapter_test_profile,submission_manifest,key_lifecycle_policy,replay_runtime_policy",
                 "--output",
                 str(output_path),
                 "--log-dir",
@@ -291,7 +295,7 @@ def main() -> int:
             report_log_dir = log_dir
         _assert(summary.get("passed") is True, "conformance suite summary did not pass")
         _assert(summary.get("failedChecks") == 0, "conformance suite reported failures")
-        _assert(len(checks) == 3, "conformance suite did not execute expected subset of checks")
+        _assert(len(checks) == 4, "conformance suite did not execute expected subset of checks")
         _assert(
             all((report_log_dir / str(item.get("stdoutLog", ""))).exists() for item in checks),
             "one or more stdout log files are missing",
