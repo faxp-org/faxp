@@ -71,6 +71,7 @@ normalized_patterns = [
 ]
 
 base64_candidate_pattern = re.compile(r"(?<![A-Za-z0-9+/])[A-Za-z0-9+/]{24,}={0,2}(?![A-Za-z0-9+/])")
+chunked_base64_fragment_pattern = re.compile(r"[A-Za-z0-9+/]{3,}={0,2}")
 # SECURITY_GATE_SELFSCAN_IGNORE_END
 max_base64_candidates_per_file = 50000
 max_base64_decoded_bytes_per_file = 8 * 1024 * 1024
@@ -90,6 +91,34 @@ findings = []
 
 def _normalize(value: str) -> str:
     return re.sub(r"[^A-Za-z0-9]", "", value).upper()
+
+
+def _evaluate_decoded_candidate(token: str):
+    token = token.strip()
+    if not token:
+        return False, 0
+    padded = token + ("=" * ((4 - len(token) % 4) % 4))
+    try:
+        decoded = base64.b64decode(padded, validate=True)
+    except (binascii.Error, ValueError):
+        return False, 0
+    if len(decoded) < 12:
+        return False, 0
+    printable = sum(32 <= b < 127 or b in (9, 10, 13) for b in decoded)
+    if printable / len(decoded) < 0.85:
+        return False, len(decoded)
+    decoded_text = decoded.decode("utf-8", "ignore")
+    if not decoded_text:
+        return False, len(decoded)
+    decoded_normalized = _normalize(decoded_text)
+    hit = bool(high_signal_pattern.search(decoded_text))
+    if not hit:
+        for _, pattern in normalized_patterns:
+            if pattern.search(decoded_normalized):
+                hit = True
+                break
+    return hit, len(decoded)
+
 
 for rel_path in tracked_files:
     path = project_dir / rel_path
@@ -132,38 +161,44 @@ for rel_path in tracked_files:
                 break
 
             token = match.group(0).strip()
-            if not token:
-                continue
-            padded = token + ("=" * ((4 - len(token) % 4) % 4))
-            try:
-                decoded = base64.b64decode(padded, validate=True)
-            except (binascii.Error, ValueError):
-                continue
-            if len(decoded) < 12:
-                continue
-            decoded_bytes += len(decoded)
+            hit, consumed_bytes = _evaluate_decoded_candidate(token)
+            decoded_bytes += consumed_bytes
             if decoded_bytes > max_base64_decoded_bytes_per_file:
                 findings.append(
                     f"{rel_path}:{line_no}:base64-scan-budget-exhausted(bytes)"
                 )
                 budget_exhausted = True
                 break
-            printable = sum(32 <= b < 127 or b in (9, 10, 13) for b in decoded)
-            if printable / len(decoded) < 0.85:
-                continue
-            decoded_text = decoded.decode("utf-8", "ignore")
-            if not decoded_text:
-                continue
-            decoded_normalized = _normalize(decoded_text)
-            hit = bool(high_signal_pattern.search(decoded_text))
-            if not hit:
-                for _, pattern in normalized_patterns:
-                    if pattern.search(decoded_normalized):
-                        hit = True
-                        break
             if hit:
                 findings.append(f"{rel_path}:{line_no}:base64-decoded-secret-like-content")
                 break
+        if not budget_exhausted:
+            fragments = chunked_base64_fragment_pattern.findall(line)
+            has_chunk_separators = bool(re.search(r"[^A-Za-z0-9+/=\s]", line))
+            if has_chunk_separators and len(fragments) >= 4:
+                rebuilt = "".join(
+                    fragment.rstrip("=") if idx < len(fragments) - 1 else fragment
+                    for idx, fragment in enumerate(fragments)
+                )
+                if len(rebuilt) >= 24:
+                    candidate_count += 1
+                    if candidate_count > max_base64_candidates_per_file:
+                        findings.append(
+                            f"{rel_path}:{line_no}:base64-scan-budget-exhausted(candidates)"
+                        )
+                        budget_exhausted = True
+                    else:
+                        hit, consumed_bytes = _evaluate_decoded_candidate(rebuilt)
+                        decoded_bytes += consumed_bytes
+                        if decoded_bytes > max_base64_decoded_bytes_per_file:
+                            findings.append(
+                                f"{rel_path}:{line_no}:base64-scan-budget-exhausted(bytes)"
+                            )
+                            budget_exhausted = True
+                        elif hit:
+                            findings.append(
+                                f"{rel_path}:{line_no}:base64-decoded-secret-like-content"
+                            )
         if budget_exhausted:
             break
 
