@@ -43,6 +43,7 @@
   },
   "clearConditions": {
     "stable_minutes_required": 15,
-    "critical_to_warn_requires_below_warn_thresholds": true
+    "critical_to_warn_requires_below_warn_thresholds": true,
+    "max_sample_window_minutes": 1
   }
 }

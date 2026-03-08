@@ -29,3 +29,9 @@ Defines service-level expectations for replay key claims in non-local environmen
 Use evaluator state mode to enforce clear/recovery transitions:
 
 `python3 scripts/evaluate_replay_ops.py --profile docs/governance/REPLAY_OPS_MONITORING_PROFILE.json --metrics /tmp/replay_metrics.json --state /tmp/replay_ops_state.json`
+
+Evaluator hardening notes:
+
+- Requires all core metrics (`availability_percent`, `failure_rate_percent`, `reject_rate_percent`, `p95_latency_ms`, `p99_latency_ms`, `backend_unavailable_seconds`).
+- Treats missing/invalid metric snapshots as `critical` with explicit input-validation breaches.
+- Enforces `clearConditions.max_sample_window_minutes` (`1` by default) to prevent de-escalation bypass by inflated sample windows.
