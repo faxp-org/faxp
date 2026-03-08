@@ -40,6 +40,8 @@ Configured replay backend by `FAXP_REPLAY_BACKEND`:
   - `owner`
   - `expires_at_utc`
   - `ticket_id`
+  - `instance_id`
+- `FAXP_INSTANCE_ID` must be set and must match override `instance_id`.
 - Override max lifetime is 24h from process start validation.
 - Startup fails closed on malformed, missing-field, non-UTC, expired, or >24h override.
 
@@ -50,7 +52,8 @@ Configured replay backend by `FAXP_REPLAY_BACKEND`:
   "reason": "temporary single-node maintenance window",
   "owner": "ops@example.org",
   "expires_at_utc": "2026-03-08T18:00:00Z",
-  "ticket_id": "SEC-142"
+  "ticket_id": "SEC-142",
+  "instance_id": "node-a"
 }
 ```
 
@@ -63,6 +66,8 @@ When a non-local single-instance override is accepted, startup emits a structure
 - `details.owner`
 - `details.expires_at_utc`
 - `details.ticket_id`
+- `details.instance_id`
+- `details.runtime_hostname`
 - `details.duration_seconds`
 - `details.max_duration_seconds`
 

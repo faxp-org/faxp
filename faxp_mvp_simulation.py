@@ -19,6 +19,7 @@ import random
 import re
 import shlex
 import shutil
+import socket
 import sqlite3
 import subprocess
 import sys
@@ -144,6 +145,10 @@ REPLAY_SINGLE_INSTANCE_OVERRIDE_RAW = os.getenv(
     "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE", ""
 ).strip()
 REPLAY_SINGLE_INSTANCE_OVERRIDE_MAX_SECONDS = 86400
+INSTANCE_ID = os.getenv("FAXP_INSTANCE_ID", "").strip()
+RUNTIME_HOSTNAME = (
+    os.getenv("FAXP_RUNTIME_HOSTNAME", "").strip() or socket.gethostname().strip() or "unknown"
+)
 MAX_TRACKED_ENTITY_STATES = int(os.getenv("FAXP_MAX_TRACKED_ENTITY_STATES", "50000"))
 IMMUTABLE_AUDIT_PATH = os.getenv("FAXP_IMMUTABLE_AUDIT_PATH", "").strip()
 IMMUTABLE_AUDIT_URL = os.getenv("FAXP_IMMUTABLE_AUDIT_URL", "").strip()
@@ -1312,7 +1317,7 @@ def _parse_single_instance_override():
         raise RuntimeError(
             "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE must be a JSON object."
         )
-    required_fields = ("reason", "owner", "expires_at_utc", "ticket_id")
+    required_fields = ("reason", "owner", "expires_at_utc", "ticket_id", "instance_id")
     normalized = {}
     for field_name in required_fields:
         text_value = str(payload.get(field_name) or "").strip()
@@ -1321,6 +1326,14 @@ def _parse_single_instance_override():
                 f"FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE missing required field '{field_name}'."
             )
         normalized[field_name] = text_value
+    if not INSTANCE_ID:
+        raise RuntimeError(
+            "FAXP_INSTANCE_ID is required when FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE is used."
+        )
+    if normalized["instance_id"] != INSTANCE_ID:
+        raise RuntimeError(
+            "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE.instance_id must match FAXP_INSTANCE_ID."
+        )
     try:
         expires_dt = datetime.fromisoformat(
             normalized["expires_at_utc"].replace("Z", "+00:00")
@@ -1438,6 +1451,8 @@ def _validate_replay_runtime_policy():
                 "owner": override["owner"],
                 "expires_at_utc": override["expires_at_utc"],
                 "ticket_id": override["ticket_id"],
+                "instance_id": override["instance_id"],
+                "runtime_hostname": RUNTIME_HOSTNAME,
                 "duration_seconds": override["duration_seconds"],
                 "max_duration_seconds": REPLAY_SINGLE_INSTANCE_OVERRIDE_MAX_SECONDS,
             },

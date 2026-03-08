@@ -78,6 +78,7 @@ def _validate_override_and_audit_event() -> None:
             "owner": "ops@example.org",
             "expires_at_utc": expires_at,
             "ticket_id": "SEC-142",
+            "instance_id": "node-a",
         }
         _expect_success(
             {
@@ -85,6 +86,7 @@ def _validate_override_and_audit_event() -> None:
                 "FAXP_REPLAY_BACKEND": "sqlite_local",
                 "FAXP_REPLAY_DEPLOYMENT_MODE": "single_instance",
                 "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE": json.dumps(override),
+                "FAXP_INSTANCE_ID": "node-a",
                 "FAXP_AUDIT_LOG_PATH": str(audit_path),
             }
         )
@@ -104,6 +106,11 @@ def _validate_override_and_audit_event() -> None:
             "Audit details.expires_at_utc mismatch.",
         )
         _assert(details.get("ticket_id") == override["ticket_id"], "Audit details.ticket_id mismatch.")
+        _assert(details.get("instance_id") == override["instance_id"], "Audit details.instance_id mismatch.")
+        _assert(
+            isinstance(details.get("runtime_hostname"), str) and details["runtime_hostname"],
+            "Audit details.runtime_hostname must be a non-empty string.",
+        )
         _assert(
             isinstance(details.get("duration_seconds"), int) and details["duration_seconds"] > 0,
             "Audit details.duration_seconds must be a positive integer.",
@@ -251,10 +258,29 @@ def main() -> int:
                     "reason": "maintenance",
                     "owner": "ops@example.org",
                     "expires_at_utc": "2099-01-01T00:00:00Z",
+                    "instance_id": "node-a",
                 }
             ),
+            "FAXP_INSTANCE_ID": "node-a",
         },
         "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE missing required field 'ticket_id'.",
+    )
+    _expect_failure(
+        {
+            "FAXP_APP_MODE": "production",
+            "FAXP_REPLAY_BACKEND": "sqlite_local",
+            "FAXP_REPLAY_DEPLOYMENT_MODE": "single_instance",
+            "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE": json.dumps(
+                {
+                    "reason": "maintenance",
+                    "owner": "ops@example.org",
+                    "expires_at_utc": "2099-01-01T00:00:00Z",
+                    "ticket_id": "SEC-103",
+                }
+            ),
+            "FAXP_INSTANCE_ID": "node-a",
+        },
+        "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE missing required field 'instance_id'.",
     )
     _expect_failure(
         {
@@ -269,8 +295,10 @@ def main() -> int:
                         datetime.now(timezone.utc) - timedelta(minutes=2)
                     ).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
                     "ticket_id": "SEC-100",
+                    "instance_id": "node-a",
                 }
             ),
+            "FAXP_INSTANCE_ID": "node-a",
         },
         "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE is expired.",
     )
@@ -287,8 +315,10 @@ def main() -> int:
                         datetime.now(timezone.utc) + timedelta(hours=25)
                     ).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
                     "ticket_id": "SEC-101",
+                    "instance_id": "node-a",
                 }
             ),
+            "FAXP_INSTANCE_ID": "node-a",
         },
         "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE exceeds max duration (24h).",
     )
@@ -303,10 +333,47 @@ def main() -> int:
                     "owner": "ops@example.org",
                     "expires_at_utc": "2099-01-01T00:00:00+05:00",
                     "ticket_id": "SEC-102",
+                    "instance_id": "node-a",
+                }
+            ),
+            "FAXP_INSTANCE_ID": "node-a",
+        },
+        "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE.expires_at_utc must be UTC (Z or +00:00).",
+    )
+    _expect_failure(
+        {
+            "FAXP_APP_MODE": "production",
+            "FAXP_REPLAY_BACKEND": "sqlite_local",
+            "FAXP_REPLAY_DEPLOYMENT_MODE": "single_instance",
+            "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE": json.dumps(
+                {
+                    "reason": "maintenance",
+                    "owner": "ops@example.org",
+                    "expires_at_utc": "2099-01-01T00:00:00Z",
+                    "ticket_id": "SEC-104",
+                    "instance_id": "node-a",
                 }
             ),
         },
-        "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE.expires_at_utc must be UTC (Z or +00:00).",
+        "FAXP_INSTANCE_ID is required when FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE is used.",
+    )
+    _expect_failure(
+        {
+            "FAXP_APP_MODE": "production",
+            "FAXP_REPLAY_BACKEND": "sqlite_local",
+            "FAXP_REPLAY_DEPLOYMENT_MODE": "single_instance",
+            "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE": json.dumps(
+                {
+                    "reason": "maintenance",
+                    "owner": "ops@example.org",
+                    "expires_at_utc": "2099-01-01T00:00:00Z",
+                    "ticket_id": "SEC-105",
+                    "instance_id": "node-a",
+                }
+            ),
+            "FAXP_INSTANCE_ID": "node-b",
+        },
+        "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE.instance_id must match FAXP_INSTANCE_ID.",
     )
     _expect_failure(
         {
