@@ -22,3 +22,9 @@ Detect replay rejection anomalies that may indicate active abuse, key drift, or 
 1. Page on-call owner listed in `docs/governance/REPLAY_ONCALL_OWNERSHIP.md`.
 2. Open incident using `docs/governance/REPLAY_INCIDENT_RUNBOOK.md`.
 3. Record override decisions in `docs/governance/REPLAY_OVERRIDE_AUDIT_REVIEW_LOG.md`.
+
+## Executable Controls
+
+- Monitoring profile: `docs/governance/REPLAY_OPS_MONITORING_PROFILE.json`
+- Evaluator implementation: `scripts/evaluate_replay_ops.py`
+- CI-enforced checks: `tests/run_replay_ops_monitoring.py`
