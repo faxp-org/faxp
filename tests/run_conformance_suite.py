@@ -64,6 +64,10 @@ def main() -> int:
         "conformance suite must include replay_runtime_policy in default checks",
     )
     _assert(
+        "replay_operations_gates" in listed_checks.stdout.splitlines(),
+        "conformance suite must include replay_operations_gates in default checks",
+    )
+    _assert(
         "registry_changelog_artifacts" in listed_checks.stdout.splitlines(),
         "conformance suite must include registry_changelog_artifacts in default checks",
     )

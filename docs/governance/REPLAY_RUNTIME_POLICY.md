@@ -76,3 +76,9 @@ This event is written to the configured audit sink and is intended to make tempo
 2. claim both keys with `NX + EX` in one script execution
 
 This avoids race conditions where split operations could allow cross-instance replay gaps.
+
+## Operational Gates
+
+Operational readiness items (SLOs, alerting, HA testing, runbook signoff, and on-call ownership) are tracked in:
+
+- `docs/governance/REPLAY_OPERATIONS_GATES.md`
