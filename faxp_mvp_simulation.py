@@ -130,6 +130,20 @@ REPLAY_DB_PATH = os.getenv(
 ).strip()
 ALLOW_REPLAY_DB_BOOTSTRAP = os.getenv("FAXP_ALLOW_REPLAY_DB_BOOTSTRAP", "0") == "1"
 REPLAY_RETENTION_SECONDS = int(os.getenv("FAXP_REPLAY_RETENTION_SECONDS", "86400"))
+REPLAY_BACKEND_RAW = os.getenv("FAXP_REPLAY_BACKEND", "").strip().lower()
+REPLAY_BACKEND = REPLAY_BACKEND_RAW or ("redis_shared" if NON_LOCAL_MODE else "sqlite_local")
+REPLAY_DEPLOYMENT_MODE = os.getenv(
+    "FAXP_REPLAY_DEPLOYMENT_MODE",
+    "multi_instance" if NON_LOCAL_MODE else "local_dev",
+).strip().lower()
+REPLAY_REDIS_URL = os.getenv("FAXP_REPLAY_REDIS_URL", "").strip()
+REPLAY_REDIS_KEY_PREFIX = (
+    os.getenv("FAXP_REPLAY_REDIS_KEY_PREFIX", "faxp:replay").strip() or "faxp:replay"
+)
+REPLAY_SINGLE_INSTANCE_OVERRIDE_RAW = os.getenv(
+    "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE", ""
+).strip()
+REPLAY_SINGLE_INSTANCE_OVERRIDE_MAX_SECONDS = 86400
 MAX_TRACKED_ENTITY_STATES = int(os.getenv("FAXP_MAX_TRACKED_ENTITY_STATES", "50000"))
 IMMUTABLE_AUDIT_PATH = os.getenv("FAXP_IMMUTABLE_AUDIT_PATH", "").strip()
 IMMUTABLE_AUDIT_URL = os.getenv("FAXP_IMMUTABLE_AUDIT_URL", "").strip()
@@ -219,6 +233,15 @@ SEEN_MESSAGE_IDS = set()
 SEEN_NONCES = set()
 LAST_AUDIT_HASH = ""
 REPLAY_DB_LOCK = threading.Lock()
+REPLAY_REDIS_CLIENT = None
+REPLAY_CLAIM_LUA_SCRIPT = """
+if redis.call("EXISTS", KEYS[1]) == 1 or redis.call("EXISTS", KEYS[2]) == 1 then
+  return 0
+end
+redis.call("SET", KEYS[1], ARGV[2], "NX", "EX", ARGV[1])
+redis.call("SET", KEYS[2], ARGV[2], "NX", "EX", ARGV[1])
+return 1
+"""
 STATE_LOCK = threading.Lock()
 FLOW_STATE = {"load": "START", "truck": "START"}
 CURRENT_RUN_ID = ""
@@ -1252,6 +1275,249 @@ def _cleanup_replay_db(conn, now_epoch):
     cutoff = now_epoch - REPLAY_RETENTION_SECONDS
     if cutoff > 0:
         conn.execute("DELETE FROM replay_cache WHERE seen_at < ?", (cutoff,))
+
+
+def _append_startup_audit_event(event_type, details):
+    event = {
+        "timestamp": now_utc(),
+        "component": "startup",
+        "event_type": str(event_type or "").strip(),
+        "app_mode": APP_MODE,
+        "replay_backend": REPLAY_BACKEND,
+        "replay_deployment_mode": REPLAY_DEPLOYMENT_MODE,
+        "details": details if isinstance(details, dict) else {"value": str(details)},
+    }
+    with open(AUDIT_LOG_PATH, "a", encoding="utf-8") as handle:
+        handle.write(canonical_json(event) + "\n")
+    try:
+        _ship_immutable_audit_event(event)
+    except Exception:
+        if NON_LOCAL_MODE and REQUIRE_IMMUTABLE_AUDIT:
+            raise
+
+
+def _parse_single_instance_override():
+    raw_value = REPLAY_SINGLE_INSTANCE_OVERRIDE_RAW.strip()
+    if not raw_value:
+        raise RuntimeError(
+            "Single-instance non-local replay exception requires FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE JSON."
+        )
+    try:
+        payload = json.loads(raw_value)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(
+            "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE must be valid JSON."
+        ) from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError(
+            "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE must be a JSON object."
+        )
+    required_fields = ("reason", "owner", "expires_at_utc", "ticket_id")
+    normalized = {}
+    for field_name in required_fields:
+        text_value = str(payload.get(field_name) or "").strip()
+        if not text_value:
+            raise RuntimeError(
+                f"FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE missing required field '{field_name}'."
+            )
+        normalized[field_name] = text_value
+    try:
+        expires_dt = datetime.fromisoformat(
+            normalized["expires_at_utc"].replace("Z", "+00:00")
+        )
+    except ValueError as exc:
+        raise RuntimeError(
+            "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE.expires_at_utc must be ISO-8601 UTC."
+        ) from exc
+    if expires_dt.tzinfo is None:
+        raise RuntimeError(
+            "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE.expires_at_utc must include timezone information."
+        )
+    expires_utc = expires_dt.astimezone(timezone.utc)
+    now_dt = datetime.now(timezone.utc)
+    if expires_utc <= now_dt:
+        raise RuntimeError(
+            "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE is expired."
+        )
+    max_expiry = now_dt + timedelta(seconds=REPLAY_SINGLE_INSTANCE_OVERRIDE_MAX_SECONDS)
+    if expires_utc > max_expiry:
+        raise RuntimeError(
+            "FAXP_REPLAY_SINGLE_INSTANCE_OVERRIDE exceeds max duration (24h)."
+        )
+    normalized["expires_at_utc"] = (
+        expires_utc.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    )
+    return normalized
+
+
+def _get_redis_replay_client():
+    global REPLAY_REDIS_CLIENT
+    with REPLAY_DB_LOCK:
+        if REPLAY_REDIS_CLIENT is not None:
+            return REPLAY_REDIS_CLIENT
+        try:
+            import redis  # type: ignore
+        except Exception as exc:
+            raise RuntimeError(
+                "Redis replay backend requires the 'redis' package."
+            ) from exc
+        try:
+            client = redis.Redis.from_url(
+                REPLAY_REDIS_URL,
+                decode_responses=True,
+            )
+            client.ping()
+        except Exception as exc:
+            raise RuntimeError(
+                "Unable to connect to FAXP_REPLAY_REDIS_URL for replay backend."
+            ) from exc
+        REPLAY_REDIS_CLIENT = client
+        return REPLAY_REDIS_CLIENT
+
+
+def _claim_replay_pair_redis(sender_scope, message_id, nonce):
+    client = _get_redis_replay_client()
+    ttl_seconds = max(1, int(REPLAY_RETENTION_SECONDS))
+    now_epoch = str(int(datetime.now(timezone.utc).timestamp()))
+    key_prefix = f"{REPLAY_REDIS_KEY_PREFIX}:{APP_MODE}:{sender_scope}"
+    message_key = f"{key_prefix}:message:{message_id}"
+    nonce_key = f"{key_prefix}:nonce:{nonce}"
+    try:
+        claimed = client.eval(
+            REPLAY_CLAIM_LUA_SCRIPT,
+            2,
+            message_key,
+            nonce_key,
+            str(ttl_seconds),
+            now_epoch,
+        )
+    except Exception as exc:
+        raise RuntimeError("Redis replay claim failed.") from exc
+    return int(claimed) == 1
+
+
+def _validate_replay_runtime_policy():
+    allowed_backends = {"sqlite_local", "redis_shared"}
+    if REPLAY_BACKEND not in allowed_backends:
+        raise RuntimeError(
+            f"Unsupported FAXP_REPLAY_BACKEND '{REPLAY_BACKEND}'."
+        )
+    allowed_deployments = {"local_dev", "single_instance", "multi_instance", "auto_scaling"}
+    if REPLAY_DEPLOYMENT_MODE not in allowed_deployments:
+        raise RuntimeError(
+            f"Unsupported FAXP_REPLAY_DEPLOYMENT_MODE '{REPLAY_DEPLOYMENT_MODE}'."
+        )
+    if NON_LOCAL_MODE and REPLAY_DEPLOYMENT_MODE == "local_dev":
+        raise RuntimeError(
+            "FAXP_REPLAY_DEPLOYMENT_MODE=local_dev is invalid in non-local mode."
+        )
+    if NON_LOCAL_MODE and REPLAY_DEPLOYMENT_MODE in {"multi_instance", "auto_scaling"}:
+        if REPLAY_BACKEND != "redis_shared":
+            raise RuntimeError(
+                "Replay backend must be redis_shared for multi-instance/auto-scaling non-local deployments."
+            )
+    if REPLAY_BACKEND == "redis_shared" and not REPLAY_REDIS_URL:
+        raise RuntimeError(
+            "FAXP_REPLAY_REDIS_URL is required when FAXP_REPLAY_BACKEND=redis_shared."
+        )
+    if NON_LOCAL_MODE and REPLAY_BACKEND == "sqlite_local":
+        if REPLAY_DEPLOYMENT_MODE != "single_instance":
+            raise RuntimeError(
+                "sqlite_local replay backend is only allowed for explicit single-instance non-local deployments."
+            )
+        override = _parse_single_instance_override()
+        _append_startup_audit_event(
+            "replay_single_instance_override_active",
+            {
+                "reason": override["reason"],
+                "owner": override["owner"],
+                "expires_at_utc": override["expires_at_utc"],
+                "ticket_id": override["ticket_id"],
+                "max_duration_seconds": REPLAY_SINGLE_INSTANCE_OVERRIDE_MAX_SECONDS,
+            },
+        )
+
+
+def _init_replay_backend():
+    if REPLAY_BACKEND == "sqlite_local":
+        _validate_replay_db_security()
+        _init_replay_db()
+        return
+    if REPLAY_BACKEND == "redis_shared":
+        _get_redis_replay_client()
+        return
+    raise RuntimeError(f"Unsupported replay backend '{REPLAY_BACKEND}'.")
+
+
+def _track_replay_pair(envelope):
+    sender_scope = str(envelope.get("FromAgentID") or envelope.get("From") or "").strip().lower()
+    if not sender_scope:
+        sender_scope = "unknown"
+    message_id = str(envelope.get("MessageID") or "").strip()
+    nonce = str(envelope.get("Nonce") or "").strip()
+    now_epoch = int(datetime.now(timezone.utc).timestamp())
+    message_cache_key = f"{sender_scope}:{message_id}"
+    nonce_cache_key = f"{sender_scope}:{nonce}"
+
+    if message_cache_key in SEEN_MESSAGE_IDS:
+        raise ValueError(f"Replay detected for MessageID: {message_id}")
+    if nonce_cache_key in SEEN_NONCES:
+        raise ValueError(f"Replay detected for Nonce: {nonce}")
+
+    if REPLAY_BACKEND == "redis_shared":
+        if not _claim_replay_pair_redis(sender_scope, message_id, nonce):
+            raise ValueError(
+                f"Replay detected for sender '{sender_scope}' (MessageID/Nonce already claimed)."
+            )
+    elif REPLAY_BACKEND == "sqlite_local":
+        attempts = 0
+        last_error = None
+        while attempts < 2:
+            attempts += 1
+            with REPLAY_DB_LOCK:
+                try:
+                    with sqlite3.connect(_resolved_replay_db_path(), timeout=5) as conn:
+                        try:
+                            conn.execute(
+                                "INSERT INTO replay_cache(kind, value, seen_at) VALUES (?, ?, ?)",
+                                ("MessageID", message_cache_key, now_epoch),
+                            )
+                            conn.execute(
+                                "INSERT INTO replay_cache(kind, value, seen_at) VALUES (?, ?, ?)",
+                                ("Nonce", nonce_cache_key, now_epoch),
+                            )
+                        except sqlite3.IntegrityError as exc:
+                            conn.rollback()
+                            raise ValueError(
+                                f"Replay detected for sender '{sender_scope}' (MessageID/Nonce already seen)."
+                            ) from exc
+                        _cleanup_replay_db(conn, now_epoch)
+                        conn.commit()
+                    last_error = None
+                    break
+                except sqlite3.OperationalError as exc:
+                    last_error = exc
+                    if "no such table" in str(exc).lower():
+                        if NON_LOCAL_MODE:
+                            raise RuntimeError(
+                                "Replay cache table is unavailable in non-local mode."
+                            ) from exc
+                        _init_replay_db()
+                        continue
+                    if "database is locked" in str(exc).lower() and attempts < 2:
+                        continue
+                    raise
+        if last_error is not None:
+            raise last_error
+    else:
+        raise RuntimeError(f"Unsupported replay backend '{REPLAY_BACKEND}'.")
+
+    SEEN_MESSAGE_IDS.add(message_cache_key)
+    SEEN_NONCES.add(nonce_cache_key)
+    if len(SEEN_MESSAGE_IDS) > 200000:
+        SEEN_MESSAGE_IDS.pop()
+    if len(SEEN_NONCES) > 200000:
+        SEEN_NONCES.pop()
 
 
 def _infer_role(agent_name):
@@ -2644,8 +2910,8 @@ def enforce_security_baseline():
         SIGNATURE_SCHEME == "ED25519" or VERIFIER_SIGNATURE_SCHEME == "ED25519"
     ) and not shutil.which("openssl"):
         raise RuntimeError("ED25519 signature scheme requires openssl binary.")
-    _validate_replay_db_security()
-    _init_replay_db()
+    _validate_replay_runtime_policy()
+    _init_replay_backend()
     _enforce_external_secret_source()
     _enforce_dual_control()
     if MESSAGE_TTL_SECONDS <= 0:
@@ -4418,50 +4684,6 @@ def validate_message_body(message_type, body):
         return
 
 
-def _track_unique_value(seen_set, value, label):
-    if value in seen_set:
-        raise ValueError(f"Replay detected for {label}: {value}")
-    now_epoch = int(datetime.now(timezone.utc).timestamp())
-    attempts = 0
-    last_error = None
-    while attempts < 2:
-        attempts += 1
-        with REPLAY_DB_LOCK:
-            try:
-                with sqlite3.connect(_resolved_replay_db_path(), timeout=5) as conn:
-                    try:
-                        conn.execute(
-                            "INSERT INTO replay_cache(kind, value, seen_at) VALUES (?, ?, ?)",
-                            (label, value, now_epoch),
-                        )
-                    except sqlite3.IntegrityError as exc:
-                        raise ValueError(f"Replay detected for {label}: {value}") from exc
-                    _cleanup_replay_db(conn, now_epoch)
-                    conn.commit()
-                last_error = None
-                break
-            except sqlite3.OperationalError as exc:
-                last_error = exc
-                # Recover from cold-start race where replay table/index is not initialized yet.
-                if "no such table" in str(exc).lower():
-                    if NON_LOCAL_MODE:
-                        raise RuntimeError(
-                            "Replay cache table is unavailable in non-local mode."
-                        ) from exc
-                    _init_replay_db()
-                    continue
-                # Retry once for transient sqlite lock contention.
-                if "database is locked" in str(exc).lower() and attempts < 2:
-                    continue
-                raise
-    if last_error is not None:
-        raise last_error
-    seen_set.add(value)
-    # Keep in-memory cache bounded while sqlite handles durability.
-    if len(seen_set) > 200000:
-        seen_set.pop()
-
-
 def _parse_utc_timestamp(value):
     parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     if parsed.tzinfo is None:
@@ -4560,8 +4782,7 @@ def validate_envelope(envelope, track_replay=True, track_state=True):
         else:
             raise ValueError("Unsupported Envelope.SignatureAlgorithm.")
     if track_replay:
-        _track_unique_value(SEEN_MESSAGE_IDS, envelope["MessageID"], "MessageID")
-        _track_unique_value(SEEN_NONCES, envelope["Nonce"], "Nonce")
+        _track_replay_pair(envelope)
     if track_state:
         with STATE_LOCK:
             _enforce_state_transition(envelope)
