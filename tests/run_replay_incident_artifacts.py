@@ -10,6 +10,15 @@ import os
 
 
 DEFAULT_ARTIFACT_PATH = "/tmp/faxp_replay_incident_artifact.json"
+PLACEHOLDER_TOKENS = {
+    "tbd",
+    "todo",
+    "sample",
+    "template",
+    "placeholder",
+    "n/a",
+    "na",
+}
 
 
 def _assert(condition: bool, message: str) -> None:
@@ -22,6 +31,13 @@ def _parse_iso8601(value: str, context: str) -> None:
         datetime.fromisoformat(str(value).replace("Z", "+00:00"))
     except ValueError as exc:
         raise AssertionError(f"{context} must be ISO-8601.") from exc
+
+
+def _assert_not_placeholder(value: object, context: str) -> None:
+    normalized = str(value or "").strip()
+    lowered = normalized.lower()
+    _assert(normalized, f"{context} must be non-empty.")
+    _assert(lowered not in PLACEHOLDER_TOKENS, f"{context} contains placeholder content.")
 
 
 def main() -> int:
@@ -54,11 +70,8 @@ def main() -> int:
     _assert(isinstance(timeline, list) and timeline, "timeline must be a non-empty array.")
     for index, entry in enumerate(timeline):
         _assert(isinstance(entry, dict), f"timeline entry {index} must be object.")
-        _assert(str(entry.get("event") or "").strip(), f"timeline entry {index} missing event.")
-        _assert(
-            str(entry.get("result") or "").strip(),
-            f"timeline entry {index} missing result.",
-        )
+        _assert_not_placeholder(entry.get("event"), f"timeline entry {index} event")
+        _assert_not_placeholder(entry.get("result"), f"timeline entry {index} result")
         _parse_iso8601(str(entry.get("time") or ""), f"timeline[{index}].time")
 
     decisions = payload.get("decisions") or []
@@ -67,6 +80,8 @@ def main() -> int:
         all(str(item).strip() for item in decisions),
         "decisions must contain non-empty entries.",
     )
+    for index, decision in enumerate(decisions):
+        _assert_not_placeholder(decision, f"decisions entry {index}")
 
     corrective_actions = payload.get("correctiveActions") or []
     _assert(
@@ -77,9 +92,11 @@ def main() -> int:
         all(str(item).strip() for item in corrective_actions),
         "correctiveActions must contain non-empty entries.",
     )
+    for index, action in enumerate(corrective_actions):
+        _assert_not_placeholder(action, f"correctiveActions entry {index}")
 
     closure_notes = str(payload.get("closureNotes") or "").strip()
-    _assert(closure_notes, "closureNotes must be non-empty.")
+    _assert_not_placeholder(closure_notes, "closureNotes")
 
     print("Replay incident artifact checks passed.")
     return 0

@@ -66,6 +66,27 @@ def _evaluate_with_state(metrics_sequence: list[dict]) -> list[dict]:
     return outputs
 
 
+def _evaluate_single_with_state(metrics: dict, state_path: Path) -> dict:
+    metrics_path = state_path.parent / "metrics.json"
+    metrics_path.write_text(json.dumps(metrics), encoding="utf-8")
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(EVALUATOR),
+            "--profile",
+            str(PROFILE),
+            "--metrics",
+            str(metrics_path),
+            "--state",
+            str(state_path),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return json.loads(completed.stdout.strip())
+
+
 def main() -> int:
     _assert(EVALUATOR.exists(), "Missing replay ops evaluator script.")
     _assert(PROFILE.exists(), "Missing replay ops monitoring profile.")
@@ -171,6 +192,80 @@ def main() -> int:
         settled.get("status") == "ok" and settled.get("clearPending") is False,
         f"Expected clear after stable window, got {settled}",
     )
+
+    bypass_probe = _evaluate_with_state(
+        [
+            {
+                "availability_percent": 99.0,
+                "failure_rate_percent": 3.0,
+                "reject_rate_percent": 6.0,
+                "p95_latency_ms": 100,
+                "p99_latency_ms": 600,
+                "backend_unavailable_seconds": 180,
+                "sample_window_minutes": 1,
+            },
+            {
+                "availability_percent": 100.0,
+                "failure_rate_percent": 0.0,
+                "reject_rate_percent": 0.0,
+                "p95_latency_ms": 20,
+                "p99_latency_ms": 40,
+                "backend_unavailable_seconds": 0,
+                "sample_window_minutes": 999,
+            },
+        ]
+    )[-1]
+    _assert(
+        bypass_probe.get("status") == "critical" and bypass_probe.get("clearPending") is True,
+        f"Expected hold for invalid sample_window_minutes, got {bypass_probe}",
+    )
+    bypass_alerts = {(item.get("type"), item.get("severity")) for item in bypass_probe.get("alerts", [])}
+    _assert(
+        ("invalid_sample_window", "critical") in bypass_alerts,
+        f"Expected invalid sample window alert, got {bypass_probe}",
+    )
+
+    partial_metrics = _evaluate({"sample_window_minutes": 1})
+    _assert(
+        partial_metrics.get("status") == "critical",
+        f"Expected critical status for partial metrics payload, got {partial_metrics}",
+    )
+    _assert(
+        "metrics_missing_breach" in partial_metrics.get("sloBreaches", []),
+        f"Expected metrics_missing_breach for partial payload, got {partial_metrics}",
+    )
+    validation = partial_metrics.get("inputValidation") or {}
+    _assert(
+        bool(validation.get("missingFields")),
+        f"Expected missingFields in input validation output, got {partial_metrics}",
+    )
+
+    with tempfile.TemporaryDirectory(prefix="faxp-replay-ops-corrupt-state-") as temp_dir:
+        state_path = Path(temp_dir) / "state.json"
+        state_path.write_text("{not-json-state", encoding="utf-8")
+        state_result = _evaluate_single_with_state(
+            {
+                "availability_percent": 100.0,
+                "failure_rate_percent": 0.0,
+                "reject_rate_percent": 0.0,
+                "p95_latency_ms": 20,
+                "p99_latency_ms": 40,
+                "backend_unavailable_seconds": 0,
+                "sample_window_minutes": 1,
+            },
+            state_path,
+        )
+        _assert(
+            state_result.get("status") == "critical" and state_result.get("clearPending") is True,
+            f"Expected fail-closed state handling for corrupt state file, got {state_result}",
+        )
+        state_alerts = {
+            (item.get("type"), item.get("severity")) for item in state_result.get("alerts", [])
+        }
+        _assert(
+            ("state_load_error", "critical") in state_alerts,
+            f"Expected state_load_error alert for corrupt state file, got {state_result}",
+        )
 
     print("Replay ops monitoring checks passed.")
     return 0

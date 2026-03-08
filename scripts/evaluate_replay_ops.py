@@ -6,10 +6,20 @@ from __future__ import annotations
 from pathlib import Path
 import argparse
 import json
+import math
+import sys
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PROFILE_PATH = PROJECT_ROOT / "docs" / "governance" / "REPLAY_OPS_MONITORING_PROFILE.json"
+REQUIRED_METRIC_FIELDS = (
+    "availability_percent",
+    "failure_rate_percent",
+    "reject_rate_percent",
+    "p95_latency_ms",
+    "p99_latency_ms",
+    "backend_unavailable_seconds",
+)
 
 
 def _assert(condition: bool, message: str) -> None:
@@ -25,8 +35,15 @@ def _load_json(path: Path) -> dict:
 def _load_state(path: Path) -> dict:
     if not path.exists():
         return {}
-    with path.open("r", encoding="utf-8") as handle:
-        payload = json.load(handle)
+    try:
+        with path.open("r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except json.JSONDecodeError:
+        return {
+            "effective_status": "critical",
+            "stable_minutes_below_warn": 0.0,
+            "_state_load_error": "state file is not valid JSON",
+        }
     if not isinstance(payload, dict):
         return {}
     return payload
@@ -37,6 +54,19 @@ def _to_float(value: object, default: float = 0.0) -> float:
         return float(value)
     except (TypeError, ValueError):
         return default
+
+
+def _extract_metric(metrics: dict, key: str) -> tuple[float | None, str | None]:
+    if key not in metrics:
+        return None, "missing"
+    value = metrics.get(key)
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError):
+        return None, "invalid"
+    if not math.isfinite(parsed):
+        return None, "invalid"
+    return parsed, None
 
 
 def _evaluate(profile: dict, metrics: dict) -> dict:
@@ -51,12 +81,34 @@ def _evaluate(profile: dict, metrics: dict) -> dict:
     p95_target = _to_float((slo.get("latency_ms") or {}).get("p95_max"), 75)
     p99_target = _to_float((slo.get("latency_ms") or {}).get("p99_max"), 150)
 
-    availability = _to_float(metrics.get("availability_percent"), 100.0)
-    error_rate = _to_float(metrics.get("failure_rate_percent"), 0.0)
-    reject_rate = _to_float(metrics.get("reject_rate_percent"), 0.0)
-    p95_latency = _to_float(metrics.get("p95_latency_ms"), 0.0)
-    p99_latency = _to_float(metrics.get("p99_latency_ms"), 0.0)
-    backend_unavailable_seconds = _to_float(metrics.get("backend_unavailable_seconds"), 0.0)
+    parsed_metrics: dict[str, float | None] = {}
+    missing_fields: list[str] = []
+    invalid_fields: list[str] = []
+    for key in REQUIRED_METRIC_FIELDS:
+        parsed, error = _extract_metric(metrics, key)
+        parsed_metrics[key] = parsed
+        if error == "missing":
+            missing_fields.append(key)
+        elif error == "invalid":
+            invalid_fields.append(key)
+
+    if missing_fields:
+        alerts.append(
+            {"type": "missing_metrics", "severity": "critical", "value": sorted(missing_fields)}
+        )
+        breaches.append("metrics_missing_breach")
+    if invalid_fields:
+        alerts.append(
+            {"type": "invalid_metrics", "severity": "critical", "value": sorted(invalid_fields)}
+        )
+        breaches.append("metrics_invalid_breach")
+
+    availability = float(parsed_metrics.get("availability_percent") or 0.0)
+    error_rate = float(parsed_metrics.get("failure_rate_percent") or 0.0)
+    reject_rate = float(parsed_metrics.get("reject_rate_percent") or 0.0)
+    p95_latency = float(parsed_metrics.get("p95_latency_ms") or 0.0)
+    p99_latency = float(parsed_metrics.get("p99_latency_ms") or 0.0)
+    backend_unavailable_seconds = float(parsed_metrics.get("backend_unavailable_seconds") or 0.0)
 
     if availability < availability_target:
         breaches.append("availability_target_breach")
@@ -113,6 +165,10 @@ def _evaluate(profile: dict, metrics: dict) -> dict:
             "p99_latency_ms": p99_latency,
             "backend_unavailable_seconds": backend_unavailable_seconds,
         },
+        "inputValidation": {
+            "missingFields": sorted(missing_fields),
+            "invalidFields": sorted(invalid_fields),
+        },
     }
 
 
@@ -127,11 +183,15 @@ def _apply_clear_conditions(
     require_below_warn_for_critical = bool(
         clear_cfg.get("critical_to_warn_requires_below_warn_thresholds", False)
     )
-    sample_window = max(0.0, _to_float(metrics.get("sample_window_minutes"), 1.0))
+    max_sample_window = max(1.0, _to_float(clear_cfg.get("max_sample_window_minutes"), 1.0))
+    raw_sample_window = metrics.get("sample_window_minutes", 1.0)
+    sample_window = _to_float(raw_sample_window, default=-1.0)
+    sample_window_invalid = sample_window <= 0.0 or sample_window > max_sample_window
 
     raw_status = str(result.get("status") or "ok")
     previous_effective = str(previous_state.get("effective_status") or "ok")
     stable_minutes = max(0.0, _to_float(previous_state.get("stable_minutes_below_warn"), 0.0))
+    state_load_error = str(previous_state.get("_state_load_error") or "").strip()
 
     below_warn_thresholds = (
         raw_status == "ok"
@@ -142,7 +202,14 @@ def _apply_clear_conditions(
     effective_status = raw_status
     clear_pending = False
 
-    if raw_status == "critical":
+    if state_load_error:
+        effective_status = "critical"
+        clear_pending = True
+    elif sample_window_invalid:
+        effective_status = previous_effective if previous_effective in {"critical", "warn"} else "critical"
+        clear_pending = True
+        stable_minutes = 0.0
+    elif raw_status == "critical":
         effective_status = "critical"
         stable_minutes = 0.0
     elif previous_effective == "critical":
@@ -181,6 +248,24 @@ def _apply_clear_conditions(
     evaluated["rawStatus"] = raw_status
     evaluated["status"] = effective_status
     evaluated["clearPending"] = clear_pending
+    if state_load_error:
+        evaluated.setdefault("alerts", []).append(
+            {
+                "type": "state_load_error",
+                "severity": "critical",
+                "value": state_load_error,
+            }
+        )
+        evaluated.setdefault("sloBreaches", []).append("state_load_error_breach")
+    if sample_window_invalid:
+        evaluated.setdefault("alerts", []).append(
+            {
+                "type": "invalid_sample_window",
+                "severity": "critical",
+                "value": raw_sample_window,
+            }
+        )
+        evaluated.setdefault("sloBreaches", []).append("invalid_sample_window_breach")
 
     state = {
         "effective_status": effective_status,
@@ -211,20 +296,24 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
-    args = parse_args()
-    profile = _load_json(Path(args.profile).expanduser().resolve())
-    metrics = _load_json(Path(args.metrics).expanduser().resolve())
-    _assert(isinstance(profile, dict), "Profile must be a JSON object.")
-    _assert(isinstance(metrics, dict), "Metrics must be a JSON object.")
-    result = _evaluate(profile, metrics)
-    if args.state.strip():
-        state_path = Path(args.state).expanduser().resolve()
-        prior_state = _load_state(state_path)
-        result, state = _apply_clear_conditions(profile, metrics, result, prior_state)
-        state_path.parent.mkdir(parents=True, exist_ok=True)
-        state_path.write_text(json.dumps(state, sort_keys=True) + "\n", encoding="utf-8")
-    print(json.dumps(result, sort_keys=True))
-    return 0
+    try:
+        args = parse_args()
+        profile = _load_json(Path(args.profile).expanduser().resolve())
+        metrics = _load_json(Path(args.metrics).expanduser().resolve())
+        _assert(isinstance(profile, dict), "Profile must be a JSON object.")
+        _assert(isinstance(metrics, dict), "Metrics must be a JSON object.")
+        result = _evaluate(profile, metrics)
+        if args.state.strip():
+            state_path = Path(args.state).expanduser().resolve()
+            prior_state = _load_state(state_path)
+            result, state = _apply_clear_conditions(profile, metrics, result, prior_state)
+            state_path.parent.mkdir(parents=True, exist_ok=True)
+            state_path.write_text(json.dumps(state, sort_keys=True) + "\n", encoding="utf-8")
+        print(json.dumps(result, sort_keys=True))
+        return 0
+    except (AssertionError, RuntimeError, ValueError, json.JSONDecodeError) as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":
