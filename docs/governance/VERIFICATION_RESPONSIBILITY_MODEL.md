@@ -18,6 +18,7 @@ Define clear ownership boundaries for verification in FAXP so protocol governanc
 - Manages vendor credentials, endpoint security, key rotation, and incident response.
 - Emits verification results that satisfy FAXP trust and schema requirements.
 - Owns SLA and operational continuity commitments to broker/carrier/shipper users.
+- Owns replay backend operations and on-call response for non-local deployments.
 
 ### 3) Verifier Vendor (External Service)
 - Performs compliance or identity checks under its own operating model.
@@ -54,3 +55,9 @@ Legacy alias:
 - Admission checks evaluate provider/source/assurance alignment and signature validity.
 - Certification approves conformance posture, not vendor business endorsement.
 - Multiple verifier vendors can be admitted if they satisfy the same objective criteria.
+
+## Replay Operations Ownership
+
+Replay runtime operational gates are tracked in:
+
+- `docs/governance/REPLAY_OPERATIONS_GATES.md`

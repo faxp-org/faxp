@@ -11,6 +11,7 @@ Use this checklist as the final go/no-go gate before a tagged release.
 - [ ] Protocol schemas and simulation artifacts are present and version-aligned.
 - [ ] Security scripts and baseline policies are present.
 - [ ] Governance policies, templates, and runbooks are present.
+- [ ] Replay operational gates (SLO, alerts, HA tests, runbook, on-call ownership) are documented and assigned.
 - [ ] Vendor-direct certification runbook is present and references attestation + decision-link checks.
 - [ ] Conformance and certification artifacts are present.
 - [ ] CI and conformance suite include all mandatory release-readiness checks.
@@ -34,6 +35,13 @@ Use this checklist as the final go/no-go gate before a tagged release.
     "docs/rfc/RFC_TEMPLATE.md",
     "docs/governance/POLICY_PROFILES.md",
     "docs/governance/REPLAY_RUNTIME_POLICY.md",
+    "docs/governance/REPLAY_OPERATIONS_GATES.md",
+    "docs/governance/REPLAY_SLO_ALERTING.md",
+    "docs/governance/REPLAY_REJECT_RATE_ALERTING.md",
+    "docs/governance/REDIS_HA_FAILOVER_TEST_PLAN.md",
+    "docs/governance/REPLAY_INCIDENT_RUNBOOK.md",
+    "docs/governance/REPLAY_ONCALL_OWNERSHIP.md",
+    "docs/governance/REPLAY_OVERRIDE_AUDIT_REVIEW_LOG.md",
     "docs/governance/REGISTRY_ADMISSION_POLICY.md",
     "docs/governance/REGISTRY_CHANGELOG_POLICY.md",
     "docs/governance/TRUSTED_VERIFIER_ADMISSION_REQUIREMENTS.md",
@@ -84,6 +92,7 @@ Use this checklist as the final go/no-go gate before a tagged release.
     "tests/run_verification_policy_profile.py",
     "tests/run_policy_decisions.py",
     "tests/run_policy_profile_sync.py",
+    "tests/run_replay_operations_gates.py",
     "tests/run_registry_admission_policy.py",
     "tests/run_registry_changelog_artifacts.py",
     "tests/run_trusted_verifier_registry.py",
@@ -137,6 +146,7 @@ Use this checklist as the final go/no-go gate before a tagged release.
     "open_source_guardrails",
     "policy_profile_sync",
     "replay_runtime_policy",
+    "replay_operations_gates",
     "verification_policy_profile",
     "policy_decisions",
     "registry_admission_policy",
