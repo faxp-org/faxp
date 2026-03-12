@@ -15,6 +15,23 @@ Default packet to share:
 3. `docs/builders/examples/public_adapter_contract/README.md`
 4. `docs/BUILDERS_START_HERE.md`
 
+## Public Outreach Checklist (Use Every Time)
+
+1. Share all four packet links from **Required Packet** in the first technical follow-up.
+2. Include this exact disclaimer line:
+   - `FAXP is experimental and early-stage. This is a sandbox-first evaluation, not a production rollout.`
+3. Keep partner-specific details private:
+   - no partner names (unless approved),
+   - no private API docs/screenshots,
+   - no credentials/tokens/IDs,
+   - no local absolute filesystem paths.
+4. Capture feedback publicly using issue templates:
+   - defects/regressions: `.github/ISSUE_TEMPLATE/bug_report.md`
+   - enhancements/ambiguity requests: `.github/ISSUE_TEMPLATE/feature_request.md`
+5. Add classification labels for triage:
+   - one domain label: `protocol-core`, `reference-runtime`, `governance`, or `interop`
+   - one type label: `bug` or `enhancement`
+
 ## Execution Flow
 
 1. Send a short intro message with protocol boundary and explicit experimental status.
