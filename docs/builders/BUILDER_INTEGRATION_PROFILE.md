@@ -2,6 +2,11 @@
 
 Use this document when you need to declare what a builder actually supports at the booking-plane level.
 
+Maturity status:
+- Experimental and early-stage.
+- Intended for sandbox/test evaluation first.
+- Not production-ready as a universal standard at this stage.
+
 If you are new to the repo, start with:
 - `README.md`
 - `docs/BUILDERS_START_HERE.md`
