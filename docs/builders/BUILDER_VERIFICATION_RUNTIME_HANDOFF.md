@@ -2,6 +2,11 @@
 
 This checklist is the implementation handoff for any builder to host a verification runtime while staying FAXP-conformant.
 
+Maturity status:
+- Experimental and early-stage.
+- Intended for sandbox/test evaluation first.
+- Not production-ready as a universal standard at this stage.
+
 Use this document only if you are hosting an adapter or verifier-facing integration runtime.
 
 If you are new to the repo, start with:
