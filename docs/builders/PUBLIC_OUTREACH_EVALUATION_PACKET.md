@@ -51,6 +51,29 @@ This packet gives prospective implementers enough context to evaluate integratio
 3. All IDs and payloads are synthetic.
 4. Scope language stays booking-plane only.
 
+## Feedback Filing Path (For External Evaluators)
+
+When outreach recipients send feedback, file it using repo templates:
+
+1. Defects/regressions:
+   - `.github/ISSUE_TEMPLATE/bug_report.md`
+2. Enhancements/contract ambiguity:
+   - `.github/ISSUE_TEMPLATE/feature_request.md`
+
+Apply labels for triage:
+
+1. Domain label (pick one):
+   - `protocol-core`
+   - `reference-runtime`
+   - `governance`
+   - `interop`
+2. Type label (pick one):
+   - `bug`
+   - `enhancement`
+
+Public hygiene reminder:
+- Do not include partner-specific identifiers, private docs/screenshots, credentials/tokens, or local absolute filesystem paths.
+
 ## Local Validation Baseline
 
 Use:
