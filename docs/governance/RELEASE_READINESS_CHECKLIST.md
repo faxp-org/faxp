@@ -16,6 +16,24 @@ Use this checklist as the final go/no-go gate before a tagged release.
 - [ ] Conformance and certification artifacts are present.
 - [ ] CI and conformance suite include all mandatory release-readiness checks.
 
+## Replay Operations Gate Tracker (Required Before Scale-Out)
+
+Use this table to make operational gate ownership and evidence explicit.
+
+| Gate | Owner | Due | Status | Evidence |
+| --- | --- | --- | --- | --- |
+| Replay claim SLO/error budget defined | TBD | TBD | Not Started | Link to SLO definition and alert threshold config |
+| Replay reject-rate anomaly alerting configured | TBD | TBD | Not Started | Link to monitoring rule/dashboard + test screenshot |
+| Redis HA/failover test pass recorded | TBD | TBD | Not Started | Link to `docs/governance/REDIS_HA_FAILOVER_TEST_PLAN.md` execution evidence |
+| Replay incident runbook reviewed and approved | TBD | TBD | Not Started | Link to signoff note in `docs/governance/REPLAY_INCIDENT_RUNBOOK.md` |
+| Replay on-call ownership confirmed | TBD | TBD | Not Started | Link to `docs/governance/REPLAY_ONCALL_OWNERSHIP.md` update |
+
+Status values:
+- `Not Started`
+- `In Progress`
+- `Blocked`
+- `Done`
+
 ## Normative Requirements (Test-Enforced)
 
 <!-- RELEASE_READINESS_REQUIREMENTS_BEGIN -->
