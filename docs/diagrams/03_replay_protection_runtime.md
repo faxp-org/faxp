@@ -1,0 +1,29 @@
+# Diagram: Replay Protection Runtime
+
+This diagram is explanatory, not normative.
+Canonical replay policy remains in:
+- `docs/governance/REPLAY_RUNTIME_POLICY.md`
+- `faxp_mvp_simulation.py`
+
+```mermaid
+flowchart TD
+    A["Message arrives"] --> B["Validate Envelope + Signature + TTL"]
+    B --> C{"Replay backend mode"}
+    C -->|sqlite_local| D{"APP_MODE non-local?"}
+    D -->|No| E["Claim MessageID + Nonce in local replay store"]
+    D -->|Yes| F{"Deployment mode = single_instance?"}
+    F -->|No| G["Fail closed: invalid policy for non-local"]
+    F -->|Yes| H{"Temporary override valid?"}
+    H -->|No| I["Fail closed: malformed/expired/invalid override"]
+    H -->|Yes| J["Emit startup audit event:
+replay_single_instance_override_active"]
+    J --> E
+
+    C -->|redis_shared| K["Atomic Lua claim:
+MessageID + Nonce together (NX+EX)"]
+    K --> L{"Already claimed?"}
+    L -->|Yes| M["Reject as replay"]
+    L -->|No| N["Accept message"]
+    E --> N
+```
+
