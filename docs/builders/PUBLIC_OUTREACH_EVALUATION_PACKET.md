@@ -27,6 +27,8 @@ This packet gives prospective implementers enough context to evaluate integratio
    - `docs/builders/BUILDER_INTEGRATION_PROFILE.md`
 4. Public anonymized examples:
    - `docs/builders/PUBLIC_ANONYMIZED_ADAPTER_PACKAGE.md`
+   - `docs/builders/ANONYMIZED_INTEGRATION_OUTCOME_TEMPLATE.md`
+   - `docs/builders/PUBLIC_PROTOCOL_VS_ADAPTER_SUMMARY.md`
    - `docs/builders/examples/public_adapter_contract/README.md`
 
 ## Suggested Outreach Sequence
@@ -50,6 +52,7 @@ This packet gives prospective implementers enough context to evaluate integratio
 2. No private domains, tokens, credentials, or local paths.
 3. All IDs and payloads are synthetic.
 4. Scope language stays booking-plane only.
+5. No partner-attributable integration outcomes are published.
 
 ## Feedback Filing Path (For External Evaluators)
 

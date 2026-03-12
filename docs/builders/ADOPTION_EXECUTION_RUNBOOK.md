@@ -12,12 +12,14 @@ Maturity status:
 Default packet to share:
 1. `docs/builders/PUBLIC_OUTREACH_EVALUATION_PACKET.md`
 2. `docs/builders/PUBLIC_ANONYMIZED_ADAPTER_PACKAGE.md`
-3. `docs/builders/examples/public_adapter_contract/README.md`
-4. `docs/BUILDERS_START_HERE.md`
+3. `docs/builders/ANONYMIZED_INTEGRATION_OUTCOME_TEMPLATE.md`
+4. `docs/builders/PUBLIC_PROTOCOL_VS_ADAPTER_SUMMARY.md`
+5. `docs/builders/examples/public_adapter_contract/README.md`
+6. `docs/BUILDERS_START_HERE.md`
 
 ## Public Outreach Checklist (Use Every Time)
 
-1. Share all four packet links from **Required Packet** in the first technical follow-up.
+1. Share all links from **Required Packet** in the first technical follow-up.
 2. Include this exact disclaimer line:
    - `FAXP is experimental and early-stage. This is a sandbox-first evaluation, not a production rollout.`
 3. Keep partner-specific details private:
@@ -25,10 +27,11 @@ Default packet to share:
    - no private API docs/screenshots,
    - no credentials/tokens/IDs,
    - no local absolute filesystem paths.
-4. Capture feedback publicly using issue templates:
+4. Publish only vendor-neutral and synthetic materials in public channels.
+5. Capture feedback publicly using issue templates:
    - defects/regressions: `.github/ISSUE_TEMPLATE/bug_report.md`
    - enhancements/ambiguity requests: `.github/ISSUE_TEMPLATE/feature_request.md`
-5. Add classification labels for triage:
+6. Add classification labels for triage:
    - one domain label: `protocol-core`, `reference-runtime`, `governance`, or `interop`
    - one type label: `bug` or `enhancement`
 

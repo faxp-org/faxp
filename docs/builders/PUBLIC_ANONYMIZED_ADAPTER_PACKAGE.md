@@ -47,7 +47,9 @@ All examples in this package are synthetic and anonymized:
    - `docs/builders/examples/public_adapter_contract/execution_report_envelope.sample.json`
 3. Adapter-side builder update request example:
    - `docs/builders/examples/public_adapter_contract/adapter_update_request.sample.json`
-4. Example notes:
+4. Deterministic stop-ID update example:
+   - `docs/builders/examples/public_adapter_contract/deterministic_stop_update.sample.json`
+5. Example notes:
    - `docs/builders/examples/public_adapter_contract/README.md`
 
 ## Handoff Model (Protocol vs Adapter)
@@ -75,4 +77,3 @@ Use the repo venv interpreter:
 1. `.venv/bin/python tests/run_open_source_guardrails.py`
 2. `.venv/bin/python tests/run_release_readiness.py`
 3. `.venv/bin/python tests/run_conformance_suite.py`
-
