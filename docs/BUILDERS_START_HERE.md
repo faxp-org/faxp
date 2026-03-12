@@ -17,6 +17,7 @@ Treat current implementation guidance as evolving until release-readiness and in
 Read these first:
 - `docs/governance/SCOPE_GUARDRAILS.md`
 - `docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md`
+- `docs/diagrams/01_scope_boundary.md`
 
 You should come away with this understanding:
 1. FAXP is a booking-plane protocol.
@@ -28,6 +29,7 @@ You should come away with this understanding:
 
 Read:
 - `README.md`
+- `docs/diagrams/02_booking_message_flow.md`
 - `faxp_mvp_simulation.py`
 
 The core booking path is:

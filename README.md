@@ -50,6 +50,13 @@ Canonical boundary docs:
 - `docs/roadmap/BUILDER_RUNTIME_MIGRATION_PLAN.md`
 - `REFERENCE_RUNTIME_BOUNDARY.md`
 
+## Architecture Diagrams
+
+Contributor-facing architecture references:
+- `docs/diagrams/01_scope_boundary.md`
+- `docs/diagrams/02_booking_message_flow.md`
+- `docs/diagrams/03_replay_protection_runtime.md`
+
 ## Repository Contents
 
 - `faxp_mvp_simulation.py`: CLI protocol simulation and validation runtime
