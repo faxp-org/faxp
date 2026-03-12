@@ -28,6 +28,12 @@ Local CI-aligned check baseline:
 - Conformance / certification reviewer: `conformance/README.md`
 - Runtime boundary clarification: `REFERENCE_RUNTIME_BOUNDARY.md`
 
+## Architecture Diagrams
+
+- `docs/diagrams/01_scope_boundary.md`
+- `docs/diagrams/02_booking_message_flow.md`
+- `docs/diagrams/03_replay_protection_runtime.md`
+
 ## Governance
 - `docs/governance/FAXP_GOVERNANCE_MODEL.md`
 - `docs/governance/SCOPE_GUARDRAILS.md`
