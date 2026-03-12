@@ -1,0 +1,30 @@
+{
+  "updateOperation": "DeterministicStopUpdate",
+  "sourceLoadId": "LOAD-SAMPLE-1001",
+  "sourceInvoiceId": "INVOICE-SAMPLE-1001",
+  "stops": [
+    {
+      "id": "STOP-SAMPLE-1",
+      "type": "shipper",
+      "date": "03/10/2026",
+      "time": "08:00",
+      "locationId": "LOCATION-SAMPLE-ORIGIN"
+    },
+    {
+      "id": "STOP-SAMPLE-2",
+      "type": "consignee",
+      "date": "03/13/2026",
+      "time": "11:00",
+      "locationId": "LOCATION-SAMPLE-DEST"
+    }
+  ],
+  "invariants": {
+    "expectedStopCount": 2,
+    "preserveExistingStopIds": true,
+    "preventDuplicateStopCreation": true
+  },
+  "trace": {
+    "requestRef": "REQ-SAMPLE-DET-001",
+    "source": "AdapterSyntheticFixture"
+  }
+}

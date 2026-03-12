@@ -2,30 +2,30 @@
 
 Status: Active (Close-out Execution)  
 Scope Class: Booking-plane implementation maturity  
-Updated: 2026-03-07
+Updated: 2026-03-12
 
 Project maturity note: this roadmap tracks experimental-to-production hardening; items should be treated as pilot-stage until release readiness gates are met.
 
-## Progress Snapshot (2026-03-07)
+## Progress Snapshot (2026-03-12)
 
 1. Protocol-core and conformance baseline are stable (`conformance/run_all_checks.py` passing on main).
 2. Security/governance hardening workstreams are active and now part of normal CI enforcement.
 3. Public-safe builder package and outreach packet are now published.
-4. Remaining Phase 2 risk is concentrated in private partner demo closeout and sustained adoption execution.
+4. Remaining Phase 2 risk is concentrated in security/governance operations hardening and sustained adoption execution.
 
 Current execution plan:
 - `docs/roadmap/VNEXT_EXECUTION_CHECKLIST_2026-03-07.md`
 
 Execution state matrix:
 - Workstream A (roadmap hygiene): Done
-- Workstream B (private partner demo): In Progress
+- Workstream B (private partner demo): Done
 - Workstream C (public anonymized adapter package): Done
 - Workstream D (security/governance continuation): Ongoing
 - Workstream E (adoption execution): In Progress
 
 Checkpoint closeout:
-1. Completed this cycle: A and C.
-2. Remaining active execution: B, D, E.
+1. Completed this cycle: A, B, and C.
+2. Remaining active execution: D and E.
 
 Local check baseline (CI-aligned):
 - `.venv/bin/python tests/run_open_source_guardrails.py`

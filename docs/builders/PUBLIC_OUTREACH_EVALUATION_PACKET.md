@@ -27,6 +27,8 @@ This packet gives prospective implementers enough context to evaluate integratio
    - `docs/builders/BUILDER_INTEGRATION_PROFILE.md`
 4. Public anonymized examples:
    - `docs/builders/PUBLIC_ANONYMIZED_ADAPTER_PACKAGE.md`
+   - `docs/builders/ANONYMIZED_INTEGRATION_OUTCOME_TEMPLATE.md`
+   - `docs/builders/PUBLIC_PROTOCOL_VS_ADAPTER_SUMMARY.md`
    - `docs/builders/examples/public_adapter_contract/README.md`
 
 ## Suggested Outreach Sequence
@@ -50,6 +52,30 @@ This packet gives prospective implementers enough context to evaluate integratio
 2. No private domains, tokens, credentials, or local paths.
 3. All IDs and payloads are synthetic.
 4. Scope language stays booking-plane only.
+5. No partner-attributable integration outcomes are published.
+
+## Feedback Filing Path (For External Evaluators)
+
+When outreach recipients send feedback, file it using repo templates:
+
+1. Defects/regressions:
+   - `.github/ISSUE_TEMPLATE/bug_report.md`
+2. Enhancements/contract ambiguity:
+   - `.github/ISSUE_TEMPLATE/feature_request.md`
+
+Apply labels for triage:
+
+1. Domain label (pick one):
+   - `protocol-core`
+   - `reference-runtime`
+   - `governance`
+   - `interop`
+2. Type label (pick one):
+   - `bug`
+   - `enhancement`
+
+Public hygiene reminder:
+- Do not include partner-specific identifiers, private docs/screenshots, credentials/tokens, or local absolute filesystem paths.
 
 ## Local Validation Baseline
 
