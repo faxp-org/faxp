@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 import argparse
 import json
+import re
 import subprocess
 import sys
 import time
@@ -15,6 +16,9 @@ import uuid
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 TESTS_DIR = PROJECT_ROOT / "tests"
+POSIX_USER_PATH_PATTERN = re.compile(r"/Users/[A-Za-z0-9._-]+/")
+POSIX_HOME_PATTERN = re.compile(r"/home/[A-Za-z0-9._-]+/")
+WINDOWS_USER_PATH_PATTERN = re.compile(r"[A-Za-z]:\\\\Users\\\\[A-Za-z0-9._-]+\\\\")
 
 
 def _now_utc() -> str:
@@ -160,6 +164,15 @@ def _relative_or_name(path: Path, base: Path) -> str:
         return path.name
 
 
+def _sanitize_log_text(text: str) -> str:
+    if not text:
+        return ""
+    sanitized = POSIX_USER_PATH_PATTERN.sub("/Users/[REDACTED]/", text)
+    sanitized = POSIX_HOME_PATTERN.sub("/home/[REDACTED]/", sanitized)
+    sanitized = WINDOWS_USER_PATH_PATTERN.sub("C:\\\\Users\\\\[REDACTED]\\\\", sanitized)
+    return sanitized
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run FAXP certification/conformance checks and emit a summary report."
@@ -242,8 +255,8 @@ def main() -> int:
 
         stdout_path = log_dir / f"{name}.stdout.log"
         stderr_path = log_dir / f"{name}.stderr.log"
-        stdout_path.write_text(completed.stdout or "", encoding="utf-8")
-        stderr_path.write_text(completed.stderr or "", encoding="utf-8")
+        stdout_path.write_text(_sanitize_log_text(completed.stdout or ""), encoding="utf-8")
+        stderr_path.write_text(_sanitize_log_text(completed.stderr or ""), encoding="utf-8")
 
         passed = completed.returncode == 0
         checks.append(

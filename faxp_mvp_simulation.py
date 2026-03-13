@@ -49,7 +49,7 @@ def _normalize_mileage_dispute_policy(value):
 
 
 DEBUG_MODE = os.getenv("FAXP_DEBUG", "0") == "1"
-SENSITIVE_KEYS = {"token", "stderr", "Signature"}
+SENSITIVE_LOG_KEY_EXACT = {"stderr", "signature", "authorization"}
 APP_MODE = os.getenv("FAXP_APP_MODE", "local").strip().lower()
 NON_LOCAL_MODE = APP_MODE not in {"local", "dev", "development"}
 VERIFICATION_POLICY_PROFILE_ID = os.getenv(
@@ -3257,10 +3257,31 @@ def format_rate(rate):
 
 
 def redact_sensitive(value):
+    def _normalize_sensitive_key(key):
+        return re.sub(r"[^a-z0-9]", "", str(key or "").strip().lower())
+
+    def _is_sensitive_log_key(key):
+        normalized = _normalize_sensitive_key(key)
+        if not normalized:
+            return False
+        if normalized == "tokenref":
+            return False
+        if normalized in SENSITIVE_LOG_KEY_EXACT:
+            return True
+        if normalized.endswith("token"):
+            return True
+        if normalized.endswith("apikey"):
+            return True
+        if normalized.endswith("secret"):
+            return True
+        if normalized.endswith("privatekey"):
+            return True
+        return False
+
     if isinstance(value, dict):
         redacted = {}
         for key, item in value.items():
-            if key in SENSITIVE_KEYS:
+            if _is_sensitive_log_key(key):
                 redacted[key] = "[REDACTED]"
             else:
                 redacted[key] = redact_sensitive(item)
