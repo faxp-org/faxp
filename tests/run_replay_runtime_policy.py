@@ -322,6 +322,56 @@ def _validate_redis_durability_guard() -> None:
     )
 
 
+def _validate_runtime_redaction_guard() -> None:
+    code = textwrap.dedent(
+        """
+        import json
+        import faxp_mvp_simulation as sim
+
+        probe = {
+            "token": "TOKEN_SYNTHETIC",
+            "access_token": "ACCESS_TOKEN_SYNTHETIC",
+            "api_key": "API_KEY_SYNTHETIC",
+            "secret": "SECRET_SYNTHETIC",
+            "private_key": "PRIVATE_KEY_SYNTHETIC",
+            "authorization": "Bearer AUTH_SYNTHETIC",
+            "nested": {
+                "token": "NESTED_TOKEN_SYNTHETIC",
+                "authorization": "Bearer NESTED_AUTH_SYNTHETIC",
+                "api_key": "NESTED_API_KEY_SYNTHETIC",
+            },
+        }
+        redacted = sim.redact_sensitive(probe)
+        checks = {
+            "token": redacted.get("token") == "[REDACTED]",
+            "access_token": redacted.get("access_token") == "[REDACTED]",
+            "api_key": redacted.get("api_key") == "[REDACTED]",
+            "secret": redacted.get("secret") == "[REDACTED]",
+            "private_key": redacted.get("private_key") == "[REDACTED]",
+            "authorization": redacted.get("authorization") == "[REDACTED]",
+            "nested_token": redacted.get("nested", {}).get("token") == "[REDACTED]",
+            "nested_authorization": redacted.get("nested", {}).get("authorization") == "[REDACTED]",
+            "nested_api_key": redacted.get("nested", {}).get("api_key") == "[REDACTED]",
+        }
+        if not all(checks.values()):
+            raise SystemExit("runtime redaction mismatch: " + json.dumps(checks, sort_keys=True))
+        print(json.dumps({"ok": True}))
+        """
+    )
+    completed = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=str(PROJECT_ROOT),
+        env=_base_env(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    _assert(
+        completed.returncode == 0,
+        f"Runtime redaction guard check failed:\nSTDOUT:\n{completed.stdout}\nSTDERR:\n{completed.stderr}",
+    )
+
+
 def main() -> int:
     _expect_failure(
         {
@@ -503,6 +553,7 @@ def main() -> int:
     _validate_override_and_audit_event()
     _validate_redis_lua_atomic_contract()
     _validate_redis_durability_guard()
+    _validate_runtime_redaction_guard()
 
     print("Replay runtime policy checks passed.")
     return 0

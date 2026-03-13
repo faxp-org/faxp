@@ -114,11 +114,25 @@ def _normalize_key(key: object) -> str:
     return re.sub(r"[^a-z0-9]", "", str(key).strip().lower())
 
 
-def _is_token_like_key(key: object) -> bool:
+def _is_sensitive_key(key: object) -> bool:
     normalized = _normalize_key(key)
     if not normalized:
         return False
-    return normalized != "tokenref" and normalized.endswith("token")
+    if normalized == "tokenref":
+        return False
+    if normalized.endswith("token"):
+        return True
+    if normalized.endswith("apikey"):
+        return True
+    if normalized.endswith("secret"):
+        return True
+    if normalized.endswith("privatekey"):
+        return True
+    if normalized.endswith("authorization"):
+        return True
+    if normalized.endswith("authheader"):
+        return True
+    return False
 
 
 def _assert_ascii_keys(value: object, context: str) -> None:
@@ -155,7 +169,7 @@ def _scrub_token_like_fields(value: object, context: str) -> object:
             raise A2ABridgeError(f"{context} exceeded max traversal depth ({MAX_SANITIZE_DEPTH}).")
         if isinstance(node, dict):
             for key in list(node.keys()):
-                if _is_token_like_key(key):
+                if _is_sensitive_key(key):
                     node.pop(key, None)
                     continue
                 item = node.get(key)

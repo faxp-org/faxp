@@ -8,6 +8,7 @@ FAILED=0
 note() { printf '[INFO] %s\n' "$*"; }
 warn() { printf '[WARN] %s\n' "$*"; }
 fail() { printf '[FAIL] %s\n' "$*"; FAILED=1; }
+sanitize_match_context() { awk -F: 'NF>=2 {print $1 ":" $2}' | sort -u; }
 
 check_env_equals() {
   local file="$1"
@@ -34,7 +35,9 @@ scan_tracked_content_secrets() {
   local hits
   hits="$(git -C "$PROJECT_DIR" grep -nE "$pattern" -- . ':!security.env.template' || true)"
   if [[ -n "$hits" ]]; then
-    fail "Potential secret material detected in tracked content:\n$hits"
+    local sanitized_hits
+    sanitized_hits="$(printf '%s\n' "$hits" | sanitize_match_context)"
+    fail "Potential secret material detected in tracked content (redacted file:line only):\n$sanitized_hits"
   else
     note "No high-signal secret patterns detected in tracked content."
   fi

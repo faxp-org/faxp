@@ -151,7 +151,16 @@ def main() -> int:
                 "provider": "vendor",
                 "score": 90,
                 "token": "realistic-sensitive-token",
+                "access_token": "access-sensitive-token",
+                "api_key": "api-key-sensitive",
+                "secret": "top-secret-value",
+                "private_key": "private-key-sensitive",
+                "authorization": "Bearer AUTH-SENSITIVE",
                 "nested": {"token": "nested-sensitive-token"},
+                "providerSecrets": {
+                    "api_key": "nested-api-key",
+                    "authorization": "Bearer nested-auth",
+                },
                 "source": "vendor-adapter",
                 "evidenceRef": "sha256:abcd",
                 "verifiedAt": "2026-03-06T12:00:00Z",
@@ -178,6 +187,34 @@ def main() -> int:
     _assert(
         (verification_result.get("nested") or {}).get("token") is None,
         "Sanitized export must scrub nested token fields in VerificationResult.",
+    )
+    _assert(
+        "access_token" not in verification_result,
+        "Sanitized export must remove VerificationResult access_token.",
+    )
+    _assert(
+        "api_key" not in verification_result,
+        "Sanitized export must remove VerificationResult api_key.",
+    )
+    _assert(
+        "secret" not in verification_result,
+        "Sanitized export must remove VerificationResult secret.",
+    )
+    _assert(
+        "private_key" not in verification_result,
+        "Sanitized export must remove VerificationResult private_key.",
+    )
+    _assert(
+        "authorization" not in verification_result,
+        "Sanitized export must remove VerificationResult authorization.",
+    )
+    _assert(
+        "api_key" not in ((verification_result.get("providerSecrets") or {})),
+        "Sanitized export must scrub nested api_key fields in VerificationResult.",
+    )
+    _assert(
+        "authorization" not in ((verification_result.get("providerSecrets") or {})),
+        "Sanitized export must scrub nested authorization fields in VerificationResult.",
     )
     _assert("tokenRef" in verification_result, "Sanitized export must add VerificationResult tokenRef.")
     _assert(
