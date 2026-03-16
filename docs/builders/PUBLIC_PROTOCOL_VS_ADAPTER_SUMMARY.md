@@ -28,3 +28,8 @@ Use this split in public write-ups:
 ## Public-Safe Rule
 
 Do not include partner-attributable details. Keep examples synthetic and vendor-neutral.
+
+## Hosting and Credential Custody
+
+For deployment and trust boundary guidance, see:
+- `docs/builders/ADAPTER_HOSTING_AND_TRUST_BOUNDARY.md`

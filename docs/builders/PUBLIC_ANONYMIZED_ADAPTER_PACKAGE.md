@@ -69,6 +69,7 @@ flowchart LR
 1. A builder may create or edit its own load records before any FAXP message exists. That is builder-side setup, not a protocol action.
 2. The FAXP handoff starts when the adapter emits a canonical FAXP message (`NewLoad`, `NewTruck`, etc.).
 3. The protocol handoff ends when the adapter receives a terminal booking-plane message (typically `ExecutionReport`) and maps it back to builder-native update logic.
+4. Hosting and credential custody guidance is documented in `docs/builders/ADAPTER_HOSTING_AND_TRUST_BOUNDARY.md`.
 
 ## Validation Baseline
 
