@@ -1,7 +1,7 @@
 # FAXP v0.2 Test Matrix (Neutral Verification + Capability Negotiation)
 
-Status: In Progress  
-Updated: 2026-02-21
+Status: Historical Baseline (v0.2)  
+Updated: 2026-03-16
 
 ## 1. Purpose
 
@@ -9,6 +9,9 @@ This matrix tracks conformance and regression tests for v0.2 changes:
 - provider-agnostic verification payloads,
 - capability negotiation behavior,
 - fail-closed security behavior.
+
+Compatibility note:
+- References to `FMCSA` in this historical matrix indicate a legacy provider alias path in reference-runtime compatibility tests. They are not protocol-core requirements.
 
 ## 2. Baseline Regression (Must Stay Green)
 
@@ -41,7 +44,7 @@ Assert in output:
 - `VerificationResult.assuranceLevel = AAL2`
 - `VerificationResult.evidenceRef` exists
 
-2. Authority-record compliance mock emits neutral fields
+2. Authority-record compliance mock emits neutral fields (legacy alias compatibility path)
 Command:
 - `./scripts/run_secure_demo.sh sim --use-kms-command --provider FMCSA --verification-status Success --mc-number 498282`
 Assert in output:
@@ -118,7 +121,7 @@ Secrets:
 - `FAXP_CLOUD_SAFE_MODE=1`
 Expected:
 - Runtime caption shows cloud-safe mode.
-- Provider options show `MockBiometricProvider` and `FMCSA (Authority)`.
+- Provider options show `MockBiometricProvider` and authority-record compliance option (`FMCSA (Authority)` legacy label path).
 
 2. Cloud booking success
 Settings:

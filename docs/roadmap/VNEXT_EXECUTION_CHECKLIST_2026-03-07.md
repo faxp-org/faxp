@@ -10,15 +10,16 @@ Close the remaining execution gap between:
 1. protocol-core readiness (already passing), and
 2. builder adoption readiness (private partner demo polish + public anonymized guidance).
 
-## Status Matrix (2026-03-12)
+## Status Matrix (2026-03-16)
 
 | Workstream | Status | Notes |
 | --- | --- | --- |
 | A. Roadmap and Status Hygiene | Done | Roadmap/index/checklist alignment completed on `main`. |
 | B. Private Partner Demo Finalization | Done | Deterministic private demo flow completed; public anonymized equivalent artifacts are published. |
 | C. Public Anonymized Adapter Spec Package | Done | Public-safe scaffold and outreach packet are now published. |
-| D. Security and Governance Continuation | Ongoing | Continuous CI/ruleset/guardrail maintenance. |
+| D. Security and Governance Continuation | Ongoing | Strict replay release-gate closure and incident drill evidence now merged; continue continuous CI/ruleset/guardrail maintenance. |
 | E. Adoption Execution | In Progress | Outreach now runs off the public-safe packet set and runbook. |
+| F. Second Independent Implementer Demo | In Progress | Complete one additional independent TMS integration demo before public beta promotion decision. |
 
 ## Checkpoint Closeout (Current)
 
@@ -30,6 +31,7 @@ Completed this cycle:
 Remaining active execution items:
 1. Workstream D (Security and Governance Continuation).
 2. Workstream E (Adoption Execution via public-safe packet).
+3. Workstream F (Second independent implementer demo evidence).
 
 ## Local Verification Baseline
 
@@ -129,7 +131,25 @@ Exit criteria:
 1. Outreach conversations can start from a consistent, public-safe technical packet.
 2. New integration prospects can evaluate FAXP without private credentials.
 
+## Workstream F: Second Independent Implementer Demo
+
+Owner: Maintainer
+Priority: P1
+Status: In Progress
+
+Tasks:
+1. Complete one additional independent TMS demo path using the public-safe adapter contract packet.
+2. Capture a deterministic runbook and evidence artifacts for that demo.
+3. Confirm protocol-vs-adapter responsibility boundaries remain unchanged in the second implementation.
+4. Execute and retain evidence per `docs/builders/SECOND_IMPLEMENTER_DEMO_CHECKLIST.md`.
+
+Exit criteria:
+1. One additional independent implementer demo passes end-to-end.
+2. Public artifacts remain anonymized and partner-safe.
+3. Beta promotion discussion can reference at least two independent implementation demonstrations.
+
 ## Sequencing
 
 1. Run Workstream D continuously.
 2. Execute Workstream E using the public packet and runbook.
+3. Execute Workstream F in parallel as integration opportunities become available.

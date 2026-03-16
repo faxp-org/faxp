@@ -31,6 +31,8 @@ This packet gives prospective implementers enough context to evaluate integratio
    - `docs/builders/ANONYMIZED_INTEGRATION_OUTCOME_TEMPLATE.md`
    - `docs/builders/PUBLIC_PROTOCOL_VS_ADAPTER_SUMMARY.md`
    - `docs/builders/examples/public_adapter_contract/README.md`
+5. Second implementer demo execution guide:
+   - `docs/builders/SECOND_IMPLEMENTER_DEMO_CHECKLIST.md`
 
 ## Suggested Outreach Sequence
 
@@ -39,6 +41,7 @@ This packet gives prospective implementers enough context to evaluate integratio
 3. Confirm builder-side responsibilities remain builder-side.
 4. Offer sandbox-first evaluation path.
 5. Keep partner/private implementation details out of public channels.
+6. When moving toward beta discussion, execute the second-implementer checklist and attach anonymized evidence.
 
 ## Evaluation Questions for Prospective Builders
 
