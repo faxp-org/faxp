@@ -96,6 +96,7 @@ If you want a deeper capability declaration after that, look at:
 - `docs/builders/PUBLIC_ANONYMIZED_ADAPTER_PACKAGE.md`
 - `docs/builders/PUBLIC_OUTREACH_EVALUATION_PACKET.md`
 - `docs/builders/ADOPTION_EXECUTION_RUNBOOK.md`
+- `docs/builders/SECOND_IMPLEMENTER_DEMO_CHECKLIST.md`
 
 ## 6) Fastest Local Evaluation Path
 

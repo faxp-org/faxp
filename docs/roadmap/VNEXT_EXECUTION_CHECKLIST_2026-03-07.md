@@ -141,6 +141,7 @@ Tasks:
 1. Complete one additional independent TMS demo path using the public-safe adapter contract packet.
 2. Capture a deterministic runbook and evidence artifacts for that demo.
 3. Confirm protocol-vs-adapter responsibility boundaries remain unchanged in the second implementation.
+4. Execute and retain evidence per `docs/builders/SECOND_IMPLEMENTER_DEMO_CHECKLIST.md`.
 
 Exit criteria:
 1. One additional independent implementer demo passes end-to-end.

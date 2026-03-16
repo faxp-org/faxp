@@ -17,6 +17,7 @@ Default packet to share:
 5. `docs/builders/ADAPTER_HOSTING_AND_TRUST_BOUNDARY.md`
 6. `docs/builders/examples/public_adapter_contract/README.md`
 7. `docs/BUILDERS_START_HERE.md`
+8. `docs/builders/SECOND_IMPLEMENTER_DEMO_CHECKLIST.md`
 
 ## Public Outreach Checklist (Use Every Time)
 
@@ -43,6 +44,7 @@ Default packet to share:
 3. Ask for sandbox-only evaluation first.
 4. Capture feedback in issues before proposing protocol changes.
 5. Keep partner-specific implementation details in private channels.
+6. Before beta-promotion discussion, run the second implementer checklist and capture anonymized evidence.
 
 ## Scope Guardrail Language (Use Verbatim)
 
