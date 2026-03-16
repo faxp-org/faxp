@@ -14,8 +14,9 @@ Default packet to share:
 2. `docs/builders/PUBLIC_ANONYMIZED_ADAPTER_PACKAGE.md`
 3. `docs/builders/ANONYMIZED_INTEGRATION_OUTCOME_TEMPLATE.md`
 4. `docs/builders/PUBLIC_PROTOCOL_VS_ADAPTER_SUMMARY.md`
-5. `docs/builders/examples/public_adapter_contract/README.md`
-6. `docs/BUILDERS_START_HERE.md`
+5. `docs/builders/ADAPTER_HOSTING_AND_TRUST_BOUNDARY.md`
+6. `docs/builders/examples/public_adapter_contract/README.md`
+7. `docs/BUILDERS_START_HERE.md`
 
 ## Public Outreach Checklist (Use Every Time)
 

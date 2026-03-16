@@ -25,6 +25,7 @@ This packet gives prospective implementers enough context to evaluate integratio
 3. Adapter contract guidance:
    - `adapter/INTERFACE.md`
    - `docs/builders/BUILDER_INTEGRATION_PROFILE.md`
+   - `docs/builders/ADAPTER_HOSTING_AND_TRUST_BOUNDARY.md`
 4. Public anonymized examples:
    - `docs/builders/PUBLIC_ANONYMIZED_ADAPTER_PACKAGE.md`
    - `docs/builders/ANONYMIZED_INTEGRATION_OUTCOME_TEMPLATE.md`
