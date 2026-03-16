@@ -40,7 +40,7 @@ No wire-level protocol breaking changes are introduced in this patch.
 
 ## What v0.2.1 Does Not Change
 
-- FAXP does not become a hosted FMCSA/compliance/biometric service.
+- FAXP does not become a hosted compliance/authority-record/biometric service.
 - FAXP does not take ownership of provider execution logic.
 - Dispatch, tracking, custody, invoicing, and payment workflows remain out of protocol-core scope.
 
