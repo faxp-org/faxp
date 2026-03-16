@@ -102,6 +102,7 @@
     "tests/run_governance_index.py",
     "tests/run_beta_promotion_criteria.py",
     "tests/run_beta_decision_snapshot.py",
+    "tests/run_beta_roadmap_sync.py",
     "tests/run_second_implementer_evidence_bundle_template.py",
     "tests/run_roadmap_status_sync.py",
     "tests/run_adoption_execution_runbook.py",
@@ -164,6 +165,7 @@
     "governance_index",
     "developer_beta_promotion_criteria",
     "beta_decision_snapshot",
+    "beta_roadmap_sync",
     "second_implementer_evidence_bundle_template",
     "roadmap_status_sync",
     "adoption_execution_runbook",
@@ -227,6 +229,7 @@
     "developer_beta_promotion_criteria": "tests/run_beta_promotion_criteria.py",
     "release_readiness": "tests/run_release_readiness.py",
     "beta_decision_snapshot": "tests/run_beta_decision_snapshot.py",
+    "beta_roadmap_sync": "tests/run_beta_roadmap_sync.py",
     "second_implementer_evidence_bundle_template": "tests/run_second_implementer_evidence_bundle_template.py",
     "roadmap_status_sync": "tests/run_roadmap_status_sync.py",
     "adoption_execution_runbook": "tests/run_adoption_execution_runbook.py"
