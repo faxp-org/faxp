@@ -19,6 +19,7 @@ Default packet to share:
 7. `docs/BUILDERS_START_HERE.md`
 8. `docs/builders/SECOND_IMPLEMENTER_DEMO_CHECKLIST.md`
 9. `docs/builders/SECOND_IMPLEMENTER_EVIDENCE_BUNDLE_TEMPLATE.json`
+10. `docs/builders/ADOPTION_EXECUTION_TRACKER_TEMPLATE.md`
 
 ## Public Outreach Checklist (Use Every Time)
 
@@ -104,5 +105,7 @@ Track outreach and feedback as:
 1. docs clarity issues,
 2. adapter contract ambiguity issues,
 3. conformance usability issues.
+4. outreach stage progression via:
+   - `docs/builders/ADOPTION_EXECUTION_TRACKER_TEMPLATE.md`
 
 Do not file partner-private implementation details in public issues.
