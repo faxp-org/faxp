@@ -23,7 +23,7 @@ Out of scope for this decision:
 | Strict release-readiness checks pass in non-local strict mode | truckingadvantage | 2026-03-16 | Done | `tests/run_release_readiness.py`, `docs/governance/RELEASE_READINESS_CHECKLIST.md` |
 | Replay operational gates fully closed | truckingadvantage | 2026-03-16 | Done | `docs/governance/REPLAY_OPERATIONS_GATES.md`, `tests/run_replay_operations_gates.py` |
 | Security posture checkpoint captured with no active P0/P1 findings | truckingadvantage | 2026-03-16 | Done | `docs/governance/REPLAY_REDTEAM_DELTA_2026-03-08.md`, `docs/governance/REPLAY_INCIDENT_DRILL_EVIDENCE_2026-03-16.md` |
-| Public-safe outreach and adapter packet published | truckingadvantage | 2026-03-16 | Done | `docs/builders/PUBLIC_OUTREACH_EVALUATION_PACKET.md`, `docs/builders/PUBLIC_ANONYMIZED_ADAPTER_PACKAGE.md` |
+| Public-safe outreach packet + runbook gate published | truckingadvantage | 2026-03-16 | Done | `docs/builders/PUBLIC_OUTREACH_EVALUATION_PACKET.md`, `docs/builders/ADOPTION_EXECUTION_RUNBOOK.md`, `docs/builders/ADOPTION_EXECUTION_TRACKER_TEMPLATE.md`, `tests/run_adoption_execution_runbook.py` |
 | Second independent implementer demo completed with anonymized evidence | truckingadvantage | 2026-03-31 | In Progress | `docs/builders/SECOND_IMPLEMENTER_DEMO_CHECKLIST.md`, `docs/builders/ANONYMIZED_INTEGRATION_OUTCOME_TEMPLATE.md`, `docs/builders/SECOND_IMPLEMENTER_EVIDENCE_BUNDLE_TEMPLATE.json`, `tests/run_second_implementer_evidence_bundle_template.py` |
 | Open-source redaction/guardrail checks pass | truckingadvantage | 2026-03-16 | Done | `tests/run_public_redaction_guardrails.py`, `tests/run_open_source_guardrails.py` |
 
@@ -44,7 +44,7 @@ Reason:
 
 <!-- DEVELOPER_BETA_PROMOTION_CRITERIA_BEGIN -->
 {
-  "updatedAt": "2026-03-16T22:15:00Z",
+  "updatedAt": "2026-03-16T23:20:00Z",
   "minimumIndependentImplementerDemos": 2,
   "betaDecision": "not_ready",
   "criteria": [
@@ -85,7 +85,9 @@ Reason:
       "status": "done",
       "evidence": [
         "docs/builders/PUBLIC_OUTREACH_EVALUATION_PACKET.md",
-        "docs/builders/PUBLIC_ANONYMIZED_ADAPTER_PACKAGE.md"
+        "docs/builders/ADOPTION_EXECUTION_RUNBOOK.md",
+        "docs/builders/ADOPTION_EXECUTION_TRACKER_TEMPLATE.md",
+        "tests/run_adoption_execution_runbook.py"
       ]
     },
     {

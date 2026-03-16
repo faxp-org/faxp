@@ -4,7 +4,7 @@ _Auto-generated from `docs/governance/DEVELOPER_BETA_PROMOTION_CRITERIA.md`._
 
 ## Decision
 
-- Source criteria updatedAt: `2026-03-16T22:15:00Z`
+- Source criteria updatedAt: `2026-03-16T23:20:00Z`
 - Decision: **Not Ready**
 - Criteria completion: `5/6` done
 - Minimum independent implementer demos required: `2`
@@ -49,7 +49,7 @@ _Auto-generated from `docs/governance/DEVELOPER_BETA_PROMOTION_CRITERIA.md`._
       "status": "in_progress"
     }
   ],
-  "sourceCriteriaUpdatedAt": "2026-03-16T22:15:00Z",
+  "sourceCriteriaUpdatedAt": "2026-03-16T23:20:00Z",
   "totalCriteria": 6
 }
 <!-- DEVELOPER_BETA_DECISION_SNAPSHOT_END -->
