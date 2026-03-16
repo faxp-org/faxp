@@ -39,7 +39,7 @@ Use this table to make operational gate ownership and evidence explicit.
 | Replay claim SLO/error budget defined | truckingadvantage | 2026-03-16 | Done | `docs/governance/REPLAY_SLO_ALERTING.md`, `docs/governance/REPLAY_OPS_MONITORING_PROFILE.json`, `tests/run_replay_ops_monitoring.py` |
 | Replay reject-rate anomaly alerting configured | truckingadvantage | 2026-03-16 | Done | `docs/governance/REPLAY_REJECT_RATE_ALERTING.md`, `scripts/evaluate_replay_ops.py`, `tests/run_replay_ops_monitoring.py` |
 | Redis HA/failover test pass recorded | truckingadvantage | 2026-03-16 | Done | `docs/governance/REDIS_HA_FAILOVER_TEST_PLAN.md`, `docs/governance/REPLAY_RUNTIME_POLICY.md`, `tests/run_replay_runtime_policy.py` |
-| Replay incident runbook reviewed and approved | truckingadvantage | 2026-03-16 | Done | `docs/governance/REPLAY_INCIDENT_RUNBOOK.md`, `scripts/incident_drill.sh`, `tests/run_replay_incident_artifacts.py` |
+| Replay incident runbook reviewed and approved | truckingadvantage | 2026-03-16 | In Progress | `docs/governance/REPLAY_INCIDENT_RUNBOOK.md`, `scripts/incident_drill.sh`, `tests/run_replay_incident_artifacts.py` |
 | Replay on-call ownership confirmed | truckingadvantage | 2026-03-16 | Done | `docs/governance/REPLAY_ONCALL_OWNERSHIP.md`, `docs/governance/REPLAY_OVERRIDE_AUDIT_REVIEW_LOG.md`, `tests/run_replay_operations_gates.py` |
 
 Status values:

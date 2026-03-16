@@ -185,7 +185,13 @@ if [[ "${DRILL_PROVIDER}" == "MockComplianceProvider" ]]; then
     baseline_cmd+=(--fmcsa-source "${DRILL_COMPLIANCE_SOURCE}")
   fi
 fi
-"${baseline_cmd[@]}" >"${tmp_ok}" 2>&1
+if ! "${baseline_cmd[@]}" >"${tmp_ok}" 2>&1; then
+  BASELINE_RESULT="fail"
+  LAST_FAILURE_REASON="baseline-command-failed"
+  echo "[IncidentDrill] Baseline command failed." >&2
+  tail -n 120 "${tmp_ok}" >&2
+  exit 1
+fi
 
 if ! rg -q "Booking completed successfully" "${tmp_ok}"; then
   BASELINE_RESULT="fail"
