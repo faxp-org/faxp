@@ -18,7 +18,7 @@ Close the remaining execution gap between:
 | B. Private Partner Demo Finalization | Done | Deterministic private demo flow completed; public anonymized equivalent artifacts are published. |
 | C. Public Anonymized Adapter Spec Package | Done | Public-safe scaffold and outreach packet are now published. |
 | D. Security and Governance Continuation | Ongoing | Strict replay release-gate closure and incident drill evidence now merged; continue continuous CI/ruleset/guardrail maintenance. |
-| E. Adoption Execution | In Progress | Outreach now runs off the public-safe packet set and runbook. |
+| E. Adoption Execution | Done | Outreach runbook/tracker are now test-enforced in CI + conformance (`run_adoption_execution_runbook`). |
 | F. Second Independent Implementer Demo | In Progress | Complete one additional independent TMS integration demo before public beta promotion decision. |
 
 ## Checkpoint Closeout (Current)
@@ -27,11 +27,11 @@ Completed this cycle:
 1. Workstream A (Roadmap and Status Hygiene).
 2. Workstream B (Private Partner Demo Finalization).
 3. Workstream C (Public Anonymized Adapter Spec Package).
+4. Workstream E (Adoption Execution).
 
 Remaining active execution items:
 1. Workstream D (Security and Governance Continuation).
-2. Workstream E (Adoption Execution via public-safe packet).
-3. Workstream F (Second independent implementer demo evidence).
+2. Workstream F (Second independent implementer demo evidence).
 
 ## Local Verification Baseline
 
@@ -119,7 +119,7 @@ Exit criteria:
 
 Owner: Maintainer  
 Priority: P2
-Status: In Progress
+Status: Done
 
 Tasks:
 1. Use final anonymized package as the default outreach artifact.
@@ -131,6 +131,10 @@ Tasks:
 Exit criteria:
 1. Outreach conversations can start from a consistent, public-safe technical packet.
 2. New integration prospects can evaluate FAXP without private credentials.
+
+Completion note (2026-03-16):
+1. Public-safe outreach packet/runbook/tracker are published.
+2. Adoption execution runbook checks are now required in CI and conformance governance wiring.
 
 ## Workstream F: Second Independent Implementer Demo
 
@@ -152,5 +156,4 @@ Exit criteria:
 ## Sequencing
 
 1. Run Workstream D continuously.
-2. Execute Workstream E using the public packet and runbook.
-3. Execute Workstream F in parallel as integration opportunities become available.
+2. Execute Workstream F as integration opportunities become available.
