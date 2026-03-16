@@ -83,6 +83,14 @@ def main() -> int:
         "24" in security and "hour" in security.lower(),
         "SECURITY.md must document max 24-hour replay override lifetime.",
     )
+    _assert(
+        "approved public domains" in security.lower(),
+        "SECURITY.md must document approved-domain public redaction guardrail.",
+    )
+    _assert(
+        "FAXP_PRIVATE_REDACTION_TERMS" in security,
+        "SECURITY.md must document optional private redaction terms env var.",
+    )
 
     ci = _read(PROJECT_ROOT / ".github" / "workflows" / "ci.yml")
     _assert("Gitleaks secret scan" in ci, "CI workflow must include gitleaks secret scan step.")
