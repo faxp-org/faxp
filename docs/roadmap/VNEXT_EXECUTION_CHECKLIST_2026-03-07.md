@@ -126,6 +126,7 @@ Tasks:
 2. Keep partner-specific implementation details in private channels.
 3. Track outreach progress separately from protocol-core changes.
 4. Use `docs/builders/ADOPTION_EXECUTION_RUNBOOK.md` as the default public outreach playbook.
+5. Track outreach stages using `docs/builders/ADOPTION_EXECUTION_TRACKER_TEMPLATE.md`.
 
 Exit criteria:
 1. Outreach conversations can start from a consistent, public-safe technical packet.

@@ -34,6 +34,8 @@ This packet gives prospective implementers enough context to evaluate integratio
 5. Second implementer demo execution guide:
    - `docs/builders/SECOND_IMPLEMENTER_DEMO_CHECKLIST.md`
    - `docs/builders/SECOND_IMPLEMENTER_EVIDENCE_BUNDLE_TEMPLATE.json`
+6. Adoption execution tracking scaffold:
+   - `docs/builders/ADOPTION_EXECUTION_TRACKER_TEMPLATE.md`
 
 ## Suggested Outreach Sequence
 
