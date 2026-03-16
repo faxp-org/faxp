@@ -41,7 +41,7 @@ Out of scope:
 - POD/BOL custody lifecycle
 - invoicing, remittance, payment rails, and settlement operations
 - FAXP-hosted verifier operations
-- verifier business logic and provider-specific execution (for example: FMCSA checks, biometric matching, vendor scoring models)
+- verifier business logic and provider-specific execution (for example: regulatory/compliance checks, biometric matching, vendor scoring models)
 
 Canonical boundary docs:
 - `docs/governance/SCOPE_GUARDRAILS.md`
@@ -69,6 +69,7 @@ Contributor-facing architecture references:
 Note:
 - Simulation and Streamlit demo runtime artifacts are reference-runtime material.
 - Protocol-core ownership remains in schemas/governance/conformance contracts, and builder-side runtime behavior is being migrated to a dedicated builder-runtime workspace.
+- Legacy compliance-provider labels (for example `FMCSA`) may still appear in reference-runtime compatibility code paths and tests; those labels are not protocol-core requirements.
 
 ## Quick Start
 

@@ -30,3 +30,8 @@
 - Publish incident summary with root cause, timeline, and corrective actions.
 - Update gate status in `REPLAY_OPERATIONS_GATES.md`.
 - Generate machine-checkable incident artifact via `scripts/incident_drill.sh` and validate with `tests/run_replay_incident_artifacts.py`.
+- For non-local compliance/authority-record incident drills, configure:
+  - `FAXP_INCIDENT_DRILL_COMPLIANCE_SOURCE` as `implementer-adapter`, `vendor-direct`, or `hosted-adapter`
+    - legacy alias still accepted: `FAXP_INCIDENT_DRILL_FMCSA_SOURCE`
+  - `FAXP_COMPLIANCE_ADAPTER_BASE_URL` with a reachable adapter endpoint
+    - legacy alias still accepted: `FAXP_FMCSA_ADAPTER_BASE_URL`
