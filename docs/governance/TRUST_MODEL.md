@@ -12,7 +12,7 @@ Define what trust controls FAXP enforces at the protocol layer and what stays ou
 
 ## Trust Controls Out of Scope
 1. Hosting verifier services or adapter infrastructure.
-2. Operating FMCSA, identity, or compliance provider APIs.
+2. Operating external compliance, identity, or regulatory-authority provider APIs.
 3. Storing provider API credentials for implementers.
 4. Acting as a global participant identity authority or onboarding registry.
 

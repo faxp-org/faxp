@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import json
+import os
 import subprocess
 import sys
 
@@ -14,9 +15,12 @@ CHECKLIST_PATH = PROJECT_ROOT / "docs" / "governance" / "RELEASE_READINESS_CHECK
 GOVERNANCE_INDEX_PATH = PROJECT_ROOT / "docs" / "governance" / "GOVERNANCE_INDEX.json"
 CI_WORKFLOW_PATH = PROJECT_ROOT / ".github" / "workflows" / "ci.yml"
 CONFORMANCE_SUITE_PATH = PROJECT_ROOT / "conformance" / "run_all_checks.py"
+REPLAY_GATES_PATH = PROJECT_ROOT / "docs" / "governance" / "REPLAY_OPERATIONS_GATES.md"
 
 BLOCK_BEGIN = "<!-- RELEASE_READINESS_REQUIREMENTS_BEGIN -->"
 BLOCK_END = "<!-- RELEASE_READINESS_REQUIREMENTS_END -->"
+REPLAY_BLOCK_BEGIN = "<!-- REPLAY_OPERATIONS_GATES_BEGIN -->"
+REPLAY_BLOCK_END = "<!-- REPLAY_OPERATIONS_GATES_END -->"
 
 
 def _assert(condition: bool, message: str) -> None:
@@ -48,9 +52,89 @@ def _validate_unique(items: list[str], context: str) -> None:
     _assert(not duplicates, f"{context} has duplicate values: {duplicates}")
 
 
+def _is_truthy(value: str | None) -> bool:
+    return str(value or "").strip().lower() in {"1", "true", "yes", "on", "y"}
+
+
+def _is_strict_release_mode() -> bool:
+    app_mode = str(os.getenv("FAXP_APP_MODE", "local") or "").strip().lower()
+    release_channel = str(os.getenv("FAXP_RELEASE_CHANNEL", "") or "").strip().lower()
+    strict_override = _is_truthy(os.getenv("FAXP_RELEASE_STRICT_GATES", "0"))
+    strict_legacy_override = _is_truthy(os.getenv("FAXP_ENFORCE_STRICT_RELEASE_GATES", "0"))
+    if strict_override:
+        return True
+    if strict_legacy_override:
+        return True
+    if app_mode not in {"local", "dev", "development", "test"}:
+        return True
+    return release_channel in {"beta", "rc", "candidate", "release", "production"}
+
+
+def _extract_replay_checklist_rows(document: str) -> list[str]:
+    rows = []
+    for raw_line in document.splitlines():
+        line = raw_line.strip()
+        if not line.startswith("| Replay "):
+            continue
+        rows.append(line)
+    return rows
+
+
+def _validate_replay_checklist_rows_if_required(checklist_doc: str) -> None:
+    if not _is_strict_release_mode():
+        return
+    rows = _extract_replay_checklist_rows(checklist_doc)
+    _assert(rows, "Strict release-mode requires replay checklist rows to be present.")
+    non_done_rows = []
+    for row in rows:
+        cells = [cell.strip() for cell in row.strip("|").split("|")]
+        if len(cells) < 4:
+            non_done_rows.append({"row": row, "reason": "invalid-row-format"})
+            continue
+        owner, due, status = cells[1], cells[2], cells[3]
+        if owner.upper() == "TBD" or due.upper() == "TBD" or status.lower() != "done":
+            non_done_rows.append({"row": row, "owner": owner, "due": due, "status": status})
+    _assert(
+        not non_done_rows,
+        (
+            "Strict release-mode readiness failed: replay checklist rows must be fully closed "
+            f"(owner/due set and status=Done). Outstanding: {non_done_rows}"
+        ),
+    )
+
+
+def _validate_strict_replay_gate_closure_if_required() -> None:
+    if not _is_strict_release_mode():
+        return
+
+    _assert(REPLAY_GATES_PATH.exists(), "Missing replay operations gates document.")
+    replay_doc = REPLAY_GATES_PATH.read_text(encoding="utf-8")
+    payload = json.loads(_extract_block(replay_doc, REPLAY_BLOCK_BEGIN, REPLAY_BLOCK_END))
+    gates = payload.get("gates") or []
+    _assert(isinstance(gates, list) and gates, "Replay gate manifest must include non-empty gates.")
+
+    not_closed = []
+    for gate in gates:
+        gate_id = str((gate or {}).get("id") or "").strip()
+        status = str((gate or {}).get("status") or "").strip().lower()
+        if not gate_id:
+            continue
+        if status != "done":
+            not_closed.append({"id": gate_id, "status": status or "missing"})
+
+    _assert(
+        not not_closed,
+        (
+            "Strict release-mode gate closure failed: all replay operation gates must be status=done "
+            f"before beta/release promotion. Outstanding: {not_closed}"
+        ),
+    )
+
+
 def main() -> int:
     checklist_doc = CHECKLIST_PATH.read_text(encoding="utf-8")
     requirements = json.loads(_extract_block(checklist_doc, BLOCK_BEGIN, BLOCK_END))
+    _validate_replay_checklist_rows_if_required(checklist_doc)
 
     required_fields = [
         "requiredArtifacts",
@@ -115,6 +199,8 @@ def main() -> int:
             str(suite_map.get("release_readiness") or "") == "tests/run_release_readiness.py",
             "GOVERNANCE_INDEX suiteCheckToTest.release_readiness must map to tests/run_release_readiness.py.",
         )
+
+    _validate_strict_replay_gate_closure_if_required()
 
     print("Release readiness checks passed.")
     return 0

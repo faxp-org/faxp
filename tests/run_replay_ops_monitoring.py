@@ -274,6 +274,50 @@ def main() -> int:
         f"Expected missingFields in input validation output, got {partial_metrics}",
     )
 
+    domain_extreme = _evaluate(
+        {
+            "availability_percent": 1e308,
+            "failure_rate_percent": 0.0,
+            "reject_rate_percent": 0.0,
+            "p95_latency_ms": 20,
+            "p99_latency_ms": 40,
+            "backend_unavailable_seconds": 0,
+        }
+    )
+    _assert(
+        domain_extreme.get("status") == "critical",
+        f"Expected critical status for out-of-domain availability, got {domain_extreme}",
+    )
+    _assert(
+        "metrics_invalid_breach" in domain_extreme.get("sloBreaches", []),
+        f"Expected metrics_invalid_breach for out-of-domain availability, got {domain_extreme}",
+    )
+    domain_validation = domain_extreme.get("inputValidation") or {}
+    _assert(
+        "availability_percent" in (domain_validation.get("invalidFields") or []),
+        f"Expected availability_percent in invalidFields, got {domain_extreme}",
+    )
+
+    domain_negative = _evaluate(
+        {
+            "availability_percent": 100.0,
+            "failure_rate_percent": -999.0,
+            "reject_rate_percent": 0.0,
+            "p95_latency_ms": 20,
+            "p99_latency_ms": 40,
+            "backend_unavailable_seconds": 0,
+        }
+    )
+    _assert(
+        domain_negative.get("status") == "critical",
+        f"Expected critical status for negative failure rate, got {domain_negative}",
+    )
+    negative_validation = domain_negative.get("inputValidation") or {}
+    _assert(
+        "failure_rate_percent" in (negative_validation.get("invalidFields") or []),
+        f"Expected failure_rate_percent in invalidFields, got {domain_negative}",
+    )
+
     with tempfile.TemporaryDirectory(prefix="faxp-replay-ops-corrupt-state-") as temp_dir:
         state_path = Path(temp_dir) / "state.json"
         state_path.write_text("{not-json-state", encoding="utf-8")
@@ -326,6 +370,41 @@ def main() -> int:
         _assert(
             ("state_load_error", "critical") in state_alerts,
             f"Expected state_load_error alert for non-object state payload, got {state_result}",
+        )
+
+    with tempfile.TemporaryDirectory(prefix="faxp-replay-ops-state-poison-") as temp_dir:
+        state_path = Path(temp_dir) / "state.json"
+        state_path.write_text(
+            json.dumps(
+                {
+                    "effective_status": {"bad": "critical"},
+                    "stable_minutes_below_warn": {"n": 999},
+                }
+            ),
+            encoding="utf-8",
+        )
+        state_result = _evaluate_single_with_state(
+            {
+                "availability_percent": 100.0,
+                "failure_rate_percent": 0.0,
+                "reject_rate_percent": 0.0,
+                "p95_latency_ms": 20,
+                "p99_latency_ms": 40,
+                "backend_unavailable_seconds": 0,
+                "sample_window_minutes": 1,
+            },
+            state_path,
+        )
+        _assert(
+            state_result.get("status") == "critical" and state_result.get("clearPending") is True,
+            f"Expected fail-closed state handling for poisoned state payload, got {state_result}",
+        )
+        state_alerts = {
+            (item.get("type"), item.get("severity")) for item in state_result.get("alerts", [])
+        }
+        _assert(
+            ("state_load_error", "critical") in state_alerts,
+            f"Expected state_load_error alert for poisoned state payload, got {state_result}",
         )
 
     print("Replay ops monitoring checks passed.")

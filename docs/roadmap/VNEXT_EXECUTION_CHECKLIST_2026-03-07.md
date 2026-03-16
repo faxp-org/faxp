@@ -10,12 +10,12 @@ Close the remaining execution gap between:
 1. protocol-core readiness (already passing), and
 2. builder adoption readiness (private partner demo polish + public anonymized guidance).
 
-## Status Matrix (2026-03-07)
+## Status Matrix (2026-03-12)
 
 | Workstream | Status | Notes |
 | --- | --- | --- |
 | A. Roadmap and Status Hygiene | Done | Roadmap/index/checklist alignment completed on `main`. |
-| B. Private Partner Demo Finalization | In Progress | Active in private partner thread and local private scripts. |
+| B. Private Partner Demo Finalization | Done | Deterministic private demo flow completed; public anonymized equivalent artifacts are published. |
 | C. Public Anonymized Adapter Spec Package | Done | Public-safe scaffold and outreach packet are now published. |
 | D. Security and Governance Continuation | Ongoing | Continuous CI/ruleset/guardrail maintenance. |
 | E. Adoption Execution | In Progress | Outreach now runs off the public-safe packet set and runbook. |
@@ -24,12 +24,12 @@ Close the remaining execution gap between:
 
 Completed this cycle:
 1. Workstream A (Roadmap and Status Hygiene).
-2. Workstream C (Public Anonymized Adapter Spec Package).
+2. Workstream B (Private Partner Demo Finalization).
+3. Workstream C (Public Anonymized Adapter Spec Package).
 
 Remaining active execution items:
-1. Workstream B (Private Partner Demo Finalization).
-2. Workstream D (Security and Governance Continuation).
-3. Workstream E (Adoption Execution via public-safe packet).
+1. Workstream D (Security and Governance Continuation).
+2. Workstream E (Adoption Execution via public-safe packet).
 
 ## Local Verification Baseline
 
@@ -64,7 +64,7 @@ Exit criteria:
 
 Owner: Maintainer  
 Priority: P0
-Status: In Progress
+Status: Done
 
 Tasks:
 1. Freeze one deterministic private smoke run and outputs.
@@ -76,6 +76,11 @@ Exit criteria:
 1. Private runbook can be replayed end-to-end without ad hoc fixes.
 2. Demo packet clearly separates FAXP responsibilities from adapter responsibilities.
 3. Partner has a single clean artifact set to review.
+
+Completion note (2026-03-12):
+1. Deterministic private smoke flow completed.
+2. Protocol-vs-adapter responsibility split documented.
+3. Stable request/response packet contract and deterministic stop-update contract captured.
 
 ## Workstream C: Public Anonymized Adapter Spec Package
 
@@ -126,6 +131,5 @@ Exit criteria:
 
 ## Sequencing
 
-1. Complete Workstream B.
-2. Run Workstream D continuously.
-3. Execute Workstream E using the public packet and runbook.
+1. Run Workstream D continuously.
+2. Execute Workstream E using the public packet and runbook.

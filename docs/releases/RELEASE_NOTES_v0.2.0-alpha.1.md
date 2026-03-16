@@ -32,7 +32,7 @@ This alpha consolidates the v0.2 neutrality/security foundation while preserving
 - Unknown taxonomy rejection check.
 - Two-provider neutrality smoke vectors:
   - MockBiometric provider neutral ID assertion.
-  - FMCSA mock neutral ID assertion.
+  - Compliance authority-record mock neutral ID assertion (legacy provider label path).
 
 5. Documentation/governance updates
 - Runbook expansion in README.
@@ -49,7 +49,7 @@ This alpha consolidates the v0.2 neutrality/security foundation while preserving
 
 ## Known Remaining Work
 
-1. Optional live FMCSA contract test against sandbox/stub API in CI.
+1. Optional live authority-record provider contract test against sandbox/stub API in CI.
 2. Dedicated compatibility suite for deprecation warnings through v0.3.x.
 3. Formal protocol version bump in runtime when v0.2 wire semantics are promoted from compatibility track.
 
@@ -58,4 +58,4 @@ This alpha consolidates the v0.2 neutrality/security foundation while preserving
 1. `python3 tests/run_schema_compatibility.py`
 2. `python3 tests/run_streamlit_state_logic.py`
 3. `./scripts/run_secure_demo.sh sim --use-kms-command --provider MockBiometricProvider --verification-status Success`
-4. `./scripts/run_secure_demo.sh sim --use-kms-command --provider FMCSA --verification-status Success`
+4. `./scripts/run_secure_demo.sh sim --use-kms-command --provider FMCSA --verification-status Success` (legacy provider label path)

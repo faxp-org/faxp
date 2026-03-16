@@ -7,6 +7,7 @@ from datetime import datetime
 from pathlib import Path
 import json
 import os
+import unicodedata
 
 
 DEFAULT_ARTIFACT_PATH = "/tmp/faxp_replay_incident_artifact.json"
@@ -19,6 +20,48 @@ PLACEHOLDER_TOKENS = {
     "n/a",
     "na",
 }
+CONFUSABLE_CHAR_MAP = str.maketrans(
+    {
+        "А": "A",
+        "В": "B",
+        "Е": "E",
+        "К": "K",
+        "М": "M",
+        "Н": "H",
+        "О": "O",
+        "Р": "P",
+        "С": "C",
+        "Т": "T",
+        "Х": "X",
+        "а": "a",
+        "е": "e",
+        "к": "k",
+        "м": "m",
+        "н": "h",
+        "о": "o",
+        "р": "p",
+        "с": "c",
+        "т": "t",
+        "х": "x",
+        "і": "i",
+        "І": "I",
+        "ο": "o",
+        "Ο": "O",
+        "τ": "t",
+        "Τ": "T",
+        "α": "a",
+        "Α": "A",
+    }
+)
+
+
+def _normalize_placeholder(value: object) -> str:
+    text = unicodedata.normalize("NFKC", str(value or "").strip())
+    text = text.translate(CONFUSABLE_CHAR_MAP).casefold()
+    return "".join(char for char in text if char.isalnum())
+
+
+NORMALIZED_PLACEHOLDERS = {_normalize_placeholder(token) for token in PLACEHOLDER_TOKENS}
 
 
 def _assert(condition: bool, message: str) -> None:
@@ -34,10 +77,10 @@ def _parse_iso8601(value: str, context: str) -> None:
 
 
 def _assert_not_placeholder(value: object, context: str) -> None:
-    normalized = str(value or "").strip()
-    lowered = normalized.lower()
-    _assert(normalized, f"{context} must be non-empty.")
-    _assert(lowered not in PLACEHOLDER_TOKENS, f"{context} contains placeholder content.")
+    raw = str(value or "").strip()
+    normalized = _normalize_placeholder(raw)
+    _assert(raw, f"{context} must be non-empty.")
+    _assert(normalized not in NORMALIZED_PLACEHOLDERS, f"{context} contains placeholder content.")
 
 
 def main() -> int:

@@ -20,6 +20,15 @@ REQUIRED_METRIC_FIELDS = (
     "p99_latency_ms",
     "backend_unavailable_seconds",
 )
+VALID_STATUSES = {"ok", "warn", "critical"}
+METRIC_DOMAINS = {
+    "availability_percent": (0.0, 100.0),
+    "failure_rate_percent": (0.0, 100.0),
+    "reject_rate_percent": (0.0, 100.0),
+    "p95_latency_ms": (0.0, None),
+    "p99_latency_ms": (0.0, None),
+    "backend_unavailable_seconds": (0.0, None),
+}
 
 
 def _assert(condition: bool, message: str) -> None:
@@ -50,7 +59,35 @@ def _load_state(path: Path) -> dict:
             "stable_minutes_below_warn": 0.0,
             "_state_load_error": "state payload must be a JSON object",
         }
-    return payload
+    effective_status = payload.get("effective_status", "ok")
+    if not isinstance(effective_status, str) or effective_status not in VALID_STATUSES:
+        return {
+            "effective_status": "critical",
+            "stable_minutes_below_warn": 0.0,
+            "_state_load_error": "state.effective_status must be one of: ok, warn, critical",
+        }
+
+    last_raw_status = payload.get("last_raw_status", "ok")
+    if not isinstance(last_raw_status, str) or last_raw_status not in VALID_STATUSES:
+        return {
+            "effective_status": "critical",
+            "stable_minutes_below_warn": 0.0,
+            "_state_load_error": "state.last_raw_status must be one of: ok, warn, critical",
+        }
+
+    stable_minutes = _to_float(payload.get("stable_minutes_below_warn", 0.0), default=-1.0)
+    if stable_minutes < 0.0:
+        return {
+            "effective_status": "critical",
+            "stable_minutes_below_warn": 0.0,
+            "_state_load_error": "state.stable_minutes_below_warn must be a finite non-negative number",
+        }
+
+    return {
+        "effective_status": effective_status,
+        "last_raw_status": last_raw_status,
+        "stable_minutes_below_warn": stable_minutes,
+    }
 
 
 def _to_float(value: object, default: float = 0.0) -> float:
@@ -76,6 +113,18 @@ def _extract_metric(metrics: dict, key: str) -> tuple[float | None, str | None]:
     return parsed, None
 
 
+def _is_out_of_domain(key: str, value: float) -> bool:
+    domain = METRIC_DOMAINS.get(key)
+    if domain is None:
+        return False
+    minimum, maximum = domain
+    if value < minimum:
+        return True
+    if maximum is not None and value > maximum:
+        return True
+    return False
+
+
 def _evaluate(profile: dict, metrics: dict) -> dict:
     alerts: list[dict[str, object]] = []
     breaches: list[str] = []
@@ -98,12 +147,15 @@ def _evaluate(profile: dict, metrics: dict) -> dict:
             missing_fields.append(key)
         elif error == "invalid":
             invalid_fields.append(key)
+        elif parsed is not None and _is_out_of_domain(key, parsed):
+            invalid_fields.append(key)
 
     if missing_fields:
         alerts.append(
             {"type": "missing_metrics", "severity": "critical", "value": sorted(missing_fields)}
         )
         breaches.append("metrics_missing_breach")
+    invalid_fields = sorted(set(invalid_fields))
     if invalid_fields:
         alerts.append(
             {"type": "invalid_metrics", "severity": "critical", "value": sorted(invalid_fields)}

@@ -7,10 +7,12 @@ ENV_FILE="${1:-${SECRETS_DIR}/security.env.local}"
 MC_NUMBER="${FAXP_INCIDENT_DRILL_MC_NUMBER:-498282}"
 ROTATE_ON_DRILL="${FAXP_INCIDENT_DRILL_ROTATE:-0}"
 DRILL_PROVIDER="${FAXP_INCIDENT_DRILL_PROVIDER:-MockComplianceProvider}"
+DRILL_COMPLIANCE_SOURCE="${FAXP_INCIDENT_DRILL_COMPLIANCE_SOURCE:-${FAXP_INCIDENT_DRILL_FMCSA_SOURCE:-}}"
 REQUIRE_TRUCK_FLOW="${FAXP_INCIDENT_DRILL_REQUIRE_TRUCK_FLOW:-1}"
 INCIDENT_ARTIFACT_PATH="${FAXP_INCIDENT_ARTIFACT_PATH:-/tmp/faxp_replay_incident_artifact.json}"
 INCIDENT_ROUTING_TARGET="${FAXP_INCIDENT_ROUTING_TARGET:-replay-oncall}"
 INCIDENT_TICKET_REF="${FAXP_INCIDENT_TICKET_REF:-none}"
+COMPLIANCE_ADAPTER_BASE_URL="${FAXP_COMPLIANCE_ADAPTER_BASE_URL:-${FAXP_FMCSA_ADAPTER_BASE_URL:-}}"
 
 SIM_SCRIPT="${PROJECT_ROOT}/faxp_mvp_simulation.py"
 ROTATE_SCRIPT="${PROJECT_ROOT}/scripts/rotate_faxp_keys.sh"
@@ -36,6 +38,27 @@ echo "[IncidentDrill] Loading environment from ${ENV_FILE}"
 set -a
 source "${ENV_FILE}"
 set +a
+
+APP_MODE_LOWER="$(printf "%s" "${FAXP_APP_MODE:-local}" | tr '[:upper:]' '[:lower:]')"
+NON_LOCAL_MODE=0
+case "${APP_MODE_LOWER}" in
+  local|dev|development|test)
+    NON_LOCAL_MODE=0
+    ;;
+  *)
+    NON_LOCAL_MODE=1
+    ;;
+esac
+
+if [[ -z "${DRILL_COMPLIANCE_SOURCE}" ]]; then
+  if [[ "${DRILL_PROVIDER}" == "FMCSA" || "${DRILL_PROVIDER}" == "MockComplianceProvider" ]]; then
+    if [[ "${NON_LOCAL_MODE}" == "1" ]]; then
+      DRILL_COMPLIANCE_SOURCE="implementer-adapter"
+    else
+      DRILL_COMPLIANCE_SOURCE="authority-mock"
+    fi
+  fi
+fi
 
 tmp_ok="$(mktemp)"
 tmp_fail="$(mktemp)"
@@ -123,6 +146,28 @@ PY
 trap 'finalize "$?"' EXIT
 
 echo "[IncidentDrill] Step 1/4: Baseline verification run (expect success)."
+echo "[IncidentDrill] Provider: ${DRILL_PROVIDER}"
+if [[ -n "${DRILL_COMPLIANCE_SOURCE}" ]]; then
+  echo "[IncidentDrill] Compliance source: ${DRILL_COMPLIANCE_SOURCE}"
+fi
+
+if [[ "${NON_LOCAL_MODE}" == "1" && ( "${DRILL_PROVIDER}" == "FMCSA" || "${DRILL_PROVIDER}" == "MockComplianceProvider" ) ]]; then
+  if [[ "${DRILL_COMPLIANCE_SOURCE}" != "implementer-adapter" && "${DRILL_COMPLIANCE_SOURCE}" != "vendor-direct" && "${DRILL_COMPLIANCE_SOURCE}" != "hosted-adapter" ]]; then
+    BASELINE_RESULT="fail"
+    LAST_FAILURE_REASON="baseline-invalid-compliance-source-for-non-local"
+    echo "[IncidentDrill] Non-local mode requires compliance source implementer-adapter, vendor-direct, or hosted-adapter." >&2
+    echo "[IncidentDrill] Set FAXP_INCIDENT_DRILL_COMPLIANCE_SOURCE accordingly." >&2
+    exit 1
+  fi
+  if [[ -z "${COMPLIANCE_ADAPTER_BASE_URL:-}" ]]; then
+    BASELINE_RESULT="fail"
+    LAST_FAILURE_REASON="baseline-missing-compliance-adapter-base-url"
+    echo "[IncidentDrill] Missing FAXP_COMPLIANCE_ADAPTER_BASE_URL for non-local compliance incident drill baseline." >&2
+    echo "[IncidentDrill] Configure adapter URL in env before running incident drill." >&2
+    exit 1
+  fi
+fi
+
 baseline_cmd=(
   "${PYTHON_BIN}" "${SIM_SCRIPT}"
   --provider "${DRILL_PROVIDER}"
@@ -131,6 +176,14 @@ baseline_cmd=(
 )
 if [[ "${DRILL_PROVIDER}" == "FMCSA" ]]; then
   baseline_cmd+=(--mc-number "${MC_NUMBER}")
+  if [[ -n "${DRILL_COMPLIANCE_SOURCE}" ]]; then
+    baseline_cmd+=(--fmcsa-source "${DRILL_COMPLIANCE_SOURCE}")
+  fi
+fi
+if [[ "${DRILL_PROVIDER}" == "MockComplianceProvider" ]]; then
+  if [[ -n "${DRILL_COMPLIANCE_SOURCE}" ]]; then
+    baseline_cmd+=(--fmcsa-source "${DRILL_COMPLIANCE_SOURCE}")
+  fi
 fi
 "${baseline_cmd[@]}" >"${tmp_ok}" 2>&1
 
@@ -161,6 +214,14 @@ incident_cmd=(
 )
 if [[ "${DRILL_PROVIDER}" == "FMCSA" ]]; then
   incident_cmd+=(--mc-number "${MC_NUMBER}")
+  if [[ -n "${DRILL_COMPLIANCE_SOURCE}" ]]; then
+    incident_cmd+=(--fmcsa-source "${DRILL_COMPLIANCE_SOURCE}")
+  fi
+fi
+if [[ "${DRILL_PROVIDER}" == "MockComplianceProvider" ]]; then
+  if [[ -n "${DRILL_COMPLIANCE_SOURCE}" ]]; then
+    incident_cmd+=(--fmcsa-source "${DRILL_COMPLIANCE_SOURCE}")
+  fi
 fi
 FAXP_VERIFIER_ED25519_ACTIVE_KEY_ID="incident-compromised-kid" \
   "${incident_cmd[@]}" >"${tmp_fail}" 2>&1 || true

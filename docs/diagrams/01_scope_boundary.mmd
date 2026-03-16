@@ -1,0 +1,27 @@
+flowchart LR
+    subgraph Protocol["FAXP Protocol Core (In Scope)"]
+      P1["Envelope, Signatures, Replay/TTL"]
+      P2["Booking Messages:
+NewLoad/NewTruck
+Bid/Counter
+ExecutionReport/AmendRequest"]
+      P3["Conformance + Governance
+Profiles, Certification, Release Gates"]
+    end
+
+    subgraph Builder["Builder Runtime (Outside Protocol Core)"]
+      B1["UI + Product Workflow"]
+      B2["Matching, Ranking, Pricing Logic"]
+      B3["Risk/Trust Logic + External Integrations"]
+      B4["Deployment + Operations"]
+    end
+
+    subgraph Out["Out of Scope for FAXP Core"]
+      O1["Dispatch Execution"]
+      O2["Tracking/Telematics Lifecycle"]
+      O3["POD/BOL Custody"]
+      O4["Invoicing/Settlement/Payments"]
+    end
+
+    Protocol -->|"Standardized Interop Contract"| Builder
+    Builder -. "No Protocol-Core Expansion" .-> Out

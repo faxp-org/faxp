@@ -16,7 +16,7 @@ FAXP foundation responsibilities:
 
 FAXP should not be the default production operator for:
 
-1. FMCSA/identity verification hosting.
+1. Compliance/authority-record and identity verification hosting.
 2. Insurance or compliance provider hosting.
 3. Payment or settlement services.
 4. Telematics/tracking infrastructure.

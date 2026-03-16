@@ -47,7 +47,9 @@ All examples in this package are synthetic and anonymized:
    - `docs/builders/examples/public_adapter_contract/execution_report_envelope.sample.json`
 3. Adapter-side builder update request example:
    - `docs/builders/examples/public_adapter_contract/adapter_update_request.sample.json`
-4. Example notes:
+4. Deterministic stop-ID update example:
+   - `docs/builders/examples/public_adapter_contract/deterministic_stop_update.sample.json`
+5. Example notes:
    - `docs/builders/examples/public_adapter_contract/README.md`
 
 ## Handoff Model (Protocol vs Adapter)
@@ -67,6 +69,7 @@ flowchart LR
 1. A builder may create or edit its own load records before any FAXP message exists. That is builder-side setup, not a protocol action.
 2. The FAXP handoff starts when the adapter emits a canonical FAXP message (`NewLoad`, `NewTruck`, etc.).
 3. The protocol handoff ends when the adapter receives a terminal booking-plane message (typically `ExecutionReport`) and maps it back to builder-native update logic.
+4. Hosting and credential custody guidance is documented in `docs/builders/ADAPTER_HOSTING_AND_TRUST_BOUNDARY.md`.
 
 ## Validation Baseline
 
@@ -75,4 +78,3 @@ Use the repo venv interpreter:
 1. `.venv/bin/python tests/run_open_source_guardrails.py`
 2. `.venv/bin/python tests/run_release_readiness.py`
 3. `.venv/bin/python tests/run_conformance_suite.py`
-

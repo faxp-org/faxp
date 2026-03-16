@@ -1,0 +1,36 @@
+name: Policy Snapshot
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "15 14 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+
+      - name: Export GitHub policy snapshot
+        env:
+          POLICY_SNAPSHOT_TOKEN: ${{ secrets.POLICY_SNAPSHOT_TOKEN }}
+        run: |
+          python3 scripts/export_github_policy_snapshot.py \
+            --repo "${{ github.repository }}" \
+            --output-dir artifacts/policy-snapshot
+
+      - name: Upload policy snapshot artifact
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        with:
+          name: policy-snapshot-${{ github.run_id }}
+          path: artifacts/policy-snapshot
+          if-no-files-found: error

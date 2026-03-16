@@ -41,7 +41,7 @@ Assert in output:
 - `VerificationResult.assuranceLevel = AAL2`
 - `VerificationResult.evidenceRef` exists
 
-2. FMCSA mock emits neutral fields
+2. Authority-record compliance mock emits neutral fields
 Command:
 - `./scripts/run_secure_demo.sh sim --use-kms-command --provider FMCSA --verification-status Success --mc-number 498282`
 Assert in output:
@@ -80,7 +80,7 @@ Expected:
 - Verification not attempted.
 - No booking completion.
 
-3. FMCSA mismatch path
+3. Compliance-source mismatch path (legacy provider label `FMCSA`)
 Command:
 - `python3 faxp_mvp_simulation.py --force-capability-mismatch --provider FMCSA --verification-status Success --mc-number 498282`
 Expected:
@@ -127,7 +127,7 @@ Settings:
 Expected:
 - Booking completed with `VerifiedBadge=Premium`.
 
-3. Cloud FMCSA mock behavior
+3. Cloud compliance mock behavior
 Settings:
 - Provider `FMCSA (Authority)`
 Expected:
@@ -136,14 +136,14 @@ Expected:
 
 4. Cloud hosted-adapter behavior (when adapter is configured)
 Secrets:
-- `FAXP_FMCSA_ADAPTER_BASE_URL=<https_endpoint>`
+- `FAXP_COMPLIANCE_ADAPTER_BASE_URL=<https_endpoint>` (legacy alias: `FAXP_FMCSA_ADAPTER_BASE_URL`)
 Settings:
 - Provider `FMCSA (Authority)`
 - FMCSA Source `hosted-adapter`
 - MC `498282`
 Expected:
 - Verification source is `hosted-adapter`.
-- Verification either succeeds with `VerifiedBadge=Basic` or fails closed with a clear adapter/FMCSA error.
+- Verification either succeeds with `VerifiedBadge=Basic` or fails closed with a clear adapter/compliance error.
 
 ## 7. CI Coverage Mapping
 
