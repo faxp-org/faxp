@@ -3,8 +3,10 @@
 
 from __future__ import annotations
 
+import os
 import re
 from pathlib import Path
+from urllib.parse import urlparse
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -24,21 +26,18 @@ TEXT_SUFFIXES = {".md", ".txt", ".json", ".yml", ".yaml", ".toml", ".html", ".ht
 EXPLICIT_TEXT_FILES = {REPO_ROOT / ".github" / "CODEOWNERS"}
 
 FORBIDDEN_PATTERNS = [
-    ("Partner name leak: Diesel TMS", re.compile(r"\bdiesel\s*tms\b", re.IGNORECASE)),
-    ("Partner name leak: dieseltms", re.compile(r"\bdieseltms\b", re.IGNORECASE)),
-    ("Partner name leak: Jamie", re.compile(r"\bjamie\b", re.IGNORECASE)),
-    ("Partner name leak: BrokerPro", re.compile(r"\bbrokerpro\b", re.IGNORECASE)),
-    (
-        "Partner name leak: DR Dispatch",
-        re.compile(r"\bdr\s*dispatch\b|\bdrdispatch\b", re.IGNORECASE),
-    ),
-    (
-        "Partner name leak: Rick/Richard Holland",
-        re.compile(r"\brick\s+holland\b|\brichard\s+holland\b", re.IGNORECASE),
-    ),
     ("Local absolute path leak: macOS home path", re.compile(r"/Users/[A-Za-z0-9._-]+/")),
     ("Local absolute path leak: Windows user path", re.compile(r"[A-Za-z]:\\\\Users\\\\")),
 ]
+
+URL_PATTERN = re.compile(r"https?://[^\s)\]>\"]+")
+APPROVED_PUBLIC_DOMAINS = {
+    "example.com",
+    "faxp.org",
+    "github.com",
+    "json-schema.org",
+}
+PRIVATE_TERMS_ENV = "FAXP_PRIVATE_REDACTION_TERMS"
 
 
 def _is_text_candidate(path: Path) -> bool:
@@ -64,8 +63,39 @@ def _iter_public_files() -> list[Path]:
     return sorted(set(files))
 
 
+def _normalize_domain(url: str) -> str:
+    parsed = urlparse(url.strip())
+    return parsed.netloc.lower().strip("`.,;:)]}>\"'")
+
+
+def _is_domain_approved(domain: str) -> bool:
+    if not domain:
+        return False
+    if domain in APPROVED_PUBLIC_DOMAINS:
+        return True
+    # Allow common safe subdomain usage under approved roots.
+    return any(domain.endswith(f".{root}") for root in APPROVED_PUBLIC_DOMAINS)
+
+
+def _private_term_patterns() -> list[tuple[str, re.Pattern[str]]]:
+    raw = str(os.getenv(PRIVATE_TERMS_ENV, "") or "").strip()
+    if not raw:
+        return []
+    terms = [term.strip() for term in raw.split(",") if term.strip()]
+    patterns: list[tuple[str, re.Pattern[str]]] = []
+    for term in terms:
+        patterns.append(
+            (
+                f"Private redaction term leak (from {PRIVATE_TERMS_ENV}): {term}",
+                re.compile(re.escape(term), re.IGNORECASE),
+            )
+        )
+    return patterns
+
+
 def main() -> int:
     violations: list[str] = []
+    private_patterns = _private_term_patterns()
     for path in _iter_public_files():
         rel = path.relative_to(REPO_ROOT)
         lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
@@ -73,6 +103,15 @@ def main() -> int:
             for reason, pattern in FORBIDDEN_PATTERNS:
                 if pattern.search(line):
                     violations.append(f"{rel}:{line_no}: {reason}")
+            for reason, pattern in private_patterns:
+                if pattern.search(line):
+                    violations.append(f"{rel}:{line_no}: {reason}")
+            for url in URL_PATTERN.findall(line):
+                domain = _normalize_domain(url)
+                if not _is_domain_approved(domain):
+                    violations.append(
+                        f"{rel}:{line_no}: Unapproved external domain in public-facing file: {domain}"
+                    )
 
     if violations:
         print("Public redaction guardrails violation(s) detected:")
