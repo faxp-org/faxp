@@ -9,6 +9,8 @@ faxp_agent_keys.filled.json
 __pycache__/
 *.pyc
 .DS_Store
+appendonlydir/
+dump.rdb
 
 # Website build/output
 website/

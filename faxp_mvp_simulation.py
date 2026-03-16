@@ -48,6 +48,17 @@ def _normalize_mileage_dispute_policy(value):
     return "balanced"
 
 
+def _env_first(*names, default=""):
+    for name in names:
+        value = os.getenv(name)
+        if value is None:
+            continue
+        trimmed = str(value).strip()
+        if trimmed:
+            return trimmed
+    return str(default).strip()
+
+
 DEBUG_MODE = os.getenv("FAXP_DEBUG", "0") == "1"
 SENSITIVE_LOG_KEY_EXACT = {"stderr", "signature", "authorization"}
 APP_MODE = os.getenv("FAXP_APP_MODE", "local").strip().lower()
@@ -72,22 +83,41 @@ try:
     DEFAULT_RISK_TIER = int(DEFAULT_RISK_TIER_RAW)
 except ValueError:
     DEFAULT_RISK_TIER = 1
-FMCSA_ADAPTER_BASE_URL = os.getenv("FAXP_FMCSA_ADAPTER_BASE_URL", "").strip()
-FMCSA_ADAPTER_AUTH_TOKEN = os.getenv("FAXP_FMCSA_ADAPTER_AUTH_TOKEN", "").strip()
-FMCSA_ADAPTER_TIMEOUT_SECONDS_RAW = os.getenv("FAXP_FMCSA_ADAPTER_TIMEOUT_SECONDS", "10").strip()
-FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER_RAW = os.getenv(
+FMCSA_ADAPTER_BASE_URL = _env_first(
+    "FAXP_COMPLIANCE_ADAPTER_BASE_URL",
+    "FAXP_FMCSA_ADAPTER_BASE_URL",
+    default="",
+)
+FMCSA_ADAPTER_AUTH_TOKEN = _env_first(
+    "FAXP_COMPLIANCE_ADAPTER_AUTH_TOKEN",
+    "FAXP_FMCSA_ADAPTER_AUTH_TOKEN",
+    default="",
+)
+FMCSA_ADAPTER_TIMEOUT_SECONDS_RAW = _env_first(
+    "FAXP_COMPLIANCE_ADAPTER_TIMEOUT_SECONDS",
+    "FAXP_FMCSA_ADAPTER_TIMEOUT_SECONDS",
+    default="10",
+)
+FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER_RAW = _env_first(
+    "FAXP_COMPLIANCE_ADAPTER_REQUIRE_SIGNED_WRAPPER",
     "FAXP_FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER",
-    "1",
-).strip()
-FMCSA_ADAPTER_SIGN_REQUESTS_RAW = os.getenv("FAXP_FMCSA_ADAPTER_SIGN_REQUESTS", "1").strip()
-FMCSA_ADAPTER_REQUEST_SIGNING_KEYS_RAW = os.getenv(
+    default="1",
+)
+FMCSA_ADAPTER_SIGN_REQUESTS_RAW = _env_first(
+    "FAXP_COMPLIANCE_ADAPTER_SIGN_REQUESTS",
+    "FAXP_FMCSA_ADAPTER_SIGN_REQUESTS",
+    default="1",
+)
+FMCSA_ADAPTER_REQUEST_SIGNING_KEYS_RAW = _env_first(
+    "FAXP_COMPLIANCE_ADAPTER_REQUEST_SIGNING_KEYS",
     "FAXP_FMCSA_ADAPTER_REQUEST_SIGNING_KEYS",
-    "",
-).strip()
-FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID = os.getenv(
+    default="",
+)
+FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID = _env_first(
+    "FAXP_COMPLIANCE_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID",
     "FAXP_FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID",
-    "",
-).strip()
+    default="",
+)
 TRUSTED_VERIFIER_REGISTRY_RAW = os.getenv("FAXP_TRUSTED_VERIFIER_REGISTRY", "").strip()
 TRUSTED_VERIFIER_REGISTRY_FILE = os.getenv(
     "FAXP_TRUSTED_VERIFIER_REGISTRY_FILE", ""
@@ -209,6 +239,13 @@ ALLOWED_EXTERNAL_SECRET_KEYS = {
     "FAXP_TRUSTED_VERIFIER_REGISTRY",
     "FAXP_TRUSTED_VERIFIER_REGISTRY_FILE",
     "FAXP_ENFORCE_TRUSTED_VERIFIER_REGISTRY",
+    "FAXP_COMPLIANCE_ADAPTER_BASE_URL",
+    "FAXP_COMPLIANCE_ADAPTER_AUTH_TOKEN",
+    "FAXP_COMPLIANCE_ADAPTER_TIMEOUT_SECONDS",
+    "FAXP_COMPLIANCE_ADAPTER_REQUIRE_SIGNED_WRAPPER",
+    "FAXP_COMPLIANCE_ADAPTER_SIGN_REQUESTS",
+    "FAXP_COMPLIANCE_ADAPTER_REQUEST_SIGNING_KEYS",
+    "FAXP_COMPLIANCE_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID",
     "FAXP_FMCSA_ADAPTER_BASE_URL",
     "FAXP_FMCSA_ADAPTER_AUTH_TOKEN",
     "FAXP_FMCSA_ADAPTER_TIMEOUT_SECONDS",
@@ -393,24 +430,48 @@ FMCSA_ADAPTER_BASE_URL = _override_secret_value(
     "FAXP_FMCSA_ADAPTER_BASE_URL",
     FMCSA_ADAPTER_BASE_URL,
 ).strip()
+FMCSA_ADAPTER_BASE_URL = _override_secret_value(
+    "FAXP_COMPLIANCE_ADAPTER_BASE_URL",
+    FMCSA_ADAPTER_BASE_URL,
+).strip()
 FMCSA_ADAPTER_AUTH_TOKEN = _override_secret_value(
     "FAXP_FMCSA_ADAPTER_AUTH_TOKEN",
+    FMCSA_ADAPTER_AUTH_TOKEN,
+).strip()
+FMCSA_ADAPTER_AUTH_TOKEN = _override_secret_value(
+    "FAXP_COMPLIANCE_ADAPTER_AUTH_TOKEN",
     FMCSA_ADAPTER_AUTH_TOKEN,
 ).strip()
 FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER_RAW = _override_secret_value(
     "FAXP_FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER",
     FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER_RAW,
 ).strip()
+FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER_RAW = _override_secret_value(
+    "FAXP_COMPLIANCE_ADAPTER_REQUIRE_SIGNED_WRAPPER",
+    FMCSA_ADAPTER_REQUIRE_SIGNED_WRAPPER_RAW,
+).strip()
 FMCSA_ADAPTER_SIGN_REQUESTS_RAW = _override_secret_value(
     "FAXP_FMCSA_ADAPTER_SIGN_REQUESTS",
+    FMCSA_ADAPTER_SIGN_REQUESTS_RAW,
+).strip()
+FMCSA_ADAPTER_SIGN_REQUESTS_RAW = _override_secret_value(
+    "FAXP_COMPLIANCE_ADAPTER_SIGN_REQUESTS",
     FMCSA_ADAPTER_SIGN_REQUESTS_RAW,
 ).strip()
 FMCSA_ADAPTER_REQUEST_SIGNING_KEYS_RAW = _override_secret_value(
     "FAXP_FMCSA_ADAPTER_REQUEST_SIGNING_KEYS",
     FMCSA_ADAPTER_REQUEST_SIGNING_KEYS_RAW,
 ).strip()
+FMCSA_ADAPTER_REQUEST_SIGNING_KEYS_RAW = _override_secret_value(
+    "FAXP_COMPLIANCE_ADAPTER_REQUEST_SIGNING_KEYS",
+    FMCSA_ADAPTER_REQUEST_SIGNING_KEYS_RAW,
+).strip()
 FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID = _override_secret_value(
     "FAXP_FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID",
+    FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID,
+).strip()
+FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID = _override_secret_value(
+    "FAXP_COMPLIANCE_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID",
     FMCSA_ADAPTER_REQUEST_SIGNING_ACTIVE_KEY_ID,
 ).strip()
 TRUSTED_VERIFIER_REGISTRY_RAW = _override_secret_value(
@@ -430,6 +491,12 @@ try:
         _override_secret_value(
             "FAXP_FMCSA_ADAPTER_TIMEOUT_SECONDS",
             FMCSA_ADAPTER_TIMEOUT_SECONDS_RAW,
+        )
+    )
+    FMCSA_ADAPTER_TIMEOUT_SECONDS = int(
+        _override_secret_value(
+            "FAXP_COMPLIANCE_ADAPTER_TIMEOUT_SECONDS",
+            str(FMCSA_ADAPTER_TIMEOUT_SECONDS),
         )
     )
 except ValueError:
@@ -2886,14 +2953,16 @@ def parse_args():
     parser.add_argument(
         "--mc-number",
         default=None,
-        help="MC number used for FMCSA verification (example: 498282).",
+        help="Authority-record identifier used for compliance verification (example US MC: 498282).",
     )
     parser.add_argument(
+        "--compliance-source",
         "--fmcsa-source",
+        dest="fmcsa_source",
         choices=["authority-mock", "hosted-adapter", "implementer-adapter", "vendor-direct"],
         default="authority-mock",
         help=(
-            "FMCSA verification source. 'implementer-adapter' and 'vendor-direct' are preferred labels; "
+            "Compliance verification source. 'implementer-adapter' and 'vendor-direct' are preferred labels; "
             "'hosted-adapter' is retained as a backward-compatible alias."
         ),
     )
@@ -5238,14 +5307,17 @@ def _unwrap_verifier_payload_wrapper(
 
 
 def lookup_fmcsa_with_hosted_adapter(mc_number):
-    """Query a hosted FMCSA adapter service for normalized compliance signals."""
+    """Query a hosted authority-record adapter service for normalized compliance signals."""
     target_mc = _normalize_mc(mc_number)
     if not target_mc:
-        return {"ok": False, "error": "No MC number provided for hosted FMCSA verification."}
+        return {"ok": False, "error": "No authority-record identifier provided for hosted compliance verification."}
 
     base_url = (FMCSA_ADAPTER_BASE_URL or "").strip()
     if not base_url:
-        return {"ok": False, "error": "Missing FAXP_FMCSA_ADAPTER_BASE_URL for hosted adapter."}
+        return {
+            "ok": False,
+            "error": "Missing compliance adapter base URL (set FAXP_COMPLIANCE_ADAPTER_BASE_URL or legacy alias FAXP_FMCSA_ADAPTER_BASE_URL).",
+        }
 
     endpoint = base_url.rstrip("/")
     parsed_endpoint = urllib.parse.urlsplit(endpoint)
@@ -5358,7 +5430,7 @@ def run_verification(
 ):
     """
     Verification providers:
-    - FMCSA / MockComplianceProvider: compliance check -> Basic badge (on success)
+    - Authority-record / MockComplianceProvider: compliance check -> Basic badge (on success)
     - MockBiometricProvider / iDenfy alias: biometric check -> Premium badge (on success)
     """
     requested_provider = str(provider or "").strip()
@@ -5484,7 +5556,7 @@ def run_verification(
                 source_authority="FMCSA",
                 extra={
                     "mcNumber": _normalize_mc(mc_number),
-                    "error": live.get("error", "Unknown hosted FMCSA adapter error."),
+                    "error": live.get("error", "Unknown hosted compliance adapter error."),
                 },
             )
             return verification_result, "None"
@@ -5505,7 +5577,7 @@ def run_verification(
                 token_value=fm_token,
                 source_value="mock-compliance",
                 source_authority="FMCSA",
-                extra={"error": f"Unsupported FMCSA source: {fmcsa_source}"},
+                extra={"error": f"Unsupported compliance source: {fmcsa_source}"},
             )
             return verification_result, "None"
 
@@ -6856,10 +6928,10 @@ def run_truck_flow(args, broker, carrier):
         print("[System] Truck flow verification not attempted due to capability mismatch.")
         return
 
-    # 5) Verification uses configured FMCSA source.
+    # 5) Verification uses configured compliance source.
     verification_mc = args.mc_number or "498282"
     print(
-        f"\n[System] Truck flow verification requested via provider: FMCSA "
+        f"\n[System] Truck flow verification requested via provider: compliance-authority-record "
         f"(source: {args.fmcsa_source}, MC: {verification_mc})"
     )
     verification_result, verified_badge = run_verification(
