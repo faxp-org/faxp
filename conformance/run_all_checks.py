@@ -53,6 +53,10 @@ def _suite_commands() -> list[tuple[str, list[str]]]:
         ("verification_policy_profile", [python, str(TESTS_DIR / "run_verification_policy_profile.py")]),
         ("policy_decisions", [python, str(TESTS_DIR / "run_policy_decisions.py")]),
         ("governance_index", [python, str(TESTS_DIR / "run_governance_index.py")]),
+        (
+            "developer_beta_promotion_criteria",
+            [python, str(TESTS_DIR / "run_beta_promotion_criteria.py")],
+        ),
         ("release_readiness", [python, str(TESTS_DIR / "run_release_readiness.py")]),
         (
             "public_redaction_guardrails",
