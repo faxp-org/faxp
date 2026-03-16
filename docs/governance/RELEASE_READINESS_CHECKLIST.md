@@ -7,6 +7,20 @@ Use this checklist as the final go/no-go gate before a tagged release.
 - Ensure required automated checks are wired into both CI and conformance suite.
 - Prevent release drift where docs claim controls that are not actually enforced.
 
+## Strict Release-Mode Gate Closure
+
+For beta/release promotion, enforce strict gate closure:
+
+- Set one of:
+  - `FAXP_ENFORCE_STRICT_RELEASE_GATES=1`, or
+  - `FAXP_APP_MODE=prod` (or any non-local mode), or
+  - `FAXP_RELEASE_CHANNEL=beta|rc|candidate|release|production`
+- Then run:
+  - `python tests/run_release_readiness.py`
+
+In strict mode, replay operational gates must all be `status=done` in:
+- `docs/governance/REPLAY_OPERATIONS_GATES.md`
+
 ## Manual Checklist
 - [ ] Protocol schemas and simulation artifacts are present and version-aligned.
 - [ ] Security scripts and baseline policies are present.

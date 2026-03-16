@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import json
+import os
 import subprocess
 import sys
 
@@ -14,9 +15,12 @@ CHECKLIST_PATH = PROJECT_ROOT / "docs" / "governance" / "RELEASE_READINESS_CHECK
 GOVERNANCE_INDEX_PATH = PROJECT_ROOT / "docs" / "governance" / "GOVERNANCE_INDEX.json"
 CI_WORKFLOW_PATH = PROJECT_ROOT / ".github" / "workflows" / "ci.yml"
 CONFORMANCE_SUITE_PATH = PROJECT_ROOT / "conformance" / "run_all_checks.py"
+REPLAY_GATES_PATH = PROJECT_ROOT / "docs" / "governance" / "REPLAY_OPERATIONS_GATES.md"
 
 BLOCK_BEGIN = "<!-- RELEASE_READINESS_REQUIREMENTS_BEGIN -->"
 BLOCK_END = "<!-- RELEASE_READINESS_REQUIREMENTS_END -->"
+REPLAY_BLOCK_BEGIN = "<!-- REPLAY_OPERATIONS_GATES_BEGIN -->"
+REPLAY_BLOCK_END = "<!-- REPLAY_OPERATIONS_GATES_END -->"
 
 
 def _assert(condition: bool, message: str) -> None:
@@ -46,6 +50,49 @@ def _resolve(path_ref: str) -> Path:
 def _validate_unique(items: list[str], context: str) -> None:
     duplicates = sorted({item for item in items if items.count(item) > 1})
     _assert(not duplicates, f"{context} has duplicate values: {duplicates}")
+
+
+def _is_truthy(value: str | None) -> bool:
+    return str(value or "").strip().lower() in {"1", "true", "yes", "on", "y"}
+
+
+def _is_strict_release_mode() -> bool:
+    app_mode = str(os.getenv("FAXP_APP_MODE", "local") or "").strip().lower()
+    release_channel = str(os.getenv("FAXP_RELEASE_CHANNEL", "") or "").strip().lower()
+    strict_override = _is_truthy(os.getenv("FAXP_ENFORCE_STRICT_RELEASE_GATES", "0"))
+    if strict_override:
+        return True
+    if app_mode not in {"local", "dev", "development", "test"}:
+        return True
+    return release_channel in {"beta", "rc", "candidate", "release", "production"}
+
+
+def _validate_strict_replay_gate_closure_if_required() -> None:
+    if not _is_strict_release_mode():
+        return
+
+    _assert(REPLAY_GATES_PATH.exists(), "Missing replay operations gates document.")
+    replay_doc = REPLAY_GATES_PATH.read_text(encoding="utf-8")
+    payload = json.loads(_extract_block(replay_doc, REPLAY_BLOCK_BEGIN, REPLAY_BLOCK_END))
+    gates = payload.get("gates") or []
+    _assert(isinstance(gates, list) and gates, "Replay gate manifest must include non-empty gates.")
+
+    not_closed = []
+    for gate in gates:
+        gate_id = str((gate or {}).get("id") or "").strip()
+        status = str((gate or {}).get("status") or "").strip().lower()
+        if not gate_id:
+            continue
+        if status != "done":
+            not_closed.append({"id": gate_id, "status": status or "missing"})
+
+    _assert(
+        not not_closed,
+        (
+            "Strict release-mode gate closure failed: all replay operation gates must be status=done "
+            f"before beta/release promotion. Outstanding: {not_closed}"
+        ),
+    )
 
 
 def main() -> int:
@@ -115,6 +162,8 @@ def main() -> int:
             str(suite_map.get("release_readiness") or "") == "tests/run_release_readiness.py",
             "GOVERNANCE_INDEX suiteCheckToTest.release_readiness must map to tests/run_release_readiness.py.",
         )
+
+    _validate_strict_replay_gate_closure_if_required()
 
     print("Release readiness checks passed.")
     return 0
