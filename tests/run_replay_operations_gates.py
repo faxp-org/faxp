@@ -6,6 +6,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import json
+import os
 import re
 
 
@@ -48,6 +49,18 @@ REQUIRED_EVIDENCE_BY_GATE = {
 def _assert(condition: bool, message: str) -> None:
     if not condition:
         raise AssertionError(message)
+
+
+def _is_truthy(value: str | None) -> bool:
+    return str(value or "").strip().lower() in {"1", "true", "yes", "on", "y"}
+
+
+def _strict_release_mode_enabled() -> bool:
+    # Canonical strict gate flag.
+    if _is_truthy(os.getenv("FAXP_RELEASE_STRICT_GATES")):
+        return True
+    # Backward-compatible alias.
+    return _is_truthy(os.getenv("FAXP_ENFORCE_STRICT_RELEASE_GATES"))
 
 
 def _extract_block(document: str, begin: str, end: str) -> str:
@@ -161,7 +174,9 @@ def main() -> int:
     gates = payload.get("gates") or []
     _assert(isinstance(gates, list) and gates, "gates must be a non-empty array.")
 
+    strict_mode = _strict_release_mode_enabled()
     gate_ids = set()
+    not_closed = []
     for gate in gates:
         _assert(isinstance(gate, dict), "Each gate entry must be an object.")
         gate_id = str(gate.get("id") or "").strip()
@@ -183,6 +198,8 @@ def main() -> int:
 
         _parse_due_date(due, f"due ({gate_id})")
         _assert(status in ALLOWED_STATUSES, f"Invalid status '{status}' for gate {gate_id}.")
+        if strict_mode and status != "done":
+            not_closed.append({"id": gate_id, "status": status})
         _assert(isinstance(evidence, list) and evidence, f"Evidence list required for gate {gate_id}.")
 
         for evidence_ref in evidence:
@@ -198,6 +215,13 @@ def main() -> int:
     _assert(
         gate_ids == EXPECTED_GATE_IDS,
         f"Gate IDs mismatch. expected={sorted(EXPECTED_GATE_IDS)} actual={sorted(gate_ids)}",
+    )
+    _assert(
+        not (strict_mode and not_closed),
+        (
+            "Strict release-mode gate closure failed: all replay operation gates must be status=done "
+            f"before release promotion. Outstanding: {not_closed}"
+        ),
     )
     _validate_oncall_backup_identity()
     _validate_override_review_log()
