@@ -1,6 +1,6 @@
 {
   "indexVersion": "1.0.0",
-  "generatedAt": "2026-03-16T23:30:00Z",
+  "generatedAt": "2026-03-16T21:39:27Z",
   "policyArtifacts": [
     ".gitleaks.toml",
     "CODE_OF_CONDUCT.md",
@@ -29,6 +29,7 @@
     "docs/governance/VENDOR_DIRECT_CERTIFICATION_RUNBOOK.md",
     "docs/governance/RELEASE_READINESS_CHECKLIST.md",
     "docs/governance/DEVELOPER_BETA_PROMOTION_CRITERIA.md",
+    "docs/releases/DEVELOPER_BETA_DECISION_SNAPSHOT.md",
     "docs/governance/CERTIFICATION_PLAYBOOK.md",
     "conformance/adapter_certification_profile.v2.json",
     "conformance/interop_maturity_profile.v1.json",
@@ -94,6 +95,7 @@
     "tests/run_protocol_compatibility_signature.py",
     "tests/run_governance_index.py",
     "tests/run_beta_promotion_criteria.py",
+    "tests/run_beta_decision_snapshot.py",
     "tests/run_release_readiness.py"
   ],
   "requiredSuiteChecks": [
@@ -152,6 +154,7 @@
     "protocol_compatibility_signature",
     "governance_index",
     "developer_beta_promotion_criteria",
+    "beta_decision_snapshot",
     "release_readiness"
   ],
   "suiteCheckToTest": {
@@ -210,6 +213,7 @@
     "protocol_compatibility_signature": "tests/run_protocol_compatibility_signature.py",
     "governance_index": "tests/run_governance_index.py",
     "developer_beta_promotion_criteria": "tests/run_beta_promotion_criteria.py",
-    "release_readiness": "tests/run_release_readiness.py"
+    "release_readiness": "tests/run_release_readiness.py",
+    "beta_decision_snapshot": "tests/run_beta_decision_snapshot.py"
   }
 }
