@@ -40,6 +40,8 @@ vendor-neutral, and non-attributable to any partner implementation.
 5. Validation pass output snippet (no internal metadata).
 6. Synthetic deterministic stop-ID update sample:
    - `docs/builders/examples/public_adapter_contract/deterministic_stop_update.sample.json`
+7. Structured second-implementer evidence bundle:
+   - `docs/builders/SECOND_IMPLEMENTER_EVIDENCE_BUNDLE_TEMPLATE.json`
 
 ## Public Artifacts to Exclude
 1. Partner-private request/response traces.

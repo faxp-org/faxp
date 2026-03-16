@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1.0.0",
+  "maturity": "experimental_sandbox_only",
+  "result": "IN_PROGRESS",
+  "evaluationWindow": {
+    "startedAtUtc": "2026-03-16T00:00:00Z",
+    "finishedAtUtc": "2026-03-16T00:30:00Z"
+  },
+  "implementer": {
+    "alias": "anonymous_implementer_a",
+    "integrationType": "tms_adapter_sandbox"
+  },
+  "scopeValidation": {
+    "bookingPlaneOnly": true,
+    "dispatchOrSettlementOutOfScope": true,
+    "protocolVsAdapterBoundaryConfirmed": true
+  },
+  "executionChecks": {
+    "sandboxAuth": "PASS",
+    "createReadPath": "PASS",
+    "deterministicUpdateByStableIds": "PASS",
+    "postUpdateReadbackNoDuplicateStops": "PASS",
+    "faxpBodyValidation": "PASS",
+    "faxpEnvelopeValidation": "PASS"
+  },
+  "publicSafety": {
+    "partnerIdentifiersRemoved": true,
+    "credentialsTokensRemoved": true,
+    "localAbsolutePathsRemoved": true,
+    "traceableIdsReplacedWithSyntheticValues": true
+  },
+  "evidenceRefs": [
+    "docs/builders/ANONYMIZED_INTEGRATION_OUTCOME_TEMPLATE.md",
+    "docs/builders/PUBLIC_PROTOCOL_VS_ADAPTER_SUMMARY.md",
+    "docs/builders/examples/public_adapter_contract/deterministic_stop_update.sample.json"
+  ],
+  "notes": [
+    "Replace sample timestamps with the actual sandbox run window.",
+    "Set result to PASS/PARTIAL/BLOCKED for each completed implementer run.",
+    "Keep all public artifacts vendor-neutral and non-attributable."
+  ]
+}

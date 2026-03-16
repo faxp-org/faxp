@@ -24,7 +24,7 @@ Out of scope for this decision:
 | Replay operational gates fully closed | truckingadvantage | 2026-03-16 | Done | `docs/governance/REPLAY_OPERATIONS_GATES.md`, `tests/run_replay_operations_gates.py` |
 | Security posture checkpoint captured with no active P0/P1 findings | truckingadvantage | 2026-03-16 | Done | `docs/governance/REPLAY_REDTEAM_DELTA_2026-03-08.md`, `docs/governance/REPLAY_INCIDENT_DRILL_EVIDENCE_2026-03-16.md` |
 | Public-safe outreach and adapter packet published | truckingadvantage | 2026-03-16 | Done | `docs/builders/PUBLIC_OUTREACH_EVALUATION_PACKET.md`, `docs/builders/PUBLIC_ANONYMIZED_ADAPTER_PACKAGE.md` |
-| Second independent implementer demo completed with anonymized evidence | truckingadvantage | 2026-03-31 | In Progress | `docs/builders/SECOND_IMPLEMENTER_DEMO_CHECKLIST.md`, `docs/builders/ANONYMIZED_INTEGRATION_OUTCOME_TEMPLATE.md` |
+| Second independent implementer demo completed with anonymized evidence | truckingadvantage | 2026-03-31 | In Progress | `docs/builders/SECOND_IMPLEMENTER_DEMO_CHECKLIST.md`, `docs/builders/ANONYMIZED_INTEGRATION_OUTCOME_TEMPLATE.md`, `docs/builders/SECOND_IMPLEMENTER_EVIDENCE_BUNDLE_TEMPLATE.json`, `tests/run_second_implementer_evidence_bundle_template.py` |
 | Open-source redaction/guardrail checks pass | truckingadvantage | 2026-03-16 | Done | `tests/run_public_redaction_guardrails.py`, `tests/run_open_source_guardrails.py` |
 
 Status values:
@@ -44,7 +44,7 @@ Reason:
 
 <!-- DEVELOPER_BETA_PROMOTION_CRITERIA_BEGIN -->
 {
-  "updatedAt": "2026-03-16T23:20:00Z",
+  "updatedAt": "2026-03-16T22:15:00Z",
   "minimumIndependentImplementerDemos": 2,
   "betaDecision": "not_ready",
   "criteria": [
@@ -95,7 +95,9 @@ Reason:
       "status": "in_progress",
       "evidence": [
         "docs/builders/SECOND_IMPLEMENTER_DEMO_CHECKLIST.md",
-        "docs/builders/ANONYMIZED_INTEGRATION_OUTCOME_TEMPLATE.md"
+        "docs/builders/ANONYMIZED_INTEGRATION_OUTCOME_TEMPLATE.md",
+        "docs/builders/SECOND_IMPLEMENTER_EVIDENCE_BUNDLE_TEMPLATE.json",
+        "tests/run_second_implementer_evidence_bundle_template.py"
       ]
     },
     {

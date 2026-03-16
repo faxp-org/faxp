@@ -35,6 +35,8 @@ Do not include:
    - create/read/update path,
    - expected stable IDs/correlation behavior,
    - expected FAXP envelope output.
+5. Evidence bundle scaffold:
+   - `docs/builders/SECOND_IMPLEMENTER_EVIDENCE_BUNDLE_TEMPLATE.json`
 
 ## Execution Checklist
 
@@ -47,6 +49,8 @@ Do not include:
    - `.venv/bin/python tests/run_release_readiness.py`
    - `.venv/bin/python tests/run_conformance_suite.py`
 6. Produce anonymized evidence artifacts only.
+7. Populate and retain one evidence bundle using:
+   - `docs/builders/SECOND_IMPLEMENTER_EVIDENCE_BUNDLE_TEMPLATE.json`
 
 ## Required Evidence Artifacts
 
@@ -57,6 +61,8 @@ Do not include:
 5. Short protocol-vs-adapter responsibility summary.
 6. Outcome summary using:
    - `docs/builders/ANONYMIZED_INTEGRATION_OUTCOME_TEMPLATE.md`
+7. Structured evidence bundle record:
+   - `docs/builders/SECOND_IMPLEMENTER_EVIDENCE_BUNDLE_TEMPLATE.json`
 
 ## Exit Criteria
 
