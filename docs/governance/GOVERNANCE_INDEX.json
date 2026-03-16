@@ -1,6 +1,6 @@
 {
   "indexVersion": "1.0.0",
-  "generatedAt": "2026-03-16T21:39:27Z",
+  "generatedAt": "2026-03-16T22:28:48Z",
   "policyArtifacts": [
     ".gitleaks.toml",
     "CODE_OF_CONDUCT.md",
@@ -29,6 +29,7 @@
     "docs/governance/VENDOR_DIRECT_CERTIFICATION_RUNBOOK.md",
     "docs/governance/RELEASE_READINESS_CHECKLIST.md",
     "docs/governance/DEVELOPER_BETA_PROMOTION_CRITERIA.md",
+    "docs/builders/SECOND_IMPLEMENTER_EVIDENCE_BUNDLE_TEMPLATE.json",
     "docs/releases/DEVELOPER_BETA_DECISION_SNAPSHOT.md",
     "docs/governance/CERTIFICATION_PLAYBOOK.md",
     "conformance/adapter_certification_profile.v2.json",
@@ -96,6 +97,7 @@
     "tests/run_governance_index.py",
     "tests/run_beta_promotion_criteria.py",
     "tests/run_beta_decision_snapshot.py",
+    "tests/run_second_implementer_evidence_bundle_template.py",
     "tests/run_release_readiness.py"
   ],
   "requiredSuiteChecks": [
@@ -155,6 +157,7 @@
     "governance_index",
     "developer_beta_promotion_criteria",
     "beta_decision_snapshot",
+    "second_implementer_evidence_bundle_template",
     "release_readiness"
   ],
   "suiteCheckToTest": {
@@ -214,6 +217,7 @@
     "governance_index": "tests/run_governance_index.py",
     "developer_beta_promotion_criteria": "tests/run_beta_promotion_criteria.py",
     "release_readiness": "tests/run_release_readiness.py",
-    "beta_decision_snapshot": "tests/run_beta_decision_snapshot.py"
+    "beta_decision_snapshot": "tests/run_beta_decision_snapshot.py",
+    "second_implementer_evidence_bundle_template": "tests/run_second_implementer_evidence_bundle_template.py"
   }
 }

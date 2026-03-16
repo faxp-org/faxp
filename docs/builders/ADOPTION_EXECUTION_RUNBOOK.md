@@ -18,6 +18,7 @@ Default packet to share:
 6. `docs/builders/examples/public_adapter_contract/README.md`
 7. `docs/BUILDERS_START_HERE.md`
 8. `docs/builders/SECOND_IMPLEMENTER_DEMO_CHECKLIST.md`
+9. `docs/builders/SECOND_IMPLEMENTER_EVIDENCE_BUNDLE_TEMPLATE.json`
 
 ## Public Outreach Checklist (Use Every Time)
 

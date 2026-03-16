@@ -33,6 +33,7 @@ This packet gives prospective implementers enough context to evaluate integratio
    - `docs/builders/examples/public_adapter_contract/README.md`
 5. Second implementer demo execution guide:
    - `docs/builders/SECOND_IMPLEMENTER_DEMO_CHECKLIST.md`
+   - `docs/builders/SECOND_IMPLEMENTER_EVIDENCE_BUNDLE_TEMPLATE.json`
 
 ## Suggested Outreach Sequence
 
