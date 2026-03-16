@@ -23,6 +23,7 @@ In strict mode, replay operational gates must all be `status=done` in:
 
 Developer-beta promotion criteria are tracked in:
 - `docs/governance/DEVELOPER_BETA_PROMOTION_CRITERIA.md`
+- `docs/releases/DEVELOPER_BETA_DECISION_SNAPSHOT.md`
 
 ## Manual Checklist
 - [ ] Protocol schemas and simulation artifacts are present and version-aligned.
@@ -88,6 +89,7 @@ Status values:
     "docs/governance/DECISION_RECORDS_RUNBOOK.md",
     "docs/governance/VENDOR_DIRECT_CERTIFICATION_RUNBOOK.md",
     "docs/governance/DEVELOPER_BETA_PROMOTION_CRITERIA.md",
+    "docs/releases/DEVELOPER_BETA_DECISION_SNAPSHOT.md",
     "docs/governance/CERTIFICATION_PLAYBOOK.md",
     "docs/governance/GOVERNANCE_INDEX.json",
     "conformance/adapter_certification_profile.v2.json",
@@ -179,6 +181,7 @@ Status values:
     "tests/run_protocol_compatibility_signature.py",
     "tests/run_governance_index.py",
     "tests/run_beta_promotion_criteria.py",
+    "tests/run_beta_decision_snapshot.py",
     "tests/run_release_readiness.py"
   ],
   "requiredSuiteChecks": [
@@ -237,6 +240,7 @@ Status values:
     "protocol_compatibility_signature",
     "governance_index",
     "developer_beta_promotion_criteria",
+    "beta_decision_snapshot",
     "release_readiness"
   ],
   "requireGovernanceIndexSync": true
