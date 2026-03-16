@@ -12,7 +12,7 @@ Project maturity note: this roadmap tracks experimental-to-production hardening;
 2. Security/governance hardening workstreams are active and now part of normal CI enforcement.
 3. Public-safe builder package and outreach packet are now published.
 4. Strict replay release-mode gates are now closed at current checkpoint.
-5. Remaining Phase 2 risk is concentrated in sustained adoption execution and completion of a second independent implementer demo before beta promotion.
+5. Remaining Phase 2 risk is concentrated in security/governance continuity and completion of a second independent implementer demo before beta promotion.
 
 Current execution plan:
 - `docs/roadmap/VNEXT_EXECUTION_CHECKLIST_2026-03-07.md`
@@ -22,13 +22,13 @@ Execution state matrix:
 - Workstream B (private partner demo): Done
 - Workstream C (public anonymized adapter package): Done
 - Workstream D (security/governance continuation): Ongoing
-- Workstream E (adoption execution): In Progress
+- Workstream E (adoption execution): Done
 - Workstream F (second independent implementer demo): In Progress
 
 Checkpoint closeout:
-1. Completed this cycle: A, B, and C.
+1. Completed this cycle: A, B, C, and E.
 2. Strict replay release-gate closure is complete.
-3. Remaining active execution: D, E, and F.
+3. Remaining active execution: D and F.
 
 Local check baseline (CI-aligned):
 - `.venv/bin/python tests/run_open_source_guardrails.py`
