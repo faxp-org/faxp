@@ -62,6 +62,10 @@ def _suite_commands() -> list[tuple[str, list[str]]]:
             [python, str(TESTS_DIR / "run_beta_decision_snapshot.py")],
         ),
         (
+            "beta_roadmap_sync",
+            [python, str(TESTS_DIR / "run_beta_roadmap_sync.py")],
+        ),
+        (
             "second_implementer_evidence_bundle_template",
             [python, str(TESTS_DIR / "run_second_implementer_evidence_bundle_template.py")],
         ),
