@@ -1832,7 +1832,7 @@ def _validate_receiver_capability_policy(envelope, receiver_role):
     if message_type == "ExecutionReport":
         if isinstance(body, dict) and "LoadID" in body and not receiver_capabilities.get("book_load", False):
             raise ValueError(f"Receiver role '{receiver_role}' is not allowed to receive load execution reports.")
-        if isinstance(body, dict) and "TruckID" in body and not receiver_capabilities.get("book_truck", False):
+        if isinstance(body, dict) and "TruckID" in body and not receiver_capabilities.get("post_truck", False):
             raise ValueError(f"Receiver role '{receiver_role}' is not allowed to receive truck execution reports.")
 
     if message_type == "AmendRequest" and not receiver_capabilities.get("book_load", False):
@@ -5625,6 +5625,7 @@ class BrokerAgent:
     def __init__(self, name):
         self.name = name
         self.loads = {}
+        self.trucks = {}
         self.completed_bookings = {}
         self.verification_capabilities = default_verification_capabilities()
 
@@ -6114,6 +6115,9 @@ class BrokerAgent:
         }
 
     def create_truck_bid_request(self, truck, bid_amount=None):
+        truck_id = str(truck.get("TruckID") or "").strip()
+        if truck_id:
+            self.trucks[truck_id] = dict(truck)
         rate_model = truck["RateMin"]["RateModel"]
         amount = default_bid_amount(rate_model) if bid_amount is None else bid_amount
         metadata = {}
