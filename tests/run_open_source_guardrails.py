@@ -4,9 +4,20 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+WORKFLOWS_DIR = PROJECT_ROOT / ".github" / "workflows"
+
+ALLOWED_ACTION_REPOS = {
+    "actions/checkout",
+    "actions/setup-python",
+    "actions/upload-artifact",
+    "actions/github-script",
+}
+
+FULL_SHA_PATTERN = re.compile(r"^[a-f0-9]{40}$")
 
 
 def _assert(condition: bool, message: str) -> None:
@@ -16,6 +27,48 @@ def _assert(condition: bool, message: str) -> None:
 
 def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
+
+
+def _validate_workflow_action_sources() -> None:
+    _assert(WORKFLOWS_DIR.exists(), ".github/workflows directory must exist.")
+
+    violations: list[str] = []
+    for workflow in sorted(WORKFLOWS_DIR.glob("*.yml")):
+        for line_no, raw in enumerate(workflow.read_text(encoding="utf-8").splitlines(), start=1):
+            line = raw.strip()
+            if not line.startswith("uses:"):
+                continue
+            value = line.split(":", 1)[1].strip()
+            if value.startswith("./"):
+                continue
+            if value.startswith("docker://"):
+                violations.append(
+                    f"{workflow.relative_to(PROJECT_ROOT)}:{line_no} uses docker action reference ({value}); "
+                    "only allowlisted GitHub actions pinned to full commit SHA are permitted."
+                )
+                continue
+            if "@" not in value:
+                violations.append(
+                    f"{workflow.relative_to(PROJECT_ROOT)}:{line_no} has malformed uses reference ({value})."
+                )
+                continue
+
+            action_repo, ref = value.split("@", 1)
+            if action_repo not in ALLOWED_ACTION_REPOS:
+                violations.append(
+                    f"{workflow.relative_to(PROJECT_ROOT)}:{line_no} uses non-allowlisted action ({action_repo})."
+                )
+                continue
+            if not FULL_SHA_PATTERN.fullmatch(ref):
+                violations.append(
+                    f"{workflow.relative_to(PROJECT_ROOT)}:{line_no} must pin {action_repo} "
+                    f"to full 40-char commit SHA, got ({ref})."
+                )
+
+    _assert(
+        not violations,
+        "Workflow action pinning/allowlist violations:\n" + "\n".join(f"- {item}" for item in violations),
+    )
 
 
 def main() -> int:
@@ -91,10 +144,19 @@ def main() -> int:
         "FAXP_PRIVATE_REDACTION_TERMS" in security,
         "SECURITY.md must document optional private redaction terms env var.",
     )
+    _assert(
+        "full-length commit SHA" in security,
+        "SECURITY.md must require GitHub Actions pinning to full-length commit SHA.",
+    )
+    _assert(
+        "action allowlist" in security.lower(),
+        "SECURITY.md must require an explicit GitHub Actions allowlist policy.",
+    )
 
     ci = _read(PROJECT_ROOT / ".github" / "workflows" / "ci.yml")
     _assert("Gitleaks secret scan" in ci, "CI workflow must include gitleaks secret scan step.")
     _assert("gitleaks detect" in ci, "CI workflow must run gitleaks detect command.")
+    _validate_workflow_action_sources()
 
     precommit = _read(PROJECT_ROOT / ".pre-commit-config.yaml")
     _assert("faxp-security-gate" in precommit, "pre-commit config must include security gate hook.")
