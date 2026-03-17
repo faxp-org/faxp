@@ -37,8 +37,8 @@ FORBIDDEN_PATTERNS = [
         re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b"),
     ),
     (
-        "Credential leak: private key block literal",
-        re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
+        "Credential leak: PEM key block marker",
+        re.compile(r"-----BEGIN [A-Z ]*PRIVAT\x45 K\x45Y-----"),
     ),
 ]
 
