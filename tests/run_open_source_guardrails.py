@@ -275,6 +275,34 @@ def main() -> int:
         "docs/BUILDERS_START_HERE.md must direct builders to sandbox/test environments first.",
     )
 
+    required_diagram_paths = [
+        "docs/diagrams/01_scope_boundary.md",
+        "docs/diagrams/02_booking_message_flow.md",
+        "docs/diagrams/03_replay_protection_runtime.md",
+    ]
+    for rel_path in required_diagram_paths:
+        _assert(
+            (PROJECT_ROOT / rel_path).exists(),
+            f"Missing required diagram doc: {rel_path}",
+        )
+        _assert(
+            rel_path in readme,
+            f"README.md must reference diagram doc: {rel_path}",
+        )
+        _assert(
+            rel_path in docs_index,
+            f"docs/INDEX.md must reference diagram doc: {rel_path}",
+        )
+
+    _assert(
+        "docs/diagrams/01_scope_boundary.md" in builders_start,
+        "docs/BUILDERS_START_HERE.md must reference scope boundary diagram.",
+    )
+    _assert(
+        "docs/diagrams/02_booking_message_flow.md" in builders_start,
+        "docs/BUILDERS_START_HERE.md must reference booking message flow diagram.",
+    )
+
     security = _read(PROJECT_ROOT / "SECURITY.md")
     _assert("Secret scanning" in security, "SECURITY.md must document Secret scanning requirement.")
     _assert("Push protection" in security, "SECURITY.md must document Push protection requirement.")
