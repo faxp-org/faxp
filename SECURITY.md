@@ -54,6 +54,7 @@ Target timelines may be adjusted based on severity, exploitability, and operatio
 - GitHub Actions workflows must declare top-level permissions with `contents: read`, disallow `pull_request_target`, and keep write scopes restricted to approved allowlisted workflow intents.
 - GitHub Actions jobs must declare explicit `timeout-minutes` values.
 - GitHub Actions workflows must declare top-level `concurrency` policy with explicit `group` and `cancel-in-progress`.
+- Downloaded CI binaries must be integrity-verified via release checksum before installation.
 
 Operational verifier hosting and credentials remain outside protocol-core responsibilities.
 
@@ -88,5 +89,6 @@ Maintainers should keep these GitHub settings enabled:
 7. GitHub Actions event/permission policy disallowing `pull_request_target` and unrestricted write scopes.
 8. GitHub Actions job timeout policy requiring explicit `timeout-minutes`.
 9. GitHub Actions workflow concurrency policy requiring explicit `concurrency.group` and `cancel-in-progress`.
+10. CI downloaded binaries verified against published checksums prior to install.
 
 If any of these are disabled, treat it as a security regression and restore immediately.

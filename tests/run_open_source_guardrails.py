@@ -307,10 +307,16 @@ def main() -> int:
         "concurrency" in security.lower(),
         "SECURITY.md must document workflow concurrency policy requirement.",
     )
+    _assert(
+        "checksum" in security.lower(),
+        "SECURITY.md must document checksum verification requirement for downloaded CI binaries.",
+    )
 
     ci = _read(PROJECT_ROOT / ".github" / "workflows" / "ci.yml")
     _assert("Gitleaks secret scan" in ci, "CI workflow must include gitleaks secret scan step.")
     _assert("gitleaks detect" in ci, "CI workflow must run gitleaks detect command.")
+    _assert("gitleaks_checksums.txt" in ci, "CI workflow must fetch gitleaks checksums for verification.")
+    _assert("sha256sum -c" in ci, "CI workflow must verify downloaded binary checksum before install.")
     _validate_workflow_action_sources()
     _validate_workflow_permissions_and_events()
     _validate_workflow_job_timeouts()
