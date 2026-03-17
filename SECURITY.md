@@ -53,6 +53,7 @@ Target timelines may be adjusted based on severity, exploitability, and operatio
 - GitHub Actions references must use an explicit action allowlist and pin each action to a full-length commit SHA.
 - GitHub Actions workflows must declare explicit permissions, disallow `pull_request_target`, and keep write scopes restricted to approved allowlisted workflow intents.
 - GitHub Actions jobs must declare explicit `timeout-minutes` values.
+- GitHub Actions workflows must declare top-level `concurrency` policy with explicit `group` and `cancel-in-progress`.
 
 Operational verifier hosting and credentials remain outside protocol-core responsibilities.
 
@@ -86,5 +87,6 @@ Maintainers should keep these GitHub settings enabled:
 6. GitHub Actions workflow policy constrained to an explicit action allowlist and full-length commit SHA pinning.
 7. GitHub Actions event/permission policy disallowing `pull_request_target` and unrestricted write scopes.
 8. GitHub Actions job timeout policy requiring explicit `timeout-minutes`.
+9. GitHub Actions workflow concurrency policy requiring explicit `concurrency.group` and `cancel-in-progress`.
 
 If any of these are disabled, treat it as a security regression and restore immediately.

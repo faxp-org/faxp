@@ -151,6 +151,27 @@ def _validate_workflow_job_timeouts() -> None:
     )
 
 
+def _validate_workflow_concurrency_policy() -> None:
+    violations: list[str] = []
+    for workflow in sorted(WORKFLOWS_DIR.glob("*.yml")):
+        rel = workflow.relative_to(PROJECT_ROOT)
+        contents = workflow.read_text(encoding="utf-8")
+        if "concurrency:" not in contents:
+            violations.append(f"{rel}: must declare top-level concurrency policy.")
+            continue
+        if not re.search(r"(?m)^concurrency:\s*$", contents):
+            violations.append(f"{rel}: concurrency block must be top-level.")
+        if not re.search(r"(?m)^\s{2}group:\s*.+$", contents):
+            violations.append(f"{rel}: concurrency block must define group.")
+        if not re.search(r"(?m)^\s{2}cancel-in-progress:\s*(true|false)\s*$", contents):
+            violations.append(f"{rel}: concurrency block must define cancel-in-progress.")
+
+    _assert(
+        not violations,
+        "Workflow concurrency guardrail violations:\n" + "\n".join(f"- {item}" for item in violations),
+    )
+
+
 def main() -> int:
     required_files = [
         PROJECT_ROOT / "CODE_OF_CONDUCT.md",
@@ -248,6 +269,10 @@ def main() -> int:
         "timeout-minutes" in security,
         "SECURITY.md must document workflow timeout-minutes requirement.",
     )
+    _assert(
+        "concurrency" in security.lower(),
+        "SECURITY.md must document workflow concurrency policy requirement.",
+    )
 
     ci = _read(PROJECT_ROOT / ".github" / "workflows" / "ci.yml")
     _assert("Gitleaks secret scan" in ci, "CI workflow must include gitleaks secret scan step.")
@@ -255,6 +280,7 @@ def main() -> int:
     _validate_workflow_action_sources()
     _validate_workflow_permissions_and_events()
     _validate_workflow_job_timeouts()
+    _validate_workflow_concurrency_policy()
 
     precommit = _read(PROJECT_ROOT / ".pre-commit-config.yaml")
     _assert("faxp-security-gate" in precommit, "pre-commit config must include security gate hook.")
