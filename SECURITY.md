@@ -51,6 +51,7 @@ Target timelines may be adjusted based on severity, exploitability, and operatio
 - Public redaction guardrails detect credential-like literals in public surfaces (for example: bearer tokens, JWT-like token strings, and private key blocks).
 - Optional maintainer-only private redaction terms can be supplied via `FAXP_PRIVATE_REDACTION_TERMS` (comma-separated) for local/CI scans without publishing partner names in-repo.
 - GitHub Actions references must use an explicit action allowlist and pin each action to a full-length commit SHA.
+- GitHub Actions workflows must declare explicit permissions, disallow `pull_request_target`, and keep write scopes restricted to approved allowlisted workflow intents.
 
 Operational verifier hosting and credentials remain outside protocol-core responsibilities.
 
@@ -82,5 +83,6 @@ Maintainers should keep these GitHub settings enabled:
 4. Dependabot security updates.
 5. Branch protection requiring passing `verify` checks before merge.
 6. GitHub Actions workflow policy constrained to an explicit action allowlist and full-length commit SHA pinning.
+7. GitHub Actions event/permission policy disallowing `pull_request_target` and unrestricted write scopes.
 
 If any of these are disabled, treat it as a security regression and restore immediately.

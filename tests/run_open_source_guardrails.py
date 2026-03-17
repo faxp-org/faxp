@@ -18,6 +18,12 @@ ALLOWED_ACTION_REPOS = {
 }
 
 FULL_SHA_PATTERN = re.compile(r"^[a-f0-9]{40}$")
+WRITE_SCOPE_PATTERN = re.compile(r"^\s*([a-z-]+)\s*:\s*write\s*$")
+
+WORKFLOW_WRITE_SCOPE_ALLOWLIST = {
+    "a2a-watch.yml": {"issues: write"},
+    "mcp-watch.yml": {"issues: write"},
+}
 
 
 def _assert(condition: bool, message: str) -> None:
@@ -68,6 +74,44 @@ def _validate_workflow_action_sources() -> None:
     _assert(
         not violations,
         "Workflow action pinning/allowlist violations:\n" + "\n".join(f"- {item}" for item in violations),
+    )
+
+
+def _validate_workflow_permissions_and_events() -> None:
+    violations: list[str] = []
+    for workflow in sorted(WORKFLOWS_DIR.glob("*.yml")):
+        rel = workflow.relative_to(PROJECT_ROOT)
+        contents = workflow.read_text(encoding="utf-8")
+        lines = contents.splitlines()
+
+        if "permissions:" not in contents:
+            violations.append(f"{rel}: must declare explicit workflow/job permissions.")
+
+        if re.search(r"(?m)^\s*pull_request_target\s*:", contents):
+            violations.append(
+                f"{rel}: pull_request_target is disallowed by repository policy due to elevated token risk."
+            )
+
+        if re.search(r"(?m)^\s*permissions\s*:\s*write-all\s*$", contents):
+            violations.append(f"{rel}: permissions: write-all is disallowed.")
+
+        if re.search(r"(?m)^\s*contents\s*:\s*write\s*$", contents):
+            violations.append(f"{rel}: contents: write is disallowed in workflow permissions.")
+
+        allowed_scopes = WORKFLOW_WRITE_SCOPE_ALLOWLIST.get(workflow.name, set())
+        for line_no, line in enumerate(lines, start=1):
+            match = WRITE_SCOPE_PATTERN.match(line)
+            if not match:
+                continue
+            scope = f"{match.group(1)}: write"
+            if scope not in allowed_scopes:
+                violations.append(
+                    f"{rel}:{line_no}: write scope '{scope}' is not in workflow allowlist for {workflow.name}."
+                )
+
+    _assert(
+        not violations,
+        "Workflow permission/event guardrail violations:\n" + "\n".join(f"- {item}" for item in violations),
     )
 
 
@@ -156,11 +200,20 @@ def main() -> int:
         "action allowlist" in security.lower(),
         "SECURITY.md must require an explicit GitHub Actions allowlist policy.",
     )
+    _assert(
+        "pull_request_target" in security,
+        "SECURITY.md must document pull_request_target policy.",
+    )
+    _assert(
+        "write scopes" in security.lower(),
+        "SECURITY.md must document workflow write-scope restrictions.",
+    )
 
     ci = _read(PROJECT_ROOT / ".github" / "workflows" / "ci.yml")
     _assert("Gitleaks secret scan" in ci, "CI workflow must include gitleaks secret scan step.")
     _assert("gitleaks detect" in ci, "CI workflow must run gitleaks detect command.")
     _validate_workflow_action_sources()
+    _validate_workflow_permissions_and_events()
 
     precommit = _read(PROJECT_ROOT / ".pre-commit-config.yaml")
     _assert("faxp-security-gate" in precommit, "pre-commit config must include security gate hook.")
