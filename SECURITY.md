@@ -49,6 +49,7 @@ Target timelines may be adjusted based on severity, exploitability, and operatio
 - Local pre-commit guardrails via `.pre-commit-config.yaml` (`security_gate`, public redaction checks, open-source guardrails).
 - Public redaction guardrails require approved public domains only in public-facing docs.
 - Optional maintainer-only private redaction terms can be supplied via `FAXP_PRIVATE_REDACTION_TERMS` (comma-separated) for local/CI scans without publishing partner names in-repo.
+- GitHub Actions references must use an explicit action allowlist and pin each action to a full-length commit SHA.
 
 Operational verifier hosting and credentials remain outside protocol-core responsibilities.
 
@@ -79,5 +80,6 @@ Maintainers should keep these GitHub settings enabled:
 3. Dependabot alerts.
 4. Dependabot security updates.
 5. Branch protection requiring passing `verify` checks before merge.
+6. GitHub Actions workflow policy constrained to an explicit action allowlist and full-length commit SHA pinning.
 
 If any of these are disabled, treat it as a security regression and restore immediately.
