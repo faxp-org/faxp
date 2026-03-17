@@ -36,6 +36,29 @@ def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
+def _extract_top_level_block(lines: list[str], key: str) -> list[str]:
+    header = f"{key}:"
+    start = -1
+    for idx, line in enumerate(lines):
+        if line.strip() == header and not line.startswith(" "):
+            start = idx
+            break
+    if start == -1:
+        return []
+
+    block = [lines[start]]
+    for idx in range(start + 1, len(lines)):
+        line = lines[idx]
+        if line.strip() == "":
+            block.append(line)
+            continue
+        if line.startswith("  "):
+            block.append(line)
+            continue
+        break
+    return block
+
+
 def _validate_workflow_action_sources() -> None:
     _assert(WORKFLOWS_DIR.exists(), ".github/workflows directory must exist.")
 
@@ -85,8 +108,15 @@ def _validate_workflow_permissions_and_events() -> None:
         contents = workflow.read_text(encoding="utf-8")
         lines = contents.splitlines()
 
-        if "permissions:" not in contents:
-            violations.append(f"{rel}: must declare explicit workflow/job permissions.")
+        top_permissions = _extract_top_level_block(lines, "permissions")
+        if not top_permissions:
+            violations.append(f"{rel}: must declare top-level permissions.")
+        else:
+            top_permissions_body = "\n".join(top_permissions)
+            if not re.search(r"(?m)^\s{2}contents:\s*read\s*$", top_permissions_body):
+                violations.append(f"{rel}: top-level permissions must include 'contents: read'.")
+            if re.search(r"(?m)^\s{2}[a-z-]+:\s*write\s*$", top_permissions_body):
+                violations.append(f"{rel}: top-level permissions must not include write scopes.")
 
         if re.search(r"(?m)^\s*pull_request_target\s*:", contents):
             violations.append(
@@ -264,6 +294,10 @@ def main() -> int:
     _assert(
         "write scopes" in security.lower(),
         "SECURITY.md must document workflow write-scope restrictions.",
+    )
+    _assert(
+        "top-level permissions" in security.lower(),
+        "SECURITY.md must document top-level workflow permissions policy.",
     )
     _assert(
         "timeout-minutes" in security,
