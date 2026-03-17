@@ -5,6 +5,9 @@ Canonical scope policy remains in:
 - `docs/governance/SCOPE_GUARDRAILS.md`
 - `docs/governance/VERIFICATION_RESPONSIBILITY_MODEL.md`
 
+Mermaid source:
+- `docs/diagrams/01_scope_boundary.mmd`
+
 ```mermaid
 flowchart LR
     subgraph Protocol["FAXP Protocol Core (In Scope)"]
@@ -37,4 +40,3 @@ Release Gates"]
     Protocol -->|"Standardized Interop Contract"| Builder
     Builder -. "No Protocol-Core Expansion" .-> Ops
 ```
-

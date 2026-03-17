@@ -5,6 +5,9 @@ Canonical replay policy remains in:
 - `docs/governance/REPLAY_RUNTIME_POLICY.md`
 - `faxp_mvp_simulation.py`
 
+Mermaid source:
+- `docs/diagrams/03_replay_protection_runtime.mmd`
+
 ```mermaid
 flowchart TD
     A["Message arrives"] --> B["Validate Envelope + Signature + TTL"]
@@ -26,4 +29,3 @@ MessageID + Nonce together (NX+EX)"]
     L -->|No| N["Accept message"]
     E --> N
 ```
-
