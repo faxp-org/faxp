@@ -235,6 +235,21 @@ def main() -> int:
         "tests/run_public_redaction_guardrails.py" in contributing,
         "CONTRIBUTING.md must include public redaction guardrails check.",
     )
+    _assert(
+        "Never post local absolute filesystem paths in public GitHub issues, PR comments, or discussions."
+        in contributing,
+        "CONTRIBUTING.md must include explicit no-local-paths rule for public collaboration.",
+    )
+    _assert(
+        "Never post partner-specific names/identifiers in public GitHub issues, PR comments, or discussions"
+        in contributing,
+        "CONTRIBUTING.md must include explicit partner-identifier hygiene rule for public collaboration.",
+    )
+    _assert(
+        "Never post tokens, credentials, bearer strings, or secret-like material in public GitHub issues, PR comments, or discussions."
+        in contributing,
+        "CONTRIBUTING.md must include explicit no-secrets rule for public collaboration.",
+    )
 
     readme = _read(PROJECT_ROOT / "README.md")
     _assert("CONTRIBUTING.md" in readme, "README.md must reference CONTRIBUTING.md.")
