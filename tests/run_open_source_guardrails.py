@@ -317,6 +317,44 @@ def main() -> int:
         "SECURITY.md must document local python compile checks in pre-commit guardrails.",
     )
 
+    pr_template = _read(PROJECT_ROOT / ".github" / "PULL_REQUEST_TEMPLATE.md")
+    _assert(
+        "No partner-specific identifiers were added to public files." in pr_template,
+        "PR template must require partner-identifier hygiene confirmation.",
+    )
+    _assert(
+        "No local absolute filesystem paths were added to public files." in pr_template,
+        "PR template must require local-path hygiene confirmation.",
+    )
+    _assert(
+        "No secrets or key material were added." in pr_template,
+        "PR template must require secret hygiene confirmation.",
+    )
+
+    bug_template = _read(PROJECT_ROOT / ".github" / "ISSUE_TEMPLATE" / "bug_report.md")
+    _assert(
+        "I removed secrets/tokens/key material." in bug_template,
+        "Bug report template must require secret removal hygiene check.",
+    )
+    _assert(
+        "I removed partner-specific identifiers not suitable for public issues." in bug_template,
+        "Bug report template must require partner-identifier hygiene check.",
+    )
+    _assert(
+        "I removed local absolute filesystem paths." in bug_template,
+        "Bug report template must require local-path hygiene check.",
+    )
+
+    feature_template = _read(PROJECT_ROOT / ".github" / "ISSUE_TEMPLATE" / "feature_request.md")
+    _assert(
+        "No partner-specific identifiers are required to understand this request." in feature_template,
+        "Feature request template must require partner-identifier hygiene check.",
+    )
+    _assert(
+        "No local absolute filesystem paths are included." in feature_template,
+        "Feature request template must require local-path hygiene check.",
+    )
+
     ci = _read(PROJECT_ROOT / ".github" / "workflows" / "ci.yml")
     _assert("Gitleaks secret scan" in ci, "CI workflow must include gitleaks secret scan step.")
     _assert("gitleaks detect" in ci, "CI workflow must run gitleaks detect command.")
