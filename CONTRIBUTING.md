@@ -75,6 +75,11 @@ Public artifact hygiene rules:
 3. Use neutral identifiers and synthetic examples in public-facing artifacts.
 4. Use one branch per PR; do not reuse merged branch names.
 
+Public collaboration hygiene rules:
+1. Never post local absolute filesystem paths in public GitHub issues, PR comments, or discussions.
+2. Never post partner-specific names/identifiers in public GitHub issues, PR comments, or discussions without explicit permission.
+3. Never post tokens, credentials, bearer strings, or secret-like material in public GitHub issues, PR comments, or discussions.
+
 ## Security and Secrets
 
 - Never commit private keys, tokens, or local secret bundles.
