@@ -254,6 +254,28 @@ def main() -> int:
         "not production guarantees" in readme.lower(),
         "README.md must state pilot/evaluation artifacts are not production guarantees.",
     )
+    _assert(
+        "legacy compliance-provider labels" in readme.lower(),
+        "README.md must document that legacy provider labels can appear in reference-runtime compatibility paths.",
+    )
+    _assert(
+        "not protocol-core requirements" in readme.lower(),
+        "README.md must state legacy provider labels are not protocol-core requirements.",
+    )
+
+    runtime_boundary = _read(PROJECT_ROOT / "REFERENCE_RUNTIME_BOUNDARY.md")
+    _assert(
+        "verification ownership boundary" in runtime_boundary.lower(),
+        "REFERENCE_RUNTIME_BOUNDARY.md must include verification ownership boundary section.",
+    )
+    _assert(
+        "fmcsa/compliance lookup execution" in runtime_boundary.lower(),
+        "REFERENCE_RUNTIME_BOUNDARY.md must document builder-side compliance lookup ownership.",
+    )
+    _assert(
+        "faxp does not execute verifier operations" in runtime_boundary.lower(),
+        "REFERENCE_RUNTIME_BOUNDARY.md must state verifier operations stay builder-side.",
+    )
 
     docs_index = _read(PROJECT_ROOT / "docs" / "INDEX.md")
     _assert(
