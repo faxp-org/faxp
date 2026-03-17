@@ -280,6 +280,11 @@ def main() -> int:
         "docs/diagrams/02_booking_message_flow.md",
         "docs/diagrams/03_replay_protection_runtime.md",
     ]
+    required_diagram_source_paths = [
+        "docs/diagrams/01_scope_boundary.mmd",
+        "docs/diagrams/02_booking_message_flow.mmd",
+        "docs/diagrams/03_replay_protection_runtime.mmd",
+    ]
     for rel_path in required_diagram_paths:
         _assert(
             (PROJECT_ROOT / rel_path).exists(),
@@ -292,6 +297,21 @@ def main() -> int:
         _assert(
             rel_path in docs_index,
             f"docs/INDEX.md must reference diagram doc: {rel_path}",
+        )
+        diagram_doc = _read(PROJECT_ROOT / rel_path)
+        _assert(
+            "This diagram is explanatory, not normative." in diagram_doc,
+            f"{rel_path} must explicitly state it is explanatory/non-normative.",
+        )
+        _assert(
+            "Canonical" in diagram_doc,
+            f"{rel_path} must include canonical policy/source references.",
+        )
+
+    for rel_path in required_diagram_source_paths:
+        _assert(
+            (PROJECT_ROOT / rel_path).exists(),
+            f"Missing required Mermaid source file: {rel_path}",
         )
 
     _assert(
