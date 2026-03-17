@@ -46,7 +46,7 @@ Target timelines may be adjusted based on severity, exploitability, and operatio
 - Conformance and governance release gates in CI.
 - `security_gate.sh` static and obfuscated/encoded secret scanning.
 - `gitleaks` repository secret scanning in CI using `.gitleaks.toml`.
-- Local pre-commit guardrails via `.pre-commit-config.yaml` (`security_gate`, public redaction checks, open-source guardrails).
+- Local pre-commit guardrails via `.pre-commit-config.yaml` (`security_gate`, public redaction checks, open-source guardrails, python compile checks).
 - Public redaction guardrails require approved public domains only in public-facing docs.
 - Public redaction guardrails detect credential-like literals in public surfaces (for example: bearer tokens, JWT-like token strings, and private key blocks).
 - Optional maintainer-only private redaction terms can be supplied via `FAXP_PRIVATE_REDACTION_TERMS` (comma-separated) for local/CI scans without publishing partner names in-repo.

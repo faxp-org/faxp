@@ -213,6 +213,7 @@ def main() -> int:
         PROJECT_ROOT / "scripts" / "install_precommit.sh",
         PROJECT_ROOT / ".github" / "ISSUE_TEMPLATE" / "config.yml",
         PROJECT_ROOT / "tests" / "run_public_redaction_guardrails.py",
+        PROJECT_ROOT / "tests" / "run_python_compile_checks.py",
     ]
     for path in required_files:
         _assert(path.exists(), f"Missing required open-source guardrail file: {path.relative_to(PROJECT_ROOT)}")
@@ -311,6 +312,10 @@ def main() -> int:
         "checksum" in security.lower(),
         "SECURITY.md must document checksum verification requirement for downloaded CI binaries.",
     )
+    _assert(
+        "python compile checks" in security.lower(),
+        "SECURITY.md must document local python compile checks in pre-commit guardrails.",
+    )
 
     ci = _read(PROJECT_ROOT / ".github" / "workflows" / "ci.yml")
     _assert("Gitleaks secret scan" in ci, "CI workflow must include gitleaks secret scan step.")
@@ -331,6 +336,10 @@ def main() -> int:
     _assert(
         "tests/run_open_source_guardrails.py" in precommit,
         "pre-commit config must include open-source guardrails hook.",
+    )
+    _assert(
+        "tests/run_python_compile_checks.py" in precommit,
+        "pre-commit config must include python compile checks hook.",
     )
 
     print("Open-source guardrails checks passed.")
