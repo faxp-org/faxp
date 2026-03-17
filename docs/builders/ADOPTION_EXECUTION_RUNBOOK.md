@@ -47,6 +47,7 @@ Default packet to share:
 4. Capture feedback in issues before proposing protocol changes.
 5. Keep partner-specific implementation details in private channels.
 6. Before beta-promotion discussion, run the second implementer checklist and capture anonymized evidence.
+7. Do not mark second implementer criterion done from synthetic-only or mock-only demos.
 
 ## Scope Guardrail Language (Use Verbatim)
 

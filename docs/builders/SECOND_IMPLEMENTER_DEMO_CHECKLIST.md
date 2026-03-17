@@ -11,6 +11,20 @@ Maturity status:
 
 Confirm that FAXP behavior is repeatable across at least two independent implementations without partner-specific dependencies.
 
+## Qualification Rule (No Pretend Demos)
+
+This checklist is only for a real second independent implementer run.
+
+Qualifies:
+1. Real sandbox API access for a separate implementer/runtime.
+2. Real create/read/update traffic captured privately, then anonymized for public artifacts.
+3. Deterministic update behavior proven with real IDs from current source state.
+
+Does not qualify:
+1. Synthetic-only payloads or mocked API responses.
+2. Re-labeling the same implementer flow as a "second" implementer.
+3. Internal-only replay of the reference runtime without an independent integration target.
+
 ## Scope Guardrails
 
 Keep demo scope inside booking-plane interoperability:
@@ -40,16 +54,17 @@ Do not include:
 
 ## Execution Checklist
 
-1. Validate protocol-vs-adapter boundary before coding.
-2. Run sandbox auth and baseline create/read operations.
-3. Run deterministic update cycle and verify ID/stop/reference stability.
-4. Build/validate FAXP message body and signed envelope.
-5. Run local conformance/readiness baseline:
+1. Confirm implementer-independence qualification and capture it in the evidence bundle.
+2. Validate protocol-vs-adapter boundary before coding.
+3. Run sandbox auth and baseline create/read operations.
+4. Run deterministic update cycle and verify ID/stop/reference stability.
+5. Build/validate FAXP message body and signed envelope.
+6. Run local conformance/readiness baseline:
    - `.venv/bin/python tests/run_open_source_guardrails.py`
    - `.venv/bin/python tests/run_release_readiness.py`
    - `.venv/bin/python tests/run_conformance_suite.py`
-6. Produce anonymized evidence artifacts only.
-7. Populate and retain one evidence bundle using:
+7. Produce anonymized evidence artifacts only.
+8. Populate and retain one evidence bundle using:
    - `docs/builders/SECOND_IMPLEMENTER_EVIDENCE_BUNDLE_TEMPLATE.json`
 
 ## Required Evidence Artifacts
@@ -70,4 +85,5 @@ Do not include:
 2. Deterministic identifiers remain stable through update/readback checks.
 3. Public artifacts remain partner-safe and anonymized.
 4. Protocol scope remains unchanged (no out-of-scope expansion).
-5. Evidence is sufficient to support beta-promotion discussion.
+5. Independence qualification is documented and reviewable in the evidence bundle.
+6. Evidence is sufficient to support beta-promotion discussion.

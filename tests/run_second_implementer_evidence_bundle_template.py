@@ -55,6 +55,7 @@ def main() -> int:
         "result",
         "evaluationWindow",
         "implementer",
+        "independenceQualification",
         "scopeValidation",
         "executionChecks",
         "publicSafety",
@@ -85,6 +86,42 @@ def main() -> int:
     _assert(alias, "implementer.alias must be non-empty.")
     _assert(integration_type, "implementer.integrationType must be non-empty.")
     _assert_no_local_path(alias, "implementer.alias")
+
+    independence = payload.get("independenceQualification") or {}
+    _assert(isinstance(independence, dict), "independenceQualification must be an object.")
+    for key in [
+        "isIndependentImplementer",
+        "separateImplementationOwner",
+        "separateRuntimeCredentials",
+        "realSandboxExecution",
+        "syntheticOnlyOrMockedFlow",
+    ]:
+        _assert(isinstance(independence.get(key), bool), f"independenceQualification.{key} must be boolean.")
+    _assert(
+        independence.get("isIndependentImplementer") is True,
+        "independenceQualification.isIndependentImplementer must be true in template baseline.",
+    )
+    _assert(
+        independence.get("separateImplementationOwner") is True,
+        "independenceQualification.separateImplementationOwner must be true in template baseline.",
+    )
+    _assert(
+        independence.get("separateRuntimeCredentials") is True,
+        "independenceQualification.separateRuntimeCredentials must be true in template baseline.",
+    )
+    _assert(
+        independence.get("realSandboxExecution") is True,
+        "independenceQualification.realSandboxExecution must be true in template baseline.",
+    )
+    _assert(
+        independence.get("syntheticOnlyOrMockedFlow") is False,
+        "independenceQualification.syntheticOnlyOrMockedFlow must be false in template baseline.",
+    )
+    reviewer = str(independence.get("evidenceReviewedByOwner") or "").strip()
+    _assert(reviewer, "independenceQualification.evidenceReviewedByOwner must be non-empty.")
+    _assert_no_local_path(reviewer, "independenceQualification.evidenceReviewedByOwner")
+    reviewed_at = str(independence.get("reviewedAtUtc") or "").strip()
+    _parse_iso8601(reviewed_at, "independenceQualification.reviewedAtUtc")
 
     scope_validation = payload.get("scopeValidation") or {}
     _assert(isinstance(scope_validation, dict), "scopeValidation must be an object.")
