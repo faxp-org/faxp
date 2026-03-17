@@ -51,7 +51,7 @@ Target timelines may be adjusted based on severity, exploitability, and operatio
 - Public redaction guardrails detect credential-like literals in public surfaces (for example: bearer tokens, JWT-like token strings, and private key blocks).
 - Optional maintainer-only private redaction terms can be supplied via `FAXP_PRIVATE_REDACTION_TERMS` (comma-separated) for local/CI scans without publishing partner names in-repo.
 - GitHub Actions references must use an explicit action allowlist and pin each action to a full-length commit SHA.
-- GitHub Actions workflows must declare explicit permissions, disallow `pull_request_target`, and keep write scopes restricted to approved allowlisted workflow intents.
+- GitHub Actions workflows must declare top-level permissions with `contents: read`, disallow `pull_request_target`, and keep write scopes restricted to approved allowlisted workflow intents.
 - GitHub Actions jobs must declare explicit `timeout-minutes` values.
 - GitHub Actions workflows must declare top-level `concurrency` policy with explicit `group` and `cancel-in-progress`.
 
