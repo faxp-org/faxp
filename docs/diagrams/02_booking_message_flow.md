@@ -5,6 +5,9 @@ Canonical message semantics remain in:
 - `faxp.schema.json`
 - `docs/governance/SCOPE_GUARDRAILS.md`
 
+Mermaid source:
+- `docs/diagrams/02_booking_message_flow.mmd`
+
 ```mermaid
 sequenceDiagram
     participant Broker as Broker Agent
@@ -29,4 +32,3 @@ sequenceDiagram
 
     Note over Broker,Carrier: Post-booking operations continue in each party's own system.
 ```
-

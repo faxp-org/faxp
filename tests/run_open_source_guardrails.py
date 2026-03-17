@@ -285,6 +285,11 @@ def main() -> int:
         "docs/diagrams/02_booking_message_flow.mmd",
         "docs/diagrams/03_replay_protection_runtime.mmd",
     ]
+    diagram_source_map = {
+        "docs/diagrams/01_scope_boundary.md": "docs/diagrams/01_scope_boundary.mmd",
+        "docs/diagrams/02_booking_message_flow.md": "docs/diagrams/02_booking_message_flow.mmd",
+        "docs/diagrams/03_replay_protection_runtime.md": "docs/diagrams/03_replay_protection_runtime.mmd",
+    }
     for rel_path in required_diagram_paths:
         _assert(
             (PROJECT_ROOT / rel_path).exists(),
@@ -306,6 +311,11 @@ def main() -> int:
         _assert(
             "Canonical" in diagram_doc,
             f"{rel_path} must include canonical policy/source references.",
+        )
+        expected_source = diagram_source_map[rel_path]
+        _assert(
+            expected_source in diagram_doc,
+            f"{rel_path} must reference Mermaid source file: {expected_source}",
         )
 
     for rel_path in required_diagram_source_paths:
