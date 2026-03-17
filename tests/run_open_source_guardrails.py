@@ -141,6 +141,10 @@ def main() -> int:
         "SECURITY.md must document approved-domain public redaction guardrail.",
     )
     _assert(
+        "credential-like literals" in security.lower(),
+        "SECURITY.md must document credential-like literal detection in public redaction guardrails.",
+    )
+    _assert(
         "FAXP_PRIVATE_REDACTION_TERMS" in security,
         "SECURITY.md must document optional private redaction terms env var.",
     )
