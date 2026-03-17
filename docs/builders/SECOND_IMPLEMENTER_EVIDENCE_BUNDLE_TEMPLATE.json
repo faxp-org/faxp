@@ -10,6 +10,15 @@
     "alias": "anonymous_implementer_a",
     "integrationType": "tms_adapter_sandbox"
   },
+  "independenceQualification": {
+    "isIndependentImplementer": true,
+    "separateImplementationOwner": true,
+    "separateRuntimeCredentials": true,
+    "realSandboxExecution": true,
+    "syntheticOnlyOrMockedFlow": false,
+    "evidenceReviewedByOwner": "truckingadvantage",
+    "reviewedAtUtc": "2026-03-16T00:30:00Z"
+  },
   "scopeValidation": {
     "bookingPlaneOnly": true,
     "dispatchOrSettlementOutOfScope": true,
@@ -37,6 +46,7 @@
   "notes": [
     "Replace sample timestamps with the actual sandbox run window.",
     "Set result to PASS/PARTIAL/BLOCKED for each completed implementer run.",
+    "Never mark PASS for synthetic-only or mocked integration flows.",
     "Keep all public artifacts vendor-neutral and non-attributable."
   ]
 }

@@ -20,6 +20,20 @@ vendor-neutral, and non-attributable to any partner implementation.
 - Protocol (FAXP): booking-plane message contract and envelope/body validation.
 - Adapter (implementation bridge): source API auth/session handling, source-specific payload extraction, deterministic update mechanics, and field mapping.
 
+## Independent Implementer Qualification
+
+Use this template only when the run is a real independent implementer evaluation.
+
+Required:
+1. Real sandbox API execution for a second implementer/runtime.
+2. Independent credentials/runtime boundary from the first implementer demo.
+3. Private raw evidence exists and public output is anonymized.
+
+Does not qualify:
+1. Synthetic-only payload walkthroughs.
+2. Mock-only tests with no real sandbox API interaction.
+3. Re-labeling prior implementer data as a second demo.
+
 ## What Was Validated
 1. Source-system auth/login works.
 2. Create/load retrieval flow works.
