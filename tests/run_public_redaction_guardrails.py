@@ -28,6 +28,18 @@ EXPLICIT_TEXT_FILES = {REPO_ROOT / ".github" / "CODEOWNERS"}
 FORBIDDEN_PATTERNS = [
     ("Local absolute path leak: macOS home path", re.compile(r"/Users/[A-Za-z0-9._-]+/")),
     ("Local absolute path leak: Windows user path", re.compile(r"[A-Za-z]:\\\\Users\\\\")),
+    (
+        "Credential leak: Authorization Bearer token literal",
+        re.compile(r"(?i)authorization\s*[:=]\s*bearer\s+[A-Za-z0-9._-]{20,}"),
+    ),
+    (
+        "Credential leak: JWT-like token literal",
+        re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b"),
+    ),
+    (
+        "Credential leak: private key block literal",
+        re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
+    ),
 ]
 
 URL_PATTERN = re.compile(r"https?://[^\s)\]>\"]+")
