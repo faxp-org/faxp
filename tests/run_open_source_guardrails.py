@@ -246,6 +246,34 @@ def main() -> int:
     _assert("CODE_OF_CONDUCT.md" in readme, "README.md must reference CODE_OF_CONDUCT.md.")
     _assert("SUPPORT.md" in readme, "README.md must reference SUPPORT.md.")
     _assert("scripts/install_precommit.sh" in readme, "README.md must reference pre-commit installer.")
+    _assert(
+        "experimental and early-stage" in readme.lower(),
+        "README.md must include explicit experimental/early-stage maturity notice.",
+    )
+    _assert(
+        "not production guarantees" in readme.lower(),
+        "README.md must state pilot/evaluation artifacts are not production guarantees.",
+    )
+
+    docs_index = _read(PROJECT_ROOT / "docs" / "INDEX.md")
+    _assert(
+        "experimental and early-stage" in docs_index.lower(),
+        "docs/INDEX.md must include explicit experimental/early-stage maturity notice.",
+    )
+    _assert(
+        "pilot/evaluation" in docs_index.lower(),
+        "docs/INDEX.md must include pilot/evaluation usage guidance.",
+    )
+
+    builders_start = _read(PROJECT_ROOT / "docs" / "BUILDERS_START_HERE.md")
+    _assert(
+        "experimental and early-stage" in builders_start.lower(),
+        "docs/BUILDERS_START_HERE.md must include explicit experimental/early-stage maturity notice.",
+    )
+    _assert(
+        "sandbox/test environments first" in builders_start.lower(),
+        "docs/BUILDERS_START_HERE.md must direct builders to sandbox/test environments first.",
+    )
 
     security = _read(PROJECT_ROOT / "SECURITY.md")
     _assert("Secret scanning" in security, "SECURITY.md must document Secret scanning requirement.")
