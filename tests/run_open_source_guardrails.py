@@ -19,6 +19,7 @@ ALLOWED_ACTION_REPOS = {
 
 FULL_SHA_PATTERN = re.compile(r"^[a-f0-9]{40}$")
 WRITE_SCOPE_PATTERN = re.compile(r"^\s*([a-z-]+)\s*:\s*write\s*$")
+JOB_HEADER_PATTERN = re.compile(r"^  ([A-Za-z0-9_-]+):\s*$")
 
 WORKFLOW_WRITE_SCOPE_ALLOWLIST = {
     "a2a-watch.yml": {"issues: write"},
@@ -115,6 +116,41 @@ def _validate_workflow_permissions_and_events() -> None:
     )
 
 
+def _validate_workflow_job_timeouts() -> None:
+    violations: list[str] = []
+    for workflow in sorted(WORKFLOWS_DIR.glob("*.yml")):
+        rel = workflow.relative_to(PROJECT_ROOT)
+        contents = workflow.read_text(encoding="utf-8")
+        lines = contents.splitlines()
+        if "jobs:" not in contents:
+            continue
+
+        jobs_start = next((idx for idx, line in enumerate(lines) if line.strip() == "jobs:"), -1)
+        if jobs_start == -1:
+            continue
+
+        job_indices: list[tuple[str, int, int]] = []
+        for idx in range(jobs_start + 1, len(lines)):
+            match = JOB_HEADER_PATTERN.match(lines[idx])
+            if match:
+                job_indices.append((match.group(1), idx, idx + 1))
+
+        for i, (job_name, header_idx, start_idx) in enumerate(job_indices):
+            end_idx = job_indices[i + 1][1] if i + 1 < len(job_indices) else len(lines)
+            block = lines[start_idx:end_idx]
+            has_runs_on = any(re.match(r"^\s{4}runs-on:\s*", line) for line in block)
+            if not has_runs_on:
+                continue
+            has_timeout = any(re.match(r"^\s{4}timeout-minutes:\s*\d+\s*$", line) for line in block)
+            if not has_timeout:
+                violations.append(f"{rel}:{header_idx + 1}: job '{job_name}' must declare timeout-minutes.")
+
+    _assert(
+        not violations,
+        "Workflow timeout guardrail violations:\n" + "\n".join(f"- {item}" for item in violations),
+    )
+
+
 def main() -> int:
     required_files = [
         PROJECT_ROOT / "CODE_OF_CONDUCT.md",
@@ -208,12 +244,17 @@ def main() -> int:
         "write scopes" in security.lower(),
         "SECURITY.md must document workflow write-scope restrictions.",
     )
+    _assert(
+        "timeout-minutes" in security,
+        "SECURITY.md must document workflow timeout-minutes requirement.",
+    )
 
     ci = _read(PROJECT_ROOT / ".github" / "workflows" / "ci.yml")
     _assert("Gitleaks secret scan" in ci, "CI workflow must include gitleaks secret scan step.")
     _assert("gitleaks detect" in ci, "CI workflow must run gitleaks detect command.")
     _validate_workflow_action_sources()
     _validate_workflow_permissions_and_events()
+    _validate_workflow_job_timeouts()
 
     precommit = _read(PROJECT_ROOT / ".pre-commit-config.yaml")
     _assert("faxp-security-gate" in precommit, "pre-commit config must include security gate hook.")

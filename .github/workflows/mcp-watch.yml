@@ -83,6 +83,7 @@ jobs:
     if: needs.watch.outputs.has_drift == 'true' || needs.watch.outputs.watch_failed == 'true'
     needs: watch
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
       issues: write
