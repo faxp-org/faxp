@@ -19,3 +19,9 @@ repos:
         language: system
         pass_filenames: false
         stages: [pre-commit]
+      - id: faxp-python-compile-checks
+        name: FAXP python compile checks
+        entry: python3 tests/run_python_compile_checks.py
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
